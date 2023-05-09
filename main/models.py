@@ -32,20 +32,24 @@ class Work(models.Model):
         max_length=100,
         verbose_name='Czynność',
     )
-    coffee_food = models.IntegerField(
+    coffee_food = models.FloatField(
         null=True,
+        default=0.00,
         verbose_name='Kawa/Posiłki',
     )
-    fuel = models.IntegerField(
+    fuel = models.FloatField(
         null=True,
+        default=0.00,
         verbose_name='Paliwo',
     )
-    prepayment = models.IntegerField(
-        null=True,      
+    prepayment = models.FloatField(
+        null=True, 
+        default=0.00,     
         verbose_name='Zaliczka',
     )
-    phone_costs = models.IntegerField(
+    phone_costs = models.FloatField(
         null=True,
+        default=0.00,
         verbose_name='Telefon',
     )
     user = models.ManyToManyField(
