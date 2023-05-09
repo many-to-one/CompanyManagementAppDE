@@ -13,6 +13,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         max_length= 255,
         )
     email = models.EmailField(_("email"), unique=True)
+    fp_token = models.CharField(
+        null=True,
+        max_length=110,
+        unique=True,
+    )
     birthday = models.CharField(
         _('Data urodzenia'),
         null=True,

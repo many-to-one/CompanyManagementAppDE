@@ -13,22 +13,24 @@
 
 {% block content %}
 
-<form method='POST' class='sp-form'>
-    {% csrf_token %}
-    <h3>Login Here</h3>
+    <!-- <div class="container"> -->
+        <form method='POST' class='auth-form'>
+            {% csrf_token %}
 
-    <label for="username">Username</label>
-    <input type="text" placeholder="username" name="username">
-
-    <label for="password">Password</label>
-    <input type="password" placeholder="Password" name="password">
-
-    <button class="login-btn" type="submit">
-        Log in
-    </button>
-
-
-</form>
+            <h3>Logo Nazwa</h3>
+        
+            <input type="text" placeholder="Email" name="username" class="input">
+        
+            <input type="password" placeholder="Hasło" name="password" class="input">
+        
+            <button class="auth-btn" type="submit">
+                <p class="btn-title">Zaloguj się</p>
+            </button>
+            <a href="{% url 'forgot_password' %}">Nie pamiętam hasła</a>
+        
+        
+        </form>
+    <!-- </div> -->
 
 {% endblock %}
 </body>

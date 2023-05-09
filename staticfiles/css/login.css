@@ -1,0 +1,64 @@
+/* :root {
+    --nav-font: 20px;
+    --text-font: 20px;
+    --title-font: 50px;
+    --nav-color: #121212;
+    --normal-font: 400;
+    --bold-font: 600;
+    --bolder-font: 900;
+    --bg-color: #f6f7f8;
+    --text-descr-color: white;
+    --block-section-color: #014f62;
+    --block-insection-color: #ffffff;
+    --block-inimage-color: #0c6176;
+    --line-height: 1.7rem;
+    --transition: 0.4s ease-in;
+  } */
+
+  /* 3399b2 */
+
+  *{
+    margin: 0;
+    padding: 0;
+    /* background-color: var(--bg-color); */
+}
+
+/* body {
+    width: 100%;
+    height: 470vh;
+} */
+
+
+.auth-form {
+    position: absolute;
+    transform: translate(-50%,-50%);
+    top: 50%;
+    left: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 50px 20px;
+    width: 15%;
+    height: auto;
+    background-color: #F3EFE0;
+    border: 1px solid #434242;
+    border-radius: 10px;
+    gap: 20px;
+}
+
+.input {
+    border: 1px solid #434242;
+    border-radius: 10px;
+    width: 90%;
+    height: 35px;
+    padding: 2px;
+}
+
+.auth-btn {
+    width: 90%;
+    height: 40px;
+    background-color: #222222;
+    border: 1px solid #434242;
+    border-radius: 10px;
+}

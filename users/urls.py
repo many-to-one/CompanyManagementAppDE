@@ -5,5 +5,8 @@ from .views import *
 urlpatterns = [
     path('register/', Register.as_view(), name='register'),
     path('login/', Login.as_view(), name='login'),
+    path('logout/', logout_view, name='logout'),
     path('user/<pk>/', Profile.as_view(), name='user'),
+    path('forgot_password/', forgotPassword, name='forgot_password'),
+    path('change_password/<token>/<uidb64>/', changePassword, name='change_password'),
     ]

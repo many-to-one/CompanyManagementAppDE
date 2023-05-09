@@ -1,0 +1,61 @@
+:root {
+    --btn-bg-color: #222222;
+    --border: 1px solid #434242;
+  }
+
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.block {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    gap: 10px;
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-el {
+    gap: 10px;
+    padding: 15px;
+    cursor: pointer;
+}
+
+.btn {
+    padding: 5px;
+    background-color: var(--btn-bg-color);
+    border: var(--border);
+    border-radius: 10px;
+    
+}
+
+a {
+    color: #222222;
+    text-decoration: none;
+}
+
+li {
+    list-style: none;
+}
+
+.btn-title {
+    color: white;
+    text-decoration: none;
+}

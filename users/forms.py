@@ -38,13 +38,62 @@ class CustomUserCreationForm(UserCreationForm):
         if commit:
             user.save()
         return user
+    
+
+class ForgotPassword(forms.Form):
+
+    email = forms.EmailField(
+        # widget=forms.EmailInput,
+        label='email',
+        max_length=30,
+    )
+
+    def clean(self):
+        email = self.cleaned_data.get('email')
+
+        return email
+
+    
+
 
 
 class CustomUserChangeForm(UserChangeForm):
 
+    new_password1 = forms.CharField(
+        widget=forms.PasswordInput,
+        label='New password',
+        max_length=20,
+    )
+    new_password2 = forms.CharField(
+        widget=forms.PasswordInput,
+        label='Confirm new password',
+        max_length=20,
+    )
+
     class Meta:
         model = CustomUser
-        fields = ("email",)
+        # fields = ("email",)
+        fields = [
+            'new_password1',
+            'new_password2',
+        ]
+
+    def clean_new_password2(self):
+        new_password1 = self.cleaned_data.get("new_password1")
+        new_password2 = self.cleaned_data.get("new_password2")
+        if new_password1 and new_password2 and new_password1 != new_password2:
+            raise forms.ValidationError(
+                self.error_messages['password_mismatch'],
+                code='password_mismatch',
+            )
+        return new_password2
+
+    def save(self, commit=True):
+        user = super(UserChangeForm, self).save(commit=False)
+        user.set_password(self.cleaned_data["new_password1"])
+        if commit:
+            user.save()
+        return user
 
 
 class AuthenticationForm(forms.Form):

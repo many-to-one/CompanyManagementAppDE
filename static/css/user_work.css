@@ -1,0 +1,25 @@
+.profile-cont {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 2%;
+    gap: 50px;
+}
+
+.allworks-cont {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+}
+
+.addwork {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.startend {
+    width: 120px;
+    height: 20px;
+    border: var(--border);
+}
