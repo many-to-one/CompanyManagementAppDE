@@ -13,16 +13,16 @@
 <body>
 
 {% block content %}
-    <form method="POST" enctype="multipart/form-data">
+    <form method="POST" enctype="multipart/form-data" class="container">
         {% csrf_token %}
         <!-- {{form.as_p}} -->
         <input type="text" placeholder="Wpisz object" name="workname" class="input">
-        <select name="user">
+
             {% for user in users %}
-                <option value="{{user}}">{{user.email}}</option>
+            <input type="checkbox" name="users" value="{{ user.id }}"> {{ user.email }}<br>
             {% endfor %}
-        </select>
-        <button type="submit">Zatwierdź</button>
+
+        <button type="submit">Dodaj</button>
     </form>
 {% endblock%}
 

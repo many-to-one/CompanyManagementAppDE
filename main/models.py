@@ -80,7 +80,7 @@ class WorkObject(models.Model):
         max_length=150,
     )
     user = models.ManyToManyField(
-        CustomUser
+        CustomUser,
     )
 
     def __str__(self):

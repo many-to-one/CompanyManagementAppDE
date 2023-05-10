@@ -35,18 +35,21 @@ class WorkObjectView(DetailView):
 
 def CreateWorkObject(request):
     users = CustomUser.objects.all()
+    users_count = users.count()
     if request.method == 'POST':
         users = CustomUser.objects.all()
         work = WorkObject.objects.create()
         workname = request.POST.get('workname')
-        user_email = request.POST.get('user')
-        user = CustomUser.objects.get(email=user_email)
         work.name = workname
-        work.user.add(user)
+        users_email = request.POST.getlist('users')
+        print('user_email: ', users_email)
+        print('users: ', users)
+        work.user.add(*users_email)
         work.save()
         return redirect('work_objects')
     context = {
         'users': users,
+        'users_count': range(users_count),
     }
     return render(request, 'create_work_object.html', context)
 
