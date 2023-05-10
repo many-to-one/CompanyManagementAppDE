@@ -1,8 +1,8 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-
 from .manager import CustomUserManager
 
 
@@ -133,6 +133,12 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         null=True,
         max_length= 255,
         )
+    # work_objects = models.ManyToManyField(
+    #     WorkObject
+    # )
+    # work_type = models.ManyToManyField(
+    #     WorkType
+    # )
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -148,3 +154,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+    
+    def get_absolute_url(self):
+        return reverse(
+            'user',
+            kwargs={'pk': str(self.id)}
+        )

@@ -1,7 +1,8 @@
 .profile-cont {
     display: flex;
     flex-direction: row;
-    align-items: flex-start;
+    justify-content: center;
+    align-items: center;
     padding: 2%;
     gap: 50px;
 }
@@ -9,6 +10,7 @@
 .allworks-cont {
     display: flex;
     flex-direction: row;
+    justify-content: space-around;
     gap: 15px;
 }
 

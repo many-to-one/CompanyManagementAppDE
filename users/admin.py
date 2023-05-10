@@ -41,6 +41,8 @@ class CustomUserAdmin(UserAdmin):
                 "growth",
                 "work_clothes",
                 "rights",
+                # "work_objects",
+                # "work_type",
             )
         }),
 

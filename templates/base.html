@@ -31,13 +31,13 @@
 
         <!-- ############################ HEADER ############################ -->
 
-        <div class="header-container">
+        <!-- <div class="header-container">
             <div class="block">Logo</div>
             <div class="block">
                 <ul class="navbar">
                     <li class="nav-el"><a href="{% url 'user' request.user.pk %}"></a>PROFIL</li>
-                    <li class="nav-el"><a href="#"></a>ELEMENT</li>
-                    <li class="nav-el"><a href="#"></a>ELEMENT</li>
+                    <li class="nav-el"><a href="{% url 'home' %}"></a>HOME</li>
+                    <li class="nav-el"><a href="{% url 'work_objects' %}"></a>WORK OBJECTS</li>
                     <li class="nav-el"><a href="#"></a>ELEMENT</li>
                     <li class="nav-el"><a href="#"></a>ELEMENT</li>
                 </ul>
@@ -51,9 +51,11 @@
                     <div class="btn"><a class="btn-title" href="{% url 'login' %}">Zaloguj się</a></div>
                 {% endif %}
             </div>
-        </div>
+        </div> -->
+
         <!-- ############################ END HEADER ############################ -->
 
+    {% include 'header.html' %}
 
     {% block content %}
     <p>Base</p>

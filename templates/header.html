@@ -11,29 +11,25 @@
 <body>
 
     <div class="header-container">
-        <div class="nav-bar">
-            <div class="logo">
-                <p>Logo</p>
-            </div>
-            <div class="nav-elements">
-                <ul>
-                    <li>
-                        <a href="#">Głowna</a>
-                    </li>
-                    <li>
-                        <a href="#">Coś</a>
-                    </li>
-                    <li>
-                        <a href="#">Coś</a>
-                    </li>
-                    <li>
-                        <a href="#">Sign up</a>
-                    </li>
-                    <li>
-                        <a href="#">Log in</a>
-                    </li>
-                </ul>
-            </div>
+        <div class="block">Logo</div>
+        <div class="block">
+            <ul class="navbar">
+                <li class="nav-el"><a href="{% url 'user' request.user.pk %}">PROFIL</a></li>
+                <li class="nav-el"><a href="{% url 'home' %}">HOME</a></li>
+                <li class="nav-el"><a href="{% url 'work_objects' %}">WORK OBJECTS</a></li>
+                <li class="nav-el"><a href="#"></a>ELEMENT</li>
+                <li class="nav-el"><a href="#"></a>ELEMENT</li>
+            </ul>
+        </div>
+        <div class="block">
+            {% if request.user.is_active %}
+                <!-- <div class=""><a class="" href="{% url 'work_objects' %}">WORK OBJECTS</a></div> -->
+                <div class="btn"><a class="btn-title" href="{% url 'user_work' request.user.pk %}">Dodaj pracę</a></div>
+                <div class="btn"><a class="btn-title" href="{% url 'logout' %}">Wyloguj się</a></div>
+            {% else %}
+                <div class="btn"><a class="btn-title" href="{% url 'register' %}">Zarejestruj się</a></div>
+                <div class="btn"><a class="btn-title" href="{% url 'login' %}">Zaloguj się</a></div>
+            {% endif %}
         </div>
     </div>
     

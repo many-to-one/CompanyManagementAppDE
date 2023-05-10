@@ -31,7 +31,12 @@
             </div>
             <div class="work">
                 <p>Miejsce pracy</p>
-                <input name="work_object" type="text" class="startend" >
+                <!-- <input name="work_object" type="text" class="startend" > -->
+                <select name="work_object">
+                    {% for wo in work_objects %}
+                        <option value="{{wo}}">{{wo.name}}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="work">
                 <p>Czynność</p>
@@ -80,17 +85,34 @@
         </div> -->
 
         <div class="allworks">
+            {% for work in allworks %}
             <div class="allworks-cont">
-                <p>users works</p>
+                <p>{{work.date}}</p>
+                <p>{{work.timestart}}</p>
+                <p>{{work.timefinish}}</p>
+                <p>{{work.work_object}}</p>
+                <p>{{work.work_type}}</p>
+                <p>{{work.coffee_food}}</p>
+                <p>{{work.prepayment}}</p>
+                <p>{{work.fuel}}</p>
+                <p>{{work.phone_costs}}</p>
+                <p>{{work.diff_time}}</p>
                 <button><p>Edytuj</p></button>
             </div>
+            {% endfor %}
+            <br>
+            <br>
             <div class="allworks-cont">
-                <p>users works</p>
-                <button><p>Edytuj</p></button>
-            </div>
-            <div class="allworks-cont">
-                <p>users works</p>
-                <button><p>Edytuj</p></button>
+                <p>--</p>
+                <p>--</p>
+                <p>--</p>
+                <p>--</p>
+                <p>--</p>
+                <p>{{total_coffee_food}}</p>
+                <p>{{total_prepayment}}</p>
+                <p>{{total_fuel}}</p>
+                <p>{{total_phone_costs}}</p>
+                <p>{{total_work_time}}</p>
             </div>
         </div>
         
