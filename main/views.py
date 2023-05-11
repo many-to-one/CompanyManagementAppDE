@@ -33,25 +33,51 @@ class WorkObjectView(DetailView):
         return context
 
 
-def CreateWorkObject(request):
+def createWorkObject(request):
     users = CustomUser.objects.all()
-    users_count = users.count()
     if request.method == 'POST':
         users = CustomUser.objects.all()
         work = WorkObject.objects.create()
         workname = request.POST.get('workname')
-        work.name = workname
-        users_email = request.POST.getlist('users')
-        print('user_email: ', users_email)
-        print('users: ', users)
-        work.user.add(*users_email)
-        work.save()
-        return redirect('work_objects')
+        print('workname ---', workname)
+        if workname != '':
+            work.name = workname
+            print('workname +++', workname)
+            users_email = request.POST.getlist('users')
+            print('user_email: ', users_email)
+            print('users: ', users)
+            work.user.add(*users_email)
+            work.save()
+            return redirect('work_objects')
+        work_none = WorkObject.objects.filter(name=None)
+        work_none.delete()
+        return redirect('home')
     context = {
         'users': users,
-        'users_count': range(users_count),
     }
     return render(request, 'create_work_object.html', context)
+
+
+def createWorkType(request):
+    users = CustomUser.objects.all()
+    if request.method == 'POST':
+        users = CustomUser.objects.all()
+        worktype = WorkType.objects.create()
+        worktype_name = request.POST.get('worktype_name')
+        if worktype_name != '':
+            worktype.name = worktype_name
+            users_email = request.POST.getlist('users')
+            worktype.user.add(*users_email)
+            worktype.save()
+            return redirect('work_objects')
+        work_none = WorkType.objects.filter(name=None)
+        work_none.delete()
+        return redirect('home')
+    context = {
+        'users': users,
+    }
+    return render(request, 'create_work_type.html', context)
+
 
 
 def userWork(request, pk):
@@ -124,3 +150,94 @@ def userWork(request, pk):
         'total_work_time': total_work_time,
         }
     return render(request, 'user_work.html', context)
+
+
+def getRaport(request, user_pk):
+    work_objects = WorkObject.objects.filter(user__id=user_pk)
+
+    if request.method == 'POST':
+
+        ### Sorted by date ###
+        sorted_from = request.POST.get('sorted_from')
+        year, month, day = sorted_from.split('-')
+        sorted_to = request.POST.get('sorted_to')
+        year_, month_, day_ = sorted_to.split('-')
+        start = datetime(int(year), int(month), int(day))
+        end = datetime(int(year_), int(month_), int(day_))
+        ### Sorted by date pause.. ###
+
+        ### Sorted by workobject ###
+        work_object = request.POST.get('work_object')
+        if work_object == '':
+            work_by_date = Work.objects.filter(
+            user__id=user_pk,
+            date__range=(start, end),
+            )
+            user = CustomUser.objects.get(id=user_pk)
+            work_objects = user.workobject_set.all()
+
+            user = CustomUser.objects.get(id=user_pk)
+            work_objects = user.workobject_set.all()
+
+            ######################
+            ### Totals for all ###
+            total_coffee_food = Work.objects.filter(user__id=user_pk,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
+            total_fuel = Work.objects.filter(user__id=user_pk).aggregate(total_fuel=Sum('fuel'))['total_fuel']
+            total_prepayment = Work.objects.filter(user__id=user_pk).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+            total_phone_costs = Work.objects.filter(user__id=user_pk).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+            total_sum_time_sec = Work.objects.filter(user__id=user_pk).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+
+            if total_sum_time_sec:
+                ### total_sum_time_sec => hours:minutes ###
+                total_hours = total_sum_time_sec // 3600
+                total_sec = total_sum_time_sec % 3600
+                total_min = total_sec // 60
+                total_work_time = f'{int(total_hours)}:{int(total_min)}'
+            else:
+                total_work_time = '0:00'
+            ### End Totals for all ###
+            ##########################
+
+            context = {
+                'work_by_date': work_by_date,
+                'work_objects': work_objects,
+                'total_coffee_food': total_coffee_food,
+            }
+            return render(request, 'user_raport.html', context)
+        
+        ### Sorted by date continue.. ###
+        work_by_date = Work.objects.filter(
+            user__id=user_pk,
+            date__range=(start, end),
+            work_object=work_object,
+        )
+        user = CustomUser.objects.get(id=user_pk)
+        work_objects = user.workobject_set.all()
+
+        #########################
+        ### Totals for choice ###
+        total_coffee_food = Work.objects.filter(user__id=user_pk, work_object=work_object,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
+        total_fuel = Work.objects.filter(user__id=user_pk).aggregate(total_fuel=Sum('fuel'))['total_fuel']
+        total_prepayment = Work.objects.filter(user__id=user_pk).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+        total_phone_costs = Work.objects.filter(user__id=user_pk).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+        total_sum_time_sec = Work.objects.filter(user__id=user_pk).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+
+        if total_sum_time_sec:
+            ### total_sum_time_sec => hours:minutes ###
+            total_hours = total_sum_time_sec // 3600
+            total_sec = total_sum_time_sec % 3600
+            total_min = total_sec // 60
+            total_work_time = f'{int(total_hours)}:{int(total_min)}'
+        else:
+            total_work_time = '0:00'
+        ### End Totals for choice ###
+        #############################
+
+        context = {
+            'work_by_date': work_by_date,
+            'work_objects': work_objects,
+            'total_coffee_food': total_coffee_food,
+        }
+        return render(request, 'user_raport.html', context)
+
+    return render(request, 'user_raport.html')

@@ -43,7 +43,7 @@
     background-color: var(--btn-bg-color);
     border: var(--border);
     border-radius: 10px;
-    
+    cursor: pointer;
 }
 
 a {
@@ -58,4 +58,5 @@ li {
 .btn-title {
     color: white;
     text-decoration: none;
+    text-align: center;
 }

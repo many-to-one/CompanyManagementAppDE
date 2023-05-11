@@ -15,7 +15,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_("email"), unique=True)
     fp_token = models.CharField(
         null=True,
-        max_length=110,
+        max_length=192,
         unique=True,
     )
     birthday = models.CharField(
@@ -133,12 +133,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         null=True,
         max_length= 255,
         )
-    # work_objects = models.ManyToManyField(
-    #     WorkObject
-    # )
-    # work_type = models.ManyToManyField(
-    #     WorkType
-    # )
+
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -153,7 +148,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     objects = CustomUserManager()
 
     def __str__(self):
-        return self.email
+        return self.username
     
     def get_absolute_url(self):
         return reverse(

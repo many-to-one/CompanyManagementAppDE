@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,14 +13,16 @@
 <body>
 
     {% block content %}
-    <div class="cwo_checkbox_cont">
-        <h1>WORK OBJECT: {{work_object.name}}</h1>
 
-            {% for user in users %} 
-                <p>{{ user.email }}</p>       
-            {% endfor %}
-    </div>       
-    {% endblock %}   
+        <div class="cwo_cont">
+            <h1>RODZAJ PRACY</h1>
+        
+                
+        
+            <div class="cwo_btn"><a href="{% url 'create_work_object' %}"><p class="btn-title">Dodaj</p></a></div>
+        </div>
 
+    {% endblock %}
+    
 </body>
 </html>

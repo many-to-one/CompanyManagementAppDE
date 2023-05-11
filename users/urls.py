@@ -9,4 +9,5 @@ urlpatterns = [
     path('user/<pk>/', Profile.as_view(), name='user'),
     path('forgot_password/', forgotPassword, name='forgot_password'),
     path('change_password/<token>/<uidb64>/', changePassword, name='change_password'),
+    path('all_users/', AllUsers.as_view(), name='all_users'),
     ]

@@ -4,7 +4,7 @@ from django.db import models
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import DetailView, CreateView, UpdateView, View 
+from django.views.generic import DetailView, CreateView, UpdateView, ListView 
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import logout
 from django.contrib import messages
@@ -127,4 +127,16 @@ class Profile(DetailView):
 
     def get_queryset(self):
         return CustomUser.objects.filter(id=self.kwargs['pk'])
+    
+
+class AllUsers(ListView):
+    ### This view is created for raports ###
+    model = CustomUser
+    context_object_name = 'users'
+    template_name = 'all_users.html'
+
+    def get_context_data(self, **kwargs) :
+        context = super().get_context_data(**kwargs)
+        context['users'] = CustomUser.objects.all()
+        return context
     

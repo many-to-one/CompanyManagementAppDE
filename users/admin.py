@@ -6,18 +6,20 @@ from .models import CustomUser
 
 
 class CustomUserAdmin(UserAdmin):
-    add_form = CustomUserCreationForm
-    form = CustomUserChangeForm
+    # add_form = CustomUserCreationForm
+    # form = CustomUserChangeForm
     model = CustomUser
     list_display = ("username", "is_staff", "is_active",)
     list_filter = ("username", "is_staff", "is_active",)
     fieldsets = (
 
-        (None,{ 
+        ("User Info",{ 
          
             "fields": (
                 "username", 
                 "email", 
+                # "password",
+                # "fp_token",
                 "birthday",
                 "birthplace",
                 "workplace",
@@ -41,8 +43,6 @@ class CustomUserAdmin(UserAdmin):
                 "growth",
                 "work_clothes",
                 "rights",
-                # "work_objects",
-                # "work_type",
             )
         }),
 
@@ -50,6 +50,7 @@ class CustomUserAdmin(UserAdmin):
             "fields": (
                 "is_staff", 
                 "is_active", 
+                "date_joined",
                 # "groups", 
                 # "user_permissions"
             )}
@@ -66,8 +67,6 @@ class CustomUserAdmin(UserAdmin):
                 "password2", 
                 "is_staff",
                 "is_active", 
-                # "groups", 
-                # "user_permissions",
             )}
         ),
     )

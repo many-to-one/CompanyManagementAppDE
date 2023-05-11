@@ -11,19 +11,11 @@
 </head>
 <body>
 
-{% block content %}
-
-<div class="cwo_cont">
-    <h1>MIEJSCA PRACY</h1>
-
-        {% for wo in work_objects %}
-            <div><a href="{% url 'work_object' wo.pk %}">{{wo.name}}</a></div> 
+    {% block content %}
+        {% for user in users %}   
+            <li><a href="{% url 'raport' user.pk %}">{{user.username}}</a></li> 
         {% endfor %}
+    {% endblock %}
 
-    <div class="cwo_btn"><a href="{% url 'create_work_object' %}"><p class="btn-title">Dodaj</p></a></div>
-</div>
-
-{% endblock %}
-    
 </body>
 </html>

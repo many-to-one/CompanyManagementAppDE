@@ -13,16 +13,20 @@
 <body>
 
 {% block content %}
-    <form method="POST" enctype="multipart/form-data" class="container">
+    <form method="POST" enctype="multipart/form-data" class="cwo_cont">
         {% csrf_token %}
         <!-- {{form.as_p}} -->
-        <input type="text" placeholder="Wpisz object" name="workname" class="input">
+        <input type="text" placeholder="Wpisz object" name="workname" class="cwo_input">
 
-            {% for user in users %}
-            <input type="checkbox" name="users" value="{{ user.id }}"> {{ user.email }}<br>
-            {% endfor %}
+            <div class="cwo_checkbox_cont">
+                {% for user in users %}
+                <div class="cwo_checkbox">
+                    <input type="checkbox" name="users" value="{{ user.id }}"> <p class="checkbox_p">{{ user.email }}</p><br>
+                </div>
+                {% endfor %}
+            </div>
 
-        <button type="submit">Dodaj</button>
+        <button class="cwo_btn" type="submit"><p class="btn-title">Dodaj</p></button>
     </form>
 {% endblock%}
 

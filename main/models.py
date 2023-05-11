@@ -69,6 +69,9 @@ class Work(models.Model):
     user = models.ManyToManyField(
         CustomUser
     )
+    work_objects = models.ManyToManyField(
+        'WorkObject'
+    )
 
     def __str__(self) -> str:
         return str(self.date)

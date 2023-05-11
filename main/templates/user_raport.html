@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    {% block content %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <input name="sorted_from" id="datetimepicker" type="date">
+            <input name="sorted_to" id="datetimepicker" type="date" class="startend">
+            <select name="work_object">
+                <option value="">wszystkie</option>
+                {% for wo in work_objects %}
+                    <option value="{{wo}}">{{wo.name}}</option>
+                {% endfor %}
+            </select>            
+
+            <button class="btn"><p class="btn-title">Szukaj</p></button>
+        </form>
+        {% for work in work_by_date %}
+            <div class="allworks-cont">
+                <p>{{work.date}}</p>
+                <p>{{work.timestart}}</p>
+                <p>{{work.timefinish}}</p>
+                <p>{{work.work_object}}</p>
+                <p>{{work.work_type}}</p>
+                <p>{{work.coffee_food}}</p>
+                <p>{{work.prepayment}}</p>
+                <p>{{work.fuel}}</p>
+                <p>{{work.phone_costs}}</p>
+                <p>{{work.diff_time}}</p>
+            </div>
+        {% endfor %}
+            
+            <div>
+                <p>total_coffee_food: {{total_coffee_food}}</p>
+                <p>allworks: {{allworks}}</p>
+            </div>
+
+    {% endblock %}
+</body>
+</html>
