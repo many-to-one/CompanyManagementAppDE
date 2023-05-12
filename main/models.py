@@ -31,10 +31,22 @@ class Work(models.Model):
         max_length=5,
         verbose_name='Czas pracy',
     )
+    over_time = models.CharField(
+        null=True,
+        default='00:00',
+        max_length=5,
+        verbose_name='Nadgodziny',
+    )
     sum_time_sec = models.FloatField(
         null=True,
         default=0.00,
         verbose_name='Czas pracy razem',
+    )
+    sum_over_time_sec = models.CharField(
+        null=True,
+        default='00:00',
+        max_length=5,
+        verbose_name='Nadgodziny',
     )
     work_object = models.CharField(
         null=True,
@@ -46,24 +58,28 @@ class Work(models.Model):
         max_length=100,
         verbose_name='Czynność',
     )
-    coffee_food = models.FloatField(
+    coffee_food = models.CharField(
         null=True,
-        default=0.00,
+        # default=0.00,
+        max_length=100,
         verbose_name='Kawa/Posiłki',
     )
-    fuel = models.FloatField(
+    fuel = models.CharField(
         null=True,
-        default=0.00,
+        # default=0.00,
+        max_length=100,
         verbose_name='Paliwo',
     )
-    prepayment = models.FloatField(
+    prepayment = models.CharField(
         null=True, 
-        default=0.00,     
+        # default=0.00,  
+        max_length=100,   
         verbose_name='Zaliczka',
     )
-    phone_costs = models.FloatField(
+    phone_costs = models.CharField(
         null=True,
-        default=0.00,
+        # default=0.00,
+        max_length=100,
         verbose_name='Telefon',
     )
     user = models.ManyToManyField(

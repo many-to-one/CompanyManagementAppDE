@@ -13,7 +13,7 @@
 
     {% block content %}
         {% for user in users %}   
-            <li><a href="{% url 'raport' user.pk %}">{{user.username}}</a></li> 
+            <li><a href="{% url 'user_raport' user.pk %}">{{user.username}}</a></li> 
         {% endfor %}
     {% endblock %}
 

@@ -31,7 +31,6 @@
             </div>
             <div class="work">
                 <p>Miejsce pracy</p>
-                <!-- <input name="work_object" type="text" class="startend" > -->
                 <select name="work_object">
                     {% for wo in work_objects %}
                         <option value="{{wo}}">{{wo.name}}</option>
@@ -97,6 +96,7 @@
                 <p>{{work.fuel}}</p>
                 <p>{{work.phone_costs}}</p>
                 <p>{{work.diff_time}}</p>
+                <p>{{work.over_time}}</p>
                 <button><p>Edytuj</p></button>
             </div>
             {% endfor %}
@@ -113,6 +113,7 @@
                 <p>{{total_fuel}}</p>
                 <p>{{total_phone_costs}}</p>
                 <p>{{total_work_time}}</p>
+                <p>{{total_work_over_time}}</p>
             </div>
         </div>
         
