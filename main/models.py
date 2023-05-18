@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.db import models
 from django.urls import reverse
 
@@ -82,6 +83,16 @@ class Work(models.Model):
         max_length=100,
         verbose_name='Telefon',
     )
+    payment = models.CharField(
+        null=True, 
+        default=0.00,  
+        max_length=100,   
+        verbose_name='Kwota',
+    )
+    payment_hour = models.FloatField(
+        default=0,
+        verbose_name='Stawka za godzinę',
+    )
     user = models.ManyToManyField(
         CustomUser
     )
@@ -90,13 +101,24 @@ class Work(models.Model):
     )
 
     def __str__(self) -> str:
-        return str(self.date)
+        for user in self.user.all():
+            return str(user.username)
     
+    # def work_payment(self):
+        # self.user = CustomUser.objects.get(id=pk)
+        # self.payment * self.user.payment
+        
 
 class WorkObject(models.Model):
     name = models.CharField(
         null=True,
         max_length=150,
+    )
+    coffee_food = models.FloatField(
+        null=True,
+        default=0.00,
+        # max_length=100,
+        verbose_name='Kawa/Posiłki',
     )
     user = models.ManyToManyField(
         CustomUser,
@@ -104,6 +126,40 @@ class WorkObject(models.Model):
 
     def __str__(self):
         return str(self.name)
+    
+
+class TotalWorkObject(models.Model):
+    name = models.CharField(
+        null=True,
+        max_length=150,
+    )
+    obj_coffee_food = models.CharField(
+        null=True,
+        default=0.00,
+        max_length=100,
+        verbose_name='Kawa/Posiłki',
+    )
+    obj_fuel = models.CharField(
+        null=True,
+        default=0.00,
+        max_length=100,
+        verbose_name='Paliwo',
+    )
+    obj_prepayment = models.CharField(
+        null=True,   
+        default=0.00,
+        max_length=100,   
+        verbose_name='Zaliczka',
+    )
+    obj_phone_costs = models.CharField(
+        null=True,
+        default=0.00,
+        max_length=100,
+        verbose_name='Telefon',
+    ) 
+    work_object = models.ManyToManyField(
+        WorkObject,
+    )
 
 
 class WorkType(models.Model):
@@ -117,3 +173,26 @@ class WorkType(models.Model):
 
     def __str__(self):
         return str(self.name)
+    
+
+class Message(models.Model):
+    sender = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.CASCADE, 
+        related_name='sent_messages'
+        )
+    name = models.CharField(
+        null=True,
+        max_length=50,
+    )
+    work_object = models.ForeignKey(
+        WorkObject,
+        null=True, 
+        on_delete=models.CASCADE, 
+        related_name='objekt'
+        )
+    content = models.TextField()
+    timestamp = models.DateTimeField(default=timezone.now,)
+
+    def __str__(self) -> str:
+        return self.sender.username

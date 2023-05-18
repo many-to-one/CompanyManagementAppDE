@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    {% block content %}
+        
+        <div class="page-container">
+            <div class="filter-container" >
+                <form method="POST" class="filter-container">
+                    {% csrf_token %}
+                    <div class="work">
+                        <p>Data</p>
+                        <input name="date" id="datetimepicker" type="date" class="add" value="{{work.date}}">
+                    </div>
+                    <div class="work">
+                        <p>Początek</p>
+                        <input name="timestart" placeholder="00:00" type="time" class="add" value="{{work.timestart}}">
+                    </div>
+                    <div class="work">
+                        <p>Koniec</p>
+                        <input name="timefinish" placeholder="00:00" type="time" class="add" value="{{work.timefinish}}">
+                    </div>
+                    <div class="work">
+                        <p>Miejsce pracy</p>
+                        <select name="work_object" class="add">
+                            {% for wo in work_objects %}
+                                <option value="{{wo}}">{{wo.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="work">
+                        <p>Czynność</p>
+                        <input name="work_type" type="text" class="work_type" value="{{work.work_type}}">
+                    </div>
+                    <div class="work">
+                        <p>Kawa i posłki</p>
+                        <input name="coffee_food" placeholder="00.00" type="text" value="{{work.coffee_food}}" class="add">
+                    </div>
+                    <div class="work">
+                        <p>Paliwo</p>
+                        <input name="fuel" placeholder="00.00" type="text" value="{{work.fuel}}" class="add">
+                    </div>
+                    <div class="work">
+                        <p>Zaliczka</p>
+                        <input name="prepayment" placeholder="00.00" type="text" value="{{work.prepayment}}" class="add">
+                    </div>
+                    <div class="work">
+                        <p>Telefon</p>
+                        <input name="phone_costs" placeholder="00.00" type="text" value="{{work.phone_costs}}" class="add">
+                    </div>
+                    <div class="work">
+                        <p> '' </p>
+                        <button class="btn" type="submit">
+                            <p class="btn-title">Zapisz</p>
+                        </button>
+                    </div>
+                </form>
+            </div>
+    
+            <div class="container">
+    
+                <table>
+                    <tr>
+                        <th>Data</th>
+                        <th>Objekt</th>
+                        <th>Początek</th>
+                        <th>Koniec</th>
+                        <th>Czas pracy</th>
+                        <th>Nadgodziny</th>
+                        <th>Czynność</th>
+                        <th>Kawa/Posiłki</th>
+                        <th>Zaliczka</th>
+                        <th>Paliwo</th>
+                        <th>Telefon</th>
+                        <th>Opłata</th>
+                    </tr>
+                    <tr>
+                        <td>{{work.date}}</td>
+                        <td>{{work.work_object}}</td>
+                        <td>{{work.timestart}}</td>
+                        <td>{{work.timefinish}}</td>
+                        <td>{{work.diff_time}}</td>
+                        <td>{{work.over_time}}</td>
+                        <td>{{work.work_type}}</td>
+                        <td>{{work.coffee_food}}</td>
+                        <td>{{work.prepayment}}</td>
+                        <td>{{work.fuel}}</td>
+                        <td>{{work.phone_costs}}</td>
+                        <td>{{work.payment}}</td>
+                    </tr>
+                </table>
+    
+            </div>
+        </div>
+    
+        {% endblock %}
+
+</body>
+</html>

@@ -12,27 +12,41 @@
 <body>
 
     {% block content %}
+        
     <div class="page-container">
         <div class="filter-container">
             <form method="POST">
                 {% csrf_token %}
+
                 <input name="sorted_from" id="datetimepicker" type="date" value="date">
+
                 <input name="sorted_to" id="datetimepicker" type="date" value="date">
+
+                <select name="user" placeholder="Pracownicy">
+                    <option value="">Wszyscy użytkowniki</option>
+                    {% for user in users %}
+                        <option value="{{user}}">{{user.username}}</option>
+                    {% endfor %}
+                </select>
+
                 <select name="work_object">
-                    <option value="">wszystkie</option>
+                    <option value="">Wszystkie miejsca pracy</option>
                     {% for wo in work_objects %}
                         <option value="{{wo}}">{{wo.name}}</option>
                     {% endfor %}
-                </select>            
-
+                </select> 
+            
                 <button class="btn"><p class="btn-title">Szukaj</p></button>
+
             </form>
         </div>
+
         <div class="container">
 
             <table>
                 <tr>
                     <th>Data</th>
+                    <th>Pracownik</th>
                     <th>Objekt</th>
                     <th>Początek</th>
                     <th>Koniec</th>
@@ -44,10 +58,14 @@
                     <th>Paliwo</th>
                     <th>Telefon</th>
                     <th>Opłata</th>
+                    <th></th>
                 </tr>
                 {% for work in works %}
                 <tr>
                     <td>{{work.date}}</td>
+                    {% for user in work.user.all %}
+                        <td>{{user.username}}</td>
+                    {% endfor %}
                     <td>{{work.work_object}}</td>
                     <td>{{work.timestart}}</td>
                     <td>{{work.timefinish}}</td>
@@ -59,26 +77,31 @@
                     <td>{{work.fuel}}</td>
                     <td>{{work.phone_costs}}</td>
                     <td>{{work.payment}}</td>
+                    <td><div><a href="{% url 'update_user_work' work.pk %}" >Edit</a></div></td>
                 </tr>
                 {% endfor %}
                 <tr>
+                    <td><b>RAZEM:</b></td>
                     <td></td>
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td>{{total_work_time}}</td>
-                    <td>{{total_work_over_time}}</td>
+                    <td><b>{{total_work_time}}</b></td>
+                    <td><b>{{total_work_over_time}}</b></td>
                     <td></td>
-                    <td>{{total_coffee_food}}</td>
-                    <td>{{total_fuel}}</td>
-                    <td>{{total_prepayment}}</td>
-                    <td>{{total_phone_costs}}</td>
-                    <td>{{total_payment}}</td>
+                    <td><b>{{total_coffee_food}}</b></td>
+                    <td><b>{{total_fuel}}</b></td>
+                    <td><b>{{total_prepayment}}</b></td>
+                    <td><b>{{total_phone_costs}}</b></td>
+                    <td><b>{{total_payment}}</b></td>
+                    <td></td>
                 </tr>
             </table>
 
         </div>
     </div>
+
     {% endblock %}
+    
 </body>
 </html>

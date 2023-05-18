@@ -11,14 +11,14 @@
 <body>
 
     <div class="header-container">
-        <div class="block">Logo</div>
+        <div class="block"><a href="">Logo</a></div>
         <div class="block">
             <ul class="navbar">
                 <li class="nav-el"><a href="{% url 'user' request.user.pk %}">PROFIL</a></li>
                 <li class="nav-el"><a href="{% url 'home' %}">HOME</a></li>
                 <li class="nav-el"><a href="{% url 'work_objects' %}">MIEJSCA PRACY</a></li>
                 <li class="nav-el"><a href="{% url 'all_users' %}">PRACOWNICY</a></li>
-                <li class="nav-el"><a href="#"></a>ELEMENT</li>
+                <li class="nav-el"><a href="{% url 'raports' %}">RAPORTY</a></li>
             </ul>
         </div>
         <div class="block">

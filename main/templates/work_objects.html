@@ -15,10 +15,13 @@
 
 <div class="cwo_cont">
     <h1>MIEJSCA PRACY</h1>
+    <br>
 
         {% for wo in work_objects %}
-            <div><a href="{% url 'work_object' wo.pk %}">{{wo.name}}</a></div> 
+            <div><a class="label" href="{% url 'work_object' wo.pk %}">{{wo.name}}</a></div> 
+            <br>
         {% endfor %}
+        <br>
 
     <div class="cwo_btn"><a href="{% url 'create_work_object' %}"><p class="btn-title">Dodaj</p></a></div>
 </div>

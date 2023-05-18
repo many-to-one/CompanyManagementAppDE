@@ -12,7 +12,7 @@
 <body>
 
     {% block content %}
-    <div class="cwo_checkbox_cont">
+    <div class="container">
         <h1>WORK OBJECT: {{work_object.name}}</h1>
         <form  method="POST" enctype="multipart/form-data">
             {% csrf_token %}
@@ -22,14 +22,75 @@
                     <option value="{{user}}">{{user.username}}</option>
                 {% endfor %}
             </select> 
-            <button class="cwo_btn" type="submit"><p class="btn-title">Dodaj</p></button>
-        </form>    
+            <button class="cwo_btn" type="submit" name="add_user"><p class="btn-title">Dodaj</p></button>
+        </form>  
+        <br>  
 
             {% for user in users %} 
-            <li><a href="{% url 'workobject_raport' user.pk work_object.pk %}">{{user.username}}</a></li>      
+                <a class="label" href="{% url 'workobject_raport' user.pk work_object.pk %}">{{user.username}} <i class="fa-thin fa-message"></i></a>   
+                <br>   
             {% endfor %}
-    </div>       
-    {% endblock %}   
+            <br>
+
+            <h1>Czat</h1>
+            <h1 id="currentDate"></h1>
+ 
+            {% for u in users %}
+                {% if request.user == u %}
+                    <div id="messages" class="chat_container">
+                        {% for message in messages %}
+                            {% if message.timestamp|date:"Y-m-d" == current_time %}
+                                {% if message.sender == request.user %}
+                                    <p class="r">Ty:</p>
+                                    <div class="chat_label_r">
+                                        <p class="chat_content">{{ message.content }}</p>
+                                        <p class="chat_time">Dzisiaj {{message.timestamp|time:"H:i"}}</p>
+                                    </div>
+                                {% else %}
+                                    <p>{{message.name}}:</p>
+                                    <div class="chat_label_l">
+                                        <p class="chat_content">{{ message.content }}</p>
+                                        <p class="chat_time">Dzisiaj {{message.timestamp|time:"H:i"}}</p>
+                                    </div>
+
+                                {% endif %}
+
+                            {% else %}
+
+                                {% if message.sender == request.user %}
+
+                                        <p>Ty:</p>
+                                        <div class="chat_label">
+                                            <p class="chat_content">{{ message.content }}</p>
+                                            <p class="chat_time">{{ message.timestamp|date:'d F Y' }} {{message.timestamp|time:"H:i"}}</p>
+                                        </div>
+                                    {% else %}
+                                        <p>{{message.name}}:</p>
+                                        <div class="chat_label">
+                                            <p class="chat_content">{{ message.content }}</p>
+                                            <p class="chat_time">{{ message.timestamp|date:'d F Y' }} {{message.timestamp|time:"H:i"}}</p>
+                                        </div>
+
+                                    {% endif %}
+
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <form  method="POST">
+                {% csrf_token %}
+                <input type="text" name="content">
+                <button type="submit" name="chat">Send</button>
+            </form>
+            <br>
+
+            <p>Razem: {{finally_obj_work_time}}</p>
+            <p>Kawa/Posiłki: {{obj_coffee_food}}</p>
+            <p>Zaliczka{{obj_prepayment}}</p>
+            <p>Telefon{{obj_phone_costs}}</p>
+    </div>     
+    {% endblock %}  
 
 </body>
 </html>

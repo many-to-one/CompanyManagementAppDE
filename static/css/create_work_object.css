@@ -4,14 +4,6 @@
     align-items: center;
     padding-left: 30px;
     padding-right: 30px;
-
-    /* position: relative; 
-    right: -10%; */
-
-    /* justify-content: center; */
-    /* align-items: flex-start;
-    padding-left: 2%; */
-    /* width: 50%, */
 }
 
 
@@ -19,7 +11,7 @@
     .cwo_input {
         border: 1px solid #434242;
         border-radius: 10px;
-        width: 600px;
+        width: 80%;
         height: 35px;
         padding: 2px;
     }
@@ -54,7 +46,8 @@
 
 .cwo_btn {
     padding: 5px;
-    width: 200px;
+    width: 19%;
+    height: 35px;
     background-color: var(--btn-bg-color);
     border: var(--border);
     border-radius: 10px;

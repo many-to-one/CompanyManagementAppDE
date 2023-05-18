@@ -7,12 +7,12 @@
     gap: 50px;
 }
 
-.allworks-cont {
+/* .allworks-cont {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
     gap: 15px;
-}
+} */
 
 .addwork {
     display: flex;

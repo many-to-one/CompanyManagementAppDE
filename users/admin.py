@@ -43,6 +43,7 @@ class CustomUserAdmin(UserAdmin):
                 "growth",
                 "work_clothes",
                 "rights",
+                "payment",
             )
         }),
 

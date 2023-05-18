@@ -14,109 +14,109 @@
 
     {% block content %}
 
-    <div>
-        <form class="addwork" method="POST">
-            {% csrf_token %}
-            <div class="work">
-                <p>Data</p>
-                <input name="date" id="datetimepicker" type="date" class="startend">
-            </div>
-            <div class="work">
-                <p>Początek</p>
-                <input name="timestart" placeholder="00:00" type="time" class="startend" >
-            </div>
-            <div class="work">
-                <p>Koniec</p>
-                <input name="timefinish" placeholder="00:00" type="time" class="startend" >
-            </div>
-            <div class="work">
-                <p>Miejsce pracy</p>
-                <select name="work_object">
-                    {% for wo in work_objects %}
-                        <option value="{{wo}}">{{wo.name}}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="work">
-                <p>Czynność</p>
-                <input name="work_type" type="text" class="startend" >
-            </div>
-            <div class="work">
-                <p>Kawa i posłki</p>
-                <input name="coffee_food" placeholder="00.00" type="text" class="startend" value="0.00">
-            </div>
-            <div class="work">
-                <p>Paliwo</p>
-                <input name="fuel" placeholder="00.00" type="text" class="startend" value="0.00">
-            </div>
-            <div class="work">
-                <p>Zaliczka</p>
-                <input name="prepayment" placeholder="00.00" type="text" class="startend" value="0.00">
-            </div>
-            <div class="work">
-                <p>Telefon</p>
-                <input name="phone_costs" placeholder="00.00" type="text" class="startend" value="0.00">
-            </div>
-            <div class="work">
-                <p> '' </p>
-                <button class="btn" type="submit">
-                    <p class="btn-title">Zapisz</p>
-                </button>
-            </div>
-            </div>
-        </form>
-    </div>
-
-    <div class="profile-cont">
-
-        <!-- <div class="userinfo">
-            <p>{{ user.username }}</p>
-            <p>{{ user.email }}</p>
-            <p>{{ user.birthday }}</p>
-            <p>{{ user.birthplace }}</p>
-            <p>{{ user.workplace }}</p>
-            <p>{{ user.religion }}</p>
-            <p>{{ user.insurance_number }}</p>
-            <p>{{ user.tax_number }}</p>
-            <p>{{ user.adress_pl }}</p>
-            <p>{{ user.adress_de }}</p>
-            <p>{{ user.profession }}</p>
-        </div> -->
-
-        <div class="allworks">
-            {% for work in allworks %}
-            <div class="allworks-cont">
-                <p>{{work.date}}</p>
-                <p>{{work.timestart}}</p>
-                <p>{{work.timefinish}}</p>
-                <p>{{work.work_object}}</p>
-                <p>{{work.work_type}}</p>
-                <p>{{work.coffee_food}}</p>
-                <p>{{work.prepayment}}</p>
-                <p>{{work.fuel}}</p>
-                <p>{{work.phone_costs}}</p>
-                <p>{{work.diff_time}}</p>
-                <p>{{work.over_time}}</p>
-                <button><p>Edytuj</p></button>
-            </div>
-            {% endfor %}
-            <br>
-            <br>
-            <div class="allworks-cont">
-                <p>--</p>
-                <p>--</p>
-                <p>--</p>
-                <p>--</p>
-                <p>--</p>
-                <p>{{total_coffee_food}}</p>
-                <p>{{total_prepayment}}</p>
-                <p>{{total_fuel}}</p>
-                <p>{{total_phone_costs}}</p>
-                <p>{{total_work_time}}</p>
-                <p>{{total_work_over_time}}</p>
-            </div>
+    <div class="page-container">
+        <div class="filter-container" >
+            <form method="POST" class="filter-container">
+                {% csrf_token %}
+                <div class="work">
+                    <p>Data</p>
+                    <input name="date" id="datetimepicker" type="date" class="add">
+                </div>
+                <div class="work">
+                    <p>Początek</p>
+                    <input name="timestart" placeholder="00:00" type="time" class="add">
+                </div>
+                <div class="work">
+                    <p>Koniec</p>
+                    <input name="timefinish" placeholder="00:00" type="time" class="add">
+                </div>
+                <div class="work">
+                    <p>Miejsce pracy</p>
+                    <select name="work_object" class="add">
+                        {% for wo in work_objects %}
+                            <option value="{{wo}}">{{wo.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="work">
+                    <p>Czynność</p>
+                    <input name="work_type" type="text" class="work_type">
+                </div>
+                <div class="work">
+                    <p>Kawa i posłki</p>
+                    <input name="coffee_food" placeholder="00.00" type="text" value="0.00" class="add">
+                </div>
+                <div class="work">
+                    <p>Paliwo</p>
+                    <input name="fuel" placeholder="00.00" type="text" value="0.00" class="add">
+                </div>
+                <div class="work">
+                    <p>Zaliczka</p>
+                    <input name="prepayment" placeholder="00.00" type="text" value="0.00" class="add">
+                </div>
+                <div class="work">
+                    <p>Telefon</p>
+                    <input name="phone_costs" placeholder="00.00" type="text" value="0.00" class="add">
+                </div>
+                <div class="work">
+                    <p> '' </p>
+                    <button class="btn" type="submit">
+                        <p class="btn-title">Zapisz</p>
+                    </button>
+                </div>
+            </form>
         </div>
-        
+
+        <div class="container">
+
+            <table>
+                <tr>
+                    <th>Data</th>
+                    <th>Objekt</th>
+                    <th>Początek</th>
+                    <th>Koniec</th>
+                    <th>Czas pracy</th>
+                    <th>Nadgodziny</th>
+                    <th>Czynność</th>
+                    <th>Kawa/Posiłki</th>
+                    <th>Zaliczka</th>
+                    <th>Paliwo</th>
+                    <th>Telefon</th>
+                    <th>Opłata</th>
+                </tr>
+                {% for work in allworks %}
+                <tr>
+                    <td>{{work.date}}</td>
+                    <td>{{work.work_object}}</td>
+                    <td>{{work.timestart}}</td>
+                    <td>{{work.timefinish}}</td>
+                    <td>{{work.diff_time}}</td>
+                    <td>{{work.over_time}}</td>
+                    <td>{{work.work_type}}</td>
+                    <td>{{work.coffee_food}}</td>
+                    <td>{{work.prepayment}}</td>
+                    <td>{{work.fuel}}</td>
+                    <td>{{work.phone_costs}}</td>
+                    <td>{{work.payment}}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>{{total_work_time}}</td>
+                    <td>{{total_work_over_time}}</td>
+                    <td></td>
+                    <td>{{total_coffee_food}}</td>
+                    <td>{{total_fuel}}</td>
+                    <td>{{total_prepayment}}</td>
+                    <td>{{total_phone_costs}}</td>
+                    <td>{{total_payment}}</td>
+                </tr>
+            </table>
+
+        </div>
     </div>
 
     {% endblock %}

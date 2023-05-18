@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'main.apps.MainConfig',
     'users.apps.UsersConfig',
+    'fontawesome',
 ]
 
 MIDDLEWARE = [
@@ -132,6 +133,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS =[
     BASE_DIR / 'static',
+    # BASE_DIR/ 'fontawesome',
 ]
 STATIC_ROOT= os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

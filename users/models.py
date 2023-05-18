@@ -133,6 +133,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         null=True,
         max_length= 255,
         )
+    payment = models.FloatField(
+        _('Stawka za godzinę'),
+        default=0
+    )
 
 
     is_staff = models.BooleanField(default=False)

@@ -12,39 +12,70 @@
 <body>
 
     {% block content %}
+    <div class="page-container">
+        <div class="filter-container">
+            <form method="POST">
+                {% csrf_token %}
+                <input name="sorted_from" id="datetimepicker" type="date">
+                <input name="sorted_to" id="datetimepicker" type="date">
+                <select name="work_object">
+                    <option value="">{{work_object}}</option>
+                </select>            
 
-        <form method="POST">
-            {% csrf_token %}
-            <input name="sorted_from" id="datetimepicker" type="date">
-            <input name="sorted_to" id="datetimepicker" type="date" class="startend">
-            <select name="work_object">
-                <option value="">{{work_object}}</option>
-            </select>            
+                <button class="btn"><p class="btn-title">Szukaj</p></button>
+            </form>
+        </div>
+        <div class="container">
 
-            <button class="btn"><p class="btn-title">Szukaj</p></button>
-        </form>
-        {% for work in work_by_date %}
-            <div class="allworks-cont">
-                <p>{{work.date}}</p>
-                <p>{{work.work_object}}</p>
-                <p>{{work.timestart}}</p>
-                <p>{{work.timefinish}}</p>
-                <p>{{work.diff_time}}</p>
-                <p>{{work.work_type}}</p>
-                <p>{{work.coffee_food}}</p>
-                <p>{{work.prepayment}}</p>
-                <p>{{work.fuel}}</p>
-                <p>{{work.phone_costs}}</p>
-            </div>
-        {% endfor %}
-            
-            <div class="allworks-cont">
-                <p>{{total_work_time}}</p>
-                <p>{{total_coffee_food}}</p>
-                <p>{{total_fuel}}</p>
-                <p>{{total_prepayment}}</p>
-                <p>{{total_phone_costs}}</p>
-            </div>
+            <table>
+                <tr>
+                    <th>Data</th>
+                    <th>Objekt</th>
+                    <th>Początek</th>
+                    <th>Koniec</th>
+                    <th>Czas pracy</th>
+                    <th>Nadgodziny</th>
+                    <th>Czynność</th>
+                    <th>Kawa/Posiłki</th>
+                    <th>Zaliczka</th>
+                    <th>Paliwo</th>
+                    <th>Telefon</th>
+                    <th>Opłata</th>
+                </tr>
+                {% for work in work_by_date %}
+                <tr>
+                    <td>{{work.date}}</td>
+                    <td>{{work.work_object}}</td>
+                    <td>{{work.timestart}}</td>
+                    <td>{{work.timefinish}}</td>
+                    <td>{{work.diff_time}}</td>
+                    <td>{{work.over_time}}</td>
+                    <td>{{work.work_type}}</td>
+                    <td>{{work.coffee_food}}</td>
+                    <td>{{work.prepayment}}</td>
+                    <td>{{work.fuel}}</td>
+                    <td>{{work.phone_costs}}</td>
+                    <td>{{work.payment}}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>{{total_work_time}}</td>
+                    <td>{{total_work_over_time}}</td>
+                    <td></td>
+                    <td>{{total_coffee_food}}</td>
+                    <td>{{total_fuel}}</td>
+                    <td>{{total_prepayment}}</td>
+                    <td>{{total_phone_costs}}</td>
+                    <td>{{total_payment}}</td>
+                </tr>
+            </table>
+
+        </div>
+    </div>
 
     {% endblock %}
 </body>
