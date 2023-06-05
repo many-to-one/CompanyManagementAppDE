@@ -16,10 +16,10 @@
         <div class="filter-container">
             <form method="POST">
                 {% csrf_token %}
-                <input name="sorted_from" id="datetimepicker" type="date">
-                <input name="sorted_to" id="datetimepicker" type="date">
+                <input class="input_" name="sorted_from" id="datetimepicker" type="date">
+                <input class="input_" name="sorted_to" id="datetimepicker" type="date">
                 <select name="work_object">
-                    <option value="">{{work_object}}</option>
+                    <option value="">{{work_object.name}}</option>
                 </select>            
 
                 <button class="btn"><p class="btn-title">Szukaj</p></button>

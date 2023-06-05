@@ -28,7 +28,11 @@
     }
   }
 
-.cwo_checkbox {
+.check_box_input {
+    padding: 1px;
+}
+
+.cwo_checkbox { 
     display: flex;
     flex-direction: row;
     padding: 5px;

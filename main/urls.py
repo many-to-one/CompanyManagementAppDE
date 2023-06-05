@@ -12,4 +12,5 @@ urlpatterns = [
     path('user_raport/<user_pk>/', getUserRaport, name='user_raport'),
     path('workobject_raport/<user_pk>/<object_pk>/', workObjectRaport, name='workobject_raport'),
     path('raports/', raports, name='raports'),
+    path('chat/<pk>/', chat, name='chat'),
     ]

@@ -7,22 +7,23 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
     <title>Document</title>
 </head>
 <body>
 
     {% block content %}
-    <div class="container">
+    <div class="wo_container">
         <h1>WORK OBJECT: {{work_object.name}}</h1>
         <form  method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            <select name="user" class="cwo_input">
+            <select name="user" class="wo_input">
                 <option value="">Dodaj pracownika</option>
                 {% for user in allusers %}
                     <option value="{{user}}">{{user.username}}</option>
                 {% endfor %}
             </select> 
-            <button class="cwo_btn" type="submit" name="add_user"><p class="btn-title">Dodaj</p></button>
+            <button class="wo_btn" type="submit" name="add_user"><p class="btn-title">Dodaj</p></button>
         </form>  
         <br>  
 
@@ -34,10 +35,14 @@
 
             <h1>Czat</h1>
             <h1 id="currentDate"></h1>
+
+            <div id="chato" class="chat_container">
+
+            </div>
  
-            {% for u in users %}
+            <!-- {% for u in users %}
                 {% if request.user == u %}
-                    <div id="messages" class="chat_container">
+                    <div id="chat_messages" class="chat_container">
                         {% for message in messages %}
                             {% if message.timestamp|date:"Y-m-d" == current_time %}
                                 {% if message.sender == request.user %}
@@ -58,30 +63,31 @@
                             {% else %}
 
                                 {% if message.sender == request.user %}
+                                    
+                                    <p class="r">Ty:</p>
+                                    <div class="chat_label_r">
+                                        <p class="chat_content">{{ message.content }}</p>
+                                        <p class="chat_time">{{ message.timestamp|date:'d F Y' }} {{message.timestamp|time:"H:i"}}</p>
+                                    </div>
+                                {% else %}
+                                    <p>{{message.name}}:</p>
+                                    <div class="chat_label_l">
+                                        <p class="chat_content">{{ message.content }}</p>
+                                        <p class="chat_time">{{ message.timestamp|date:'d F Y' }} {{message.timestamp|time:"H:i"}}</p>
+                                    </div>
 
-                                        <p>Ty:</p>
-                                        <div class="chat_label">
-                                            <p class="chat_content">{{ message.content }}</p>
-                                            <p class="chat_time">{{ message.timestamp|date:'d F Y' }} {{message.timestamp|time:"H:i"}}</p>
-                                        </div>
-                                    {% else %}
-                                        <p>{{message.name}}:</p>
-                                        <div class="chat_label">
-                                            <p class="chat_content">{{ message.content }}</p>
-                                            <p class="chat_time">{{ message.timestamp|date:'d F Y' }} {{message.timestamp|time:"H:i"}}</p>
-                                        </div>
-
-                                    {% endif %}
+                                {% endif %}
 
                             {% endif %}
                         {% endfor %}
                     </div>
                 {% endif %}
-            {% endfor %}
-            <form  method="POST">
+            {% endfor %} -->
+            <!-- <form id="chat-form" method="POST" action="{% url 'work_object' work_object.id %}"> -->
+            <form id="chat-form" method="POST">
                 {% csrf_token %}
-                <input type="text" name="content">
-                <button type="submit" name="chat">Send</button>
+                <textarea name="content" class="chat_input" placeholder="Napisz coś..." wrap="soft" id="content"></textarea>
+                <button id="chat_push" type="button" onclick="sendChatMessage()" name="chat" class="wo_btn" ><p class="btn-title">Wyślij</p></button>
             </form>
             <br>
 
@@ -89,8 +95,79 @@
             <p>Kawa/Posiłki: {{obj_coffee_food}}</p>
             <p>Zaliczka{{obj_prepayment}}</p>
             <p>Telefon{{obj_phone_costs}}</p>
-    </div>     
-    {% endblock %}  
+    </div>   
+    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>  -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
+    <script> 
+
+    // POST
+    function sendChatMessage(){
+          var txt = document.getElementById("content").value;
+          console.log(txt)
+          $.ajax({
+              type: 'POST',
+              url: "{% url 'chat' work_object.pk %}",
+              data: {
+                  'txt': txt,
+                  'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
+              },
+              success: (data) => {
+                console.log(data);
+                $('#content').empty();
+              },
+              error: (data) => {
+                  console.log('error')
+                  $('#content').empty();
+              }                
+          }),
+         console.log('ok')             
+      }
+    
+    
+    // GET
+    $(document).ready(function(){
+        var Ty = 'Ty:'
+        var user = 
+
+        setInterval(function(){
+            $.ajax({
+                type: 'GET',
+                url: "{% url 'chat' work_object.pk %}",
+                success: function(response){
+                    $('#chato').empty();
+                    for (var key in response.messages)
+                    {   if(response.user === response.messages[key].name){
+                            var data= '<p class="r">'+Ty+'</p>'+
+                                    '<div class="chat_label_r">'+
+                                        '<p class="chat_content">'+response.messages[key].content+'</p>'+
+                                        '<p class="chat_time">'+response.messages[key].day+response.messages[key].time+'</p>'+
+                                    '</div>'
+                        }else{
+                            var data='<p class="l">'+response.messages[key].name+'</p>'+
+                                    '<div class="chat_label_l">'+
+                                        '<p class="chat_content">'+response.messages[key].content+'</p>'+
+                                        '<p class="chat_time">'+response.messages[key].day+response.messages[key].time+'</p>'+
+                                    '</div>'
+                        }
+                                
+                    $('#chato').append(data)
+                    }
+                },
+                error: function(response){
+                    // alert('Error')
+                }
+            })
+        },1000)
+    })
+        
+
+   
+    </script>  
+
+
+    
+    {% endblock %}
+    
 </body>
 </html>

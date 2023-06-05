@@ -1,11 +1,12 @@
+from typing import Iterable, Optional
 from django.utils import timezone
 from django.db import models
 from django.urls import reverse
-
+from datetime import datetime
 from users.models import CustomUser
 
 # from users.models import CustomUser
-
+    
 
 class Work(models.Model):
     date = models.CharField(
@@ -107,7 +108,7 @@ class Work(models.Model):
     # def work_payment(self):
         # self.user = CustomUser.objects.get(id=pk)
         # self.payment * self.user.payment
-        
+
 
 class WorkObject(models.Model):
     name = models.CharField(
@@ -125,7 +126,26 @@ class WorkObject(models.Model):
     )
 
     def __str__(self):
-        return str(self.name)
+        return str(self.id)
+        
+
+# class WorkObject(models.Model):
+#     name = models.CharField(
+#         null=True,
+#         max_length=150,
+#     )
+#     coffee_food = models.FloatField(
+#         null=True,
+#         default=0.00,
+#         # max_length=100,
+#         verbose_name='Kawa/Posiłki',
+#     )
+#     user = models.ManyToManyField(
+#         CustomUser,
+#     )
+
+#     def __str__(self):
+#         return str(self.id)
     
 
 class TotalWorkObject(models.Model):
@@ -192,7 +212,15 @@ class Message(models.Model):
         related_name='objekt'
         )
     content = models.TextField()
-    timestamp = models.DateTimeField(default=timezone.now,)
+    timestamp = models.DateTimeField(default=timezone.now)
+    day = models.CharField(
+        null=True,
+        max_length=50,
+    )
+    time = models.CharField(
+        null=True,
+        max_length=50,
+    )
 
     def __str__(self) -> str:
         return self.sender.username

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView
 from .forms import WorkobjectForm
 from .models import Work, WorkObject, WorkType, TotalWorkObject, Message
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.db.models import Sum
 from datetime import datetime
 from django.db.models import F
@@ -139,6 +139,7 @@ def workObjectView(request, **kwargs):
     
     ## Add new user to the object & make chat with all users belong to it
     if request.method == 'POST':
+        ## Add new user in work object
         if 'add_user' in request.POST:
             user = request.POST.get('user')
             add_user = CustomUser.objects.get(username=user)
@@ -146,22 +147,25 @@ def workObjectView(request, **kwargs):
             work_object.save()
             work_object, created = WorkObject.objects.get_or_create(id=kwargs['pk'])
             users = work_object.user.all()
-        elif 'chat' in request.POST:
-            r_user = request.user
-            print('r_user', r_user)
-            content = request.POST.get('content')
-            messages = Message.objects.filter(
-                # sender=r_user,
-                work_object=work_object,
-            )
-            new_message = Message(
-                name = r_user,
-                sender=r_user,
-                content=content,
-                work_object=work_object
-            )
-            new_message.save()
-        return redirect('work_object', pk=kwargs['pk'])
+            print('++')
+        ## Add new message to the chat
+        # elif 'chat' in request.POST:
+        #     r_user = request.user
+        #     content = request.POST.get('content')
+        #     messages = Message.objects.filter(
+        #         work_object=work_object,
+        #     )
+        #     new_message = Message(
+        #         name = r_user,
+        #         sender=r_user,
+        #         content=content,
+        #         work_object=work_object
+        #     )
+        #     new_message.save()
+        #     response = {
+        #         'new_message_id': new_message.id
+        #     }
+        #     print('--')
 
     context = {
         'current_time': datetime.now().strftime('%Y-%m-%d'),
@@ -180,6 +184,44 @@ def workObjectView(request, **kwargs):
         'u_total_coffee_food': u_total_coffee_food,
     }
     return render(request, 'work_object.html', context)
+
+
+def chat(request, pk):
+    if request.method == 'GET':
+        path = pk
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        work_object, created = WorkObject.objects.get_or_create(id=pk)
+        messages = Message.objects.filter(
+                    work_object=work_object,
+                )
+        response = {
+            'user': request.user.username,
+            'messages': list(messages.values()),
+            'current_time': current_time,
+        }
+        return JsonResponse(response)
+    if request.method == 'POST':
+        work_object, created = WorkObject.objects.get_or_create(id=pk)
+        r_user = request.user
+        content = request.POST.get('txt')
+        messages = Message.objects.filter(
+            work_object=work_object,
+        )
+        new_message = Message(
+            name = r_user,
+            sender=r_user,
+            content=content,
+            day = f"{datetime.now().strftime('%d %B %Y')}  ",
+            time = f'{datetime.now().hour}:{datetime.now().minute}',
+            work_object=work_object,
+        )
+        new_message.save()
+        response = {
+            'new_message_id': new_message.id
+        }
+        print('--')
+        return JsonResponse(response)
+
 
 
 #**********************************************************************************************************************#
@@ -479,7 +521,8 @@ def updateUserWork(request, work_pk):
         work.phone_costs = phone_costs
         work.payment = (user.payment / 3600) * diff.seconds       
         work.save()
-        return redirect('user_work', user.id)
+        # return redirect('user_work', user.id)
+        return redirect('raports')
     else:
         # work_o = Work.objects.get(id=work_pk)
         work_objects = WorkObject.objects.filter(user__id=user.id)
@@ -745,25 +788,25 @@ def workObjectRaport(request, user_pk, object_pk):
             ### Sorted by workobject ###
             work_object = WorkObject.objects.get(
                 pk=object_pk,
-                user__id=user_pk,
+                # user__id=user_pk,
                 )
 
              ### Sorted by date continue.. ###
             work_by_date = Work.objects.filter(
                 user__id=user_pk,
                 date__range=(start, end),
-                work_object=work_object,
+                work_object=work_object.name,
             ).order_by('date')
 
             #########################
             ### Totals for choice ###
-            total_coffee_food = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object,).aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+            total_coffee_food = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
+            total_fuel = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object.name,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
+            total_prepayment = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object.name,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+            total_phone_costs = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object.name,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+            total_payment = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object.name,).aggregate(total_payment=Sum('payment'))['total_payment']
+            total_sum_time_sec = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object.name,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+            total_sum_over_time_sec = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object.name,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
 
             if total_sum_time_sec:
                 ### total_sum_time_sec => hours:minutes ###
@@ -792,24 +835,24 @@ def workObjectRaport(request, user_pk, object_pk):
         ### Sorted by workobject ###
         work_object = WorkObject.objects.get(
             pk=object_pk,
-            user__id=user_pk,
+            # user__id=user_pk,
             )
-
+        # wo = WorkObject.objects.get(id=work_object)
         ### Sorted by date continue.. ###
         work_by_date = Work.objects.filter(
             user__id=user_pk,
-            work_object=work_object,
+            work_object=work_object.name,
         ).order_by('date')
 
         #########################
         ### Totals for choice ###
-        total_coffee_food = Work.objects.filter(user__id=user_pk, work_object=work_object,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-        total_fuel = Work.objects.filter(user__id=user_pk, work_object=work_object,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-        total_prepayment = Work.objects.filter(user__id=user_pk, work_object=work_object,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-        total_phone_costs = Work.objects.filter(user__id=user_pk, work_object=work_object,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-        total_payment = Work.objects.filter(user__id=user_pk, work_object=work_object,).aggregate(total_payment=Sum('payment'))['total_payment']
-        total_sum_time_sec = Work.objects.filter(user__id=user_pk, work_object=work_object,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-        total_sum_over_time_sec = Work.objects.filter(user__id=user_pk, work_object=work_object,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+        total_coffee_food = Work.objects.filter(user__id=user_pk, work_object=work_object.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
+        total_fuel = Work.objects.filter(user__id=user_pk, work_object=work_object.name,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
+        total_prepayment = Work.objects.filter(user__id=user_pk, work_object=work_object.name,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+        total_phone_costs = Work.objects.filter(user__id=user_pk, work_object=work_object.name,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+        total_payment = Work.objects.filter(user__id=user_pk, work_object=work_object.name,).aggregate(total_payment=Sum('payment'))['total_payment']
+        total_sum_time_sec = Work.objects.filter(user__id=user_pk, work_object=work_object.name,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+        total_sum_over_time_sec = Work.objects.filter(user__id=user_pk, work_object=work_object.name,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
 
         if total_sum_time_sec:
             ### total_sum_time_sec => hours:minutes ###
@@ -983,16 +1026,18 @@ def raports(request):
         ###################################  WORK OBJECT  ###################################
         #####################################################################################
         if work_object: 
-            works = Work.objects.filter(work_object=work_object).order_by('date')
+            wo = WorkObject.objects.get(id=work_object)
+            works = Work.objects.filter(work_object=wo.name).order_by('date')
+            print('WORK_OBJECT:', wo.name)
             ##############################
             ### Totals for sorted_from ###
-            total_coffee_food = Work.objects.filter(work_object=work_object,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = Work.objects.filter(work_object=work_object,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = Work.objects.filter(work_object=work_object,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = Work.objects.filter(work_object=work_object,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = Work.objects.filter(work_object=work_object,).aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = Work.objects.filter(work_object=work_object,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = Work.objects.filter(work_object=work_object,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+            total_coffee_food = Work.objects.filter(work_object=wo.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
+            total_fuel = Work.objects.filter(work_object=wo.name,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
+            total_prepayment = Work.objects.filter(work_object=wo.name,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+            total_phone_costs = Work.objects.filter(work_object=wo.name,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+            total_payment = Work.objects.filter(work_object=wo.name,).aggregate(total_payment=Sum('payment'))['total_payment']
+            total_sum_time_sec = Work.objects.filter(work_object=wo.name,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+            total_sum_over_time_sec = Work.objects.filter(work_object=wo.name,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
 
             if total_sum_time_sec:
                 ### total_sum_time_sec => hours:minutes ###
@@ -1030,15 +1075,16 @@ def raports(request):
                 date__range=(start, end),
                 work_object=work_object,
             ).order_by('date')
+            wo = WorkObject.objects.get(id=work_object)
             ##############################
             ### Totals for sorted_from ###
-            total_coffee_food = Work.objects.filter(date__range=(start, end), work_object=work_object,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = Work.objects.filter(date__range=(start, end), work_object=work_object,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = Work.objects.filter(date__range=(start, end),work_object=work_object,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = Work.objects.filter(date__range=(start, end), work_object=work_object,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = Work.objects.filter(date__range=(start, end), work_object=work_object,).aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = Work.objects.filter(date__range=(start, end), work_object=work_object,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = Work.objects.filter(date__range=(start, end), work_object=work_object,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+            total_coffee_food = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
+            total_fuel = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
+            total_prepayment = Work.objects.filter(date__range=(start, end),work_object=wo.name,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+            total_phone_costs = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+            total_payment = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_payment=Sum('payment'))['total_payment']
+            total_sum_time_sec = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+            total_sum_over_time_sec = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
 
             if total_sum_time_sec:
                 ### total_sum_time_sec => hours:minutes ###
@@ -1077,6 +1123,7 @@ def raports(request):
                 date__range=(start, end),
                 user=user,
             ).order_by('date')
+
             ##############################
             ### Totals for sorted_from ###
             total_coffee_food = Work.objects.filter(date__range=(start, end), user__id=user.id).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
@@ -1119,15 +1166,16 @@ def raports(request):
                 work_object=work_object,
                 user=user
                 ).order_by('date')
+            wo = WorkObject.objects.get(id=work_object)
             ##############################
             ### Totals for sorted_from ###
-            total_coffee_food = Work.objects.filter(user__id=user.id, work_object=work_object,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = Work.objects.filter(user__id=user.id, work_object=work_object,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = Work.objects.filter(user__id=user.id, work_object=work_object,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = Work.objects.filter(user__id=user.id, work_object=work_object,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = Work.objects.filter(user__id=user.id, work_object=work_object,).aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = Work.objects.filter(user__id=user.id, work_object=work_object,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = Work.objects.filter(user__id=user.id, work_object=work_object,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+            total_coffee_food = Work.objects.filter(user__id=user.id, work_object=wo.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
+            total_fuel = Work.objects.filter(user__id=user.id, work_object=wo.name,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
+            total_prepayment = Work.objects.filter(user__id=user.id, work_object=wo.name,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+            total_phone_costs = Work.objects.filter(user__id=user.id, work_object=wo.name,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+            total_payment = Work.objects.filter(user__id=user.id, work_object=wo.name,).aggregate(total_payment=Sum('payment'))['total_payment']
+            total_sum_time_sec = Work.objects.filter(user__id=user.id, work_object=wo.name,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+            total_sum_over_time_sec = Work.objects.filter(user__id=user.id, work_object=wo.name,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
 
             if total_sum_time_sec:
                 ### total_sum_time_sec => hours:minutes ###
@@ -1162,15 +1210,16 @@ def raports(request):
                 work_object=work_object,
                 user=user,
             ).order_by('date')
+            wo = WorkObject.objects.get(id=work_object)
             ##############################
             ### Totals for sorted_from ###
-            total_coffee_food = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=work_object,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=work_object,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=work_object,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=work_object,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=work_object,).aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=work_object,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=work_object,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+            total_coffee_food = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=wo.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
+            total_fuel = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=wo.name,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
+            total_prepayment = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=wo.name,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+            total_phone_costs = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=wo.name,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+            total_payment = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=wo.name,).aggregate(total_payment=Sum('payment'))['total_payment']
+            total_sum_time_sec = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=wo.name,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+            total_sum_over_time_sec = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=wo.name,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
 
             if total_sum_time_sec:
                 ### total_sum_time_sec => hours:minutes ###
@@ -1215,27 +1264,27 @@ def raports(request):
 #**********************************************************************************************************************#
 
 
-@login_required
-def chat(request, receiver_id):
-    receiver = get_object_or_404(CustomUser, id=receiver_id)
-    messages = Message.objects.filter(
-        sender=request.user,
-        receiver=receiver
-    ) | Message.objects.filter(
-        sender=receiver,
-        receiver=request.user
-    ).order_by('timestamp')
-    return render(request, 'work_object.html', {'receiver': receiver, 'messages': messages})
+# @login_required
+# def chat(request, receiver_id):
+#     receiver = get_object_or_404(CustomUser, id=receiver_id)
+#     messages = Message.objects.filter(
+#         sender=request.user,
+#         receiver=receiver
+#     ) | Message.objects.filter(
+#         sender=receiver,
+#         receiver=request.user
+#     ).order_by('timestamp')
+#     return render(request, 'work_object.html', {'receiver': receiver, 'messages': messages})
 
-@login_required
-def send_message(request, receiver_id):
-    receiver = get_object_or_404(CustomUser, id=receiver_id)
-    if request.method == 'POST':
-        content = request.POST.get('content')
-        if content:
-            message = Message.objects.create(
-                sender=request.user,
-                receiver=receiver,
-                content=content
-            )
-    return redirect('chat', receiver_id=receiver_id)
+# @login_required
+# def send_message(request, receiver_id):
+#     receiver = get_object_or_404(CustomUser, id=receiver_id)
+#     if request.method == 'POST':
+#         content = request.POST.get('content')
+#         if content:
+#             message = Message.objects.create(
+#                 sender=request.user,
+#                 receiver=receiver,
+#                 content=content
+#             )
+#     return redirect('chat', receiver_id=receiver_id)
