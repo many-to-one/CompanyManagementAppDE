@@ -127,25 +127,6 @@ class WorkObject(models.Model):
 
     def __str__(self):
         return str(self.id)
-        
-
-# class WorkObject(models.Model):
-#     name = models.CharField(
-#         null=True,
-#         max_length=150,
-#     )
-#     coffee_food = models.FloatField(
-#         null=True,
-#         default=0.00,
-#         # max_length=100,
-#         verbose_name='Kawa/Posiłki',
-#     )
-#     user = models.ManyToManyField(
-#         CustomUser,
-#     )
-
-#     def __str__(self):
-#         return str(self.id)
     
 
 class TotalWorkObject(models.Model):
@@ -224,3 +205,104 @@ class Message(models.Model):
 
     def __str__(self) -> str:
         return self.sender.username
+    
+
+class Vacations(models.Model):
+    user = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.CASCADE, 
+        related_name='user'
+        )
+    year = models.CharField(
+        default='0000',
+        max_length=4,
+        verbose_name='Rok',
+    )
+    date = models.CharField(
+        default='00-00-0000',
+        max_length=10,
+        verbose_name='Data',
+    )
+    v_from = models.CharField(
+        default='00-00-0000',
+        max_length=10,
+        verbose_name='Od',
+    )
+    v_to = models.CharField(
+        default='00-00-0000',
+        max_length=10,
+        verbose_name='Do',
+    )
+    type = models.CharField(
+        null=True,
+        max_length=50,
+        verbose_name='Typ urlopu',
+    )
+    actually_days_to_use = models.IntegerField(
+        default=0,
+        verbose_name='Faktyczny urlop według przepracowanych dni',
+    )
+    days_used_in_current_year = models.IntegerField(
+        default=0,
+        verbose_name='Użyto w bieżącym roku',
+    )
+    days_to_use_in_last_year = models.IntegerField(
+        default=0,
+        verbose_name='Do użycia w poprzednim roku',
+    )
+    days_used_in_last_year = models.IntegerField(
+        default=0,
+        verbose_name='Użyto w poprzednim roku',
+    )
+    days_planned = models.IntegerField(
+        null=True,
+        verbose_name='Zaplanowany urlop',
+    )
+    consideration = models.BooleanField(
+        default=False,
+        verbose_name='Rozpatrywanie',
+    )
+    accepted = models.BooleanField(
+        default=False,
+        verbose_name='Akceptacja',
+    )
+
+    def __str__(self) -> str:
+        return str(self.id)
+
+        # return self.user.username
+
+
+# class VacationDaysQuantity(models.Model):
+#     days_to_use_in_current_year = models.IntegerField(
+#         null=True,
+#         verbose_name='Do użycia w bieżącym roku',
+#     )
+#     days_used_in_current_year = models.IntegerField(
+#         default=0,
+#         verbose_name='Użyto w bieżącym roku',
+#     )
+#     days_to_use_in_last_year = models.IntegerField(
+#         default=0,
+#         verbose_name='Do użycia w poprzednim roku',
+#     )
+#     days_used_in_last_year = models.IntegerField(
+#         default=0,
+#         verbose_name='Użyto w poprzednim roku',
+#     )
+#     user = models.ManyToManyField(
+#         CustomUser, 
+#         )
+
+#     def __str__(self) -> str:
+#         return str(self.user.username)
+    
+
+class VacationRequest(models.Model):
+    v_request = models.ForeignKey(
+        Vacations,
+        on_delete=models.CASCADE, 
+    )
+
+    def __str__(self) -> str:
+        return self.v_request.date

@@ -23,14 +23,20 @@
 
                 <input class="input_" name="sorted_to" id="datetimepicker" type="date" value="date">
 
-                <select name="user" placeholder="Pracownicy">
-                    <option value="">Wszyscy użytkowniki</option>
-                    {% for user in users %}
-                        <option value="{{user}}">{{user.username}}</option>
-                    {% endfor %}
-                </select>
+                {% if request.user.is_superuser %}
+                    <select class="input_"  name="user" placeholder="Pracownicy">
+                        <option value="">Wszyscy użytkownicy</option>
+                        {% for user in users %}
+                            <option value="{{user.username}}">{{user.username}}</option>
+                        {% endfor %}
+                    </select>
+                {% else %}
+                    <select class="input_"  name="user" placeholder="Pracownik">
+                        <option value="{{user.username}}">{{user.username}}</option>
+                    </select>
+                {% endif %}
 
-                <select name="work_object">
+                <select class="input_"  name="work_object">
                     <option value="">Wszystkie miejsca pracy</option>
                     {% for wo in work_objects %}
                         <option value="{{wo}}">{{wo.name}}</option>
@@ -45,58 +51,68 @@
         <div class="container">
 
             <table>
-                <tr>
-                    <th>Data</th>
-                    <th>Pracownik</th>
-                    <th>Objekt</th>
-                    <th>Początek</th>
-                    <th>Koniec</th>
-                    <th>Czas pracy</th>
-                    <th>Nadgodziny</th>
-                    <th>Czynność</th>
-                    <th>Kawa/Posiłki</th>
-                    <th>Zaliczka</th>
-                    <th>Paliwo</th>
-                    <th>Telefon</th>
-                    <th>Opłata</th>
-                    <th></th>
-                </tr>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Pracownik</th>
+                        <th>Objekt</th>
+                        <th>Początek</th>
+                        <th>Koniec</th>
+                        <th>Czas pracy</th>
+                        <th>Nadgodziny</th>
+                        <th>Czynność</th>
+                        <th>Kawa/Posiłki</th>
+                        <th>Zaliczka</th>
+                        <th>Paliwo</th>
+                        <th>Telefon</th>
+                        <th>Opłata</th>
+                        <th></th>
+                    </tr>
+                </thead>
                 {% for work in works %}
-                <tr>
-                    <td>{{work.date}}</td>
-                    {% for user in work.user.all %}
-                        <td>{{user.username}}</td>
-                    {% endfor %}
-                    <td>{{work.work_object}}</td>
-                    <td>{{work.timestart}}</td>
-                    <td>{{work.timefinish}}</td>
-                    <td>{{work.diff_time}}</td>
-                    <td>{{work.over_time}}</td>
-                    <td>{{work.work_type}}</td>
-                    <td>{{work.coffee_food}}</td>
-                    <td>{{work.prepayment}}</td>
-                    <td>{{work.fuel}}</td>
-                    <td>{{work.phone_costs}}</td>
-                    <td>{{work.payment}}</td>
-                    <td><div><a href="{% url 'update_user_work' work.pk %}" >Edit</a></div></td>
-                </tr>
+                    <tr>
+                        <td class="nch" data-label="Data">{{work.date}}</td>
+                        {% for user in work.user.all %}
+                            <td data-label="Pracownik">{{user.username}}</td>
+                        {% endfor %}
+                        <td class="ch" data-label="Objekt">{{work.work_object}}</td>
+                        <td class="nch" data-label="Początek">{{work.timestart}}</td>
+                        <td class="ch" data-label="Koniec">{{work.timefinish}}</td>
+                        <td class="nch" data-label="Czas pracy">{{work.diff_time}}</td>
+                        <td class="ch" data-label="Nadgodziny">{{work.over_time}}</td>
+                        {% if work.work_type %}
+                            <td class="odd" data-label="Czynność">{{work.work_type}}</td>
+                        {% else %}
+                            <td class="odd" data-label="Czynność"> - </td>
+                        {% endif %}
+                        <td class="nch" data-label="Kawa/Posiłki">{{work.coffee_food}}</td>
+                        <td class="ch" data-label="Zaliczka">{{work.prepayment}}</td>
+                        <td class="nch" data-label="Paliwo">{{work.fuel}}</td>
+                        <td class="ch" data-label="Telefon">{{work.phone_costs}}</td>
+                        <td class="nch" data-label="Opłata">{{work.payment}}</td>
+                        {% if request.user.is_superuser %}
+                            <td class="ch" data-label="Edytuj"><div><a href="{% url 'update_user_work' work.pk %}" >Edit</a></div></td>
+                        {% endif %}
+                    </tr>
                 {% endfor %}
-                <tr>
-                    <td><b>RAZEM:</b></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td><b>{{total_work_time}}</b></td>
-                    <td><b>{{total_work_over_time}}</b></td>
-                    <td></td>
-                    <td><b>{{total_coffee_food}}</b></td>
-                    <td><b>{{total_fuel}}</b></td>
-                    <td><b>{{total_prepayment}}</b></td>
-                    <td><b>{{total_phone_costs}}</b></td>
-                    <td><b>{{total_payment}}</b></td>
-                    <td></td>
-                </tr>
+                    <tr>
+                        <td data-label="RAZEM"></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td data-label="Czas pracy">{{total_work_time}}</td>
+                        <td data-label="Nadgodziny">{{total_work_over_time}}</td>
+                        <td ></td>
+                        <td data-label="Kawa/Posiłki">{{total_coffee_food}}</td>
+                        <td data-label="Zaliczka">{{total_fuel}}</td>
+                        <td data-label="Paliwo">{{total_prepayment}}</td>
+                        <td data-label="Telefon">{{total_phone_costs}}</td>
+                        <td data-label="Opłata">{{total_payment}}</td>
+                        {% if request.user.is_superuser %}
+                            <td></td>
+                        {% endif %}
+                    </tr>
             </table>
 
         </div>

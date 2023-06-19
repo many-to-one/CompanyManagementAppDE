@@ -137,8 +137,34 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         _('Stawka za godzinę'),
         default=0
     )
-
-
+    vacations_days_quantity = models.IntegerField(
+        _('Ilość przysługujących dni urlopu'),
+        null=True,
+    )
+    vacacions_on_demand = models.IntegerField(
+        _('Ilość dni urlopu na żądanie'),
+        default=4,
+    )
+    cares_vacations = models.IntegerField(
+        _('Ilość dni urlopu opiekuńczego'),
+        default=5,
+    )
+    force_majeure_vacations = models.IntegerField(
+        _('Ilość godzin urlopu z powodu siły wyższej'),
+        default=16,
+    )
+    compassionate_vacations = models.IntegerField(
+        _('Ilość dni urlopu okolicznościowego'),
+        default=2,
+    )
+    last_year_vacations_days_quantity = models.IntegerField(
+        _('Ilość przysługujących dni urlopu za zeszły rok'),
+        null=True,
+    )
+    days_to_use_in_current_year = models.IntegerField(
+        _('Do użycia w bieżącym roku'),
+        null=True,
+    )
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(

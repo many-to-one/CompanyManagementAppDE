@@ -15,7 +15,18 @@
     {% block content %}
 
     <div class="page-container">
-        <div class="filter-container" >
+        <div class="filter-cont" >
+            {% if messages %}
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                  {{ message }}
+                  <button type="button" class="close" onclick="this.parentElement.style.display='none'">
+                      &times;
+                  </button>
+                  </div>
+              {% endfor %}
+            {% endif %}
+
             <form method="POST" class="filter-container">
                 {% csrf_token %}
                 <div class="work">
@@ -64,55 +75,67 @@
                         <p class="btn-title">Zapisz</p>
                     </button>
                 </div>
+                
             </form>
         </div>
 
         <div class="container">
 
             <table>
-                <tr>
-                    <th>Data</th>
-                    <th>Objekt</th>
-                    <th>Początek</th>
-                    <th>Koniec</th>
-                    <th>Czas pracy</th>
-                    <th>Nadgodziny</th>
-                    <th>Czynność</th>
-                    <th>Kawa/Posiłki</th>
-                    <th>Zaliczka</th>
-                    <th>Paliwo</th>
-                    <th>Telefon</th>
-                    <th>Opłata</th>
-                </tr>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Pracownik</th>
+                        <th>Objekt</th>
+                        <th>Początek</th>
+                        <th>Koniec</th>
+                        <th>Czas pracy</th>
+                        <th>Nadgodziny</th>
+                        <th>Czynność</th>
+                        <th>Kawa/Posiłki</th>
+                        <th>Zaliczka</th>
+                        <th>Paliwo</th>
+                        <th>Telefon</th>
+                        <th>Opłata</th>
+                    </tr>
+                </thead>
                 {% for work in allworks %}
                 <tr>
-                    <td>{{work.date}}</td>
-                    <td>{{work.work_object}}</td>
-                    <td>{{work.timestart}}</td>
-                    <td>{{work.timefinish}}</td>
-                    <td>{{work.diff_time}}</td>
-                    <td>{{work.over_time}}</td>
-                    <td>{{work.work_type}}</td>
-                    <td>{{work.coffee_food}}</td>
-                    <td>{{work.prepayment}}</td>
-                    <td>{{work.fuel}}</td>
-                    <td>{{work.phone_costs}}</td>
-                    <td>{{work.payment}}</td>
+                    <td class="nch" data-label="Data">{{work.date}}</td>
+                    {% for user in work.user.all %}
+                        <td data-label="Pracownik">{{user.username}}</td>
+                    {% endfor %}
+                    <td class="ch" data-label="Objekt">{{work.work_object}}</td>
+                    <td class="nch" data-label="Początek">{{work.timestart}}</td>
+                    <td class="ch" data-label="Koniec">{{work.timefinish}}</td>
+                    <td class="nch" data-label="Czas pracy">{{work.diff_time}}</td>
+                    <td class="ch" data-label="Nadgodziny">{{work.over_time}}</td>
+                    {% if work.work_type %}
+                        <td class="odd" data-label="Czynność">{{work.work_type}}</td>
+                    {% else %}
+                        <td class="odd" data-label="Czynność"> - </td>
+                    {% endif %}
+                    <td class="nch" data-label="Kawa/Posiłki">{{work.coffee_food}}</td>
+                    <td class="ch" data-label="Zaliczka">{{work.prepayment}}</td>
+                    <td class="nch" data-label="Paliwo">{{work.fuel}}</td>
+                    <td class="ch" data-label="Telefon">{{work.phone_costs}}</td>
+                    <td class="nch" data-label="Opłata">{{work.payment}}</td>
                 </tr>
                 {% endfor %}
                 <tr>
+                    <td data-label="RAZEM"></td>
                     <td></td>
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td>{{total_work_time}}</td>
-                    <td>{{total_work_over_time}}</td>
-                    <td></td>
-                    <td>{{total_coffee_food}}</td>
-                    <td>{{total_fuel}}</td>
-                    <td>{{total_prepayment}}</td>
-                    <td>{{total_phone_costs}}</td>
-                    <td>{{total_payment}}</td>
+                    <td data-label="Czas pracy">{{total_work_time}}</td>
+                    <td data-label="Nadgodziny">{{total_work_over_time}}</td>
+                    <td ></td>
+                    <td data-label="Kawa/Posiłki">{{total_coffee_food}}</td>
+                    <td data-label="Zaliczka">{{total_fuel}}</td>
+                    <td data-label="Paliwo">{{total_prepayment}}</td>
+                    <td data-label="Telefon">{{total_phone_costs}}</td>
+                    <td data-label="Opłata">{{total_payment}}</td>
                 </tr>
             </table>
 

@@ -18,8 +18,8 @@
                 {% csrf_token %}
                 <input class="input_" name="sorted_from" id="datetimepicker" type="date">
                 <input class="input_" name="sorted_to" id="datetimepicker" type="date">
-                <select name="work_object">
-                    <option value="">{{work_object.name}}</option>
+                <select class="input_" name="work_object">
+                    <option value="{{work_object.name}}">{{work_object.name}}</option>
                 </select>            
 
                 <button class="btn"><p class="btn-title">Szukaj</p></button>
@@ -28,50 +28,56 @@
         <div class="container">
 
             <table>
-                <tr>
-                    <th>Data</th>
-                    <th>Objekt</th>
-                    <th>Początek</th>
-                    <th>Koniec</th>
-                    <th>Czas pracy</th>
-                    <th>Nadgodziny</th>
-                    <th>Czynność</th>
-                    <th>Kawa/Posiłki</th>
-                    <th>Zaliczka</th>
-                    <th>Paliwo</th>
-                    <th>Telefon</th>
-                    <th>Opłata</th>
-                </tr>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Objekt</th>
+                        <th>Początek</th>
+                        <th>Koniec</th>
+                        <th>Czas pracy</th>
+                        <th>Nadgodziny</th>
+                        <th>Czynność</th>
+                        <th>Kawa/Posiłki</th>
+                        <th>Zaliczka</th>
+                        <th>Paliwo</th>
+                        <th>Telefon</th>
+                        <th>Opłata</th>
+                    </tr>
+                </thead>
                 {% for work in work_by_date %}
-                <tr>
-                    <td>{{work.date}}</td>
-                    <td>{{work.work_object}}</td>
-                    <td>{{work.timestart}}</td>
-                    <td>{{work.timefinish}}</td>
-                    <td>{{work.diff_time}}</td>
-                    <td>{{work.over_time}}</td>
-                    <td>{{work.work_type}}</td>
-                    <td>{{work.coffee_food}}</td>
-                    <td>{{work.prepayment}}</td>
-                    <td>{{work.fuel}}</td>
-                    <td>{{work.phone_costs}}</td>
-                    <td>{{work.payment}}</td>
-                </tr>
+                    <tr>
+                        <td class="odd" data-label="Data">{{work.date}}</td>
+                        <td class="even" data-label="Objekt">{{work.work_object}}</td>
+                        <td class="odd" data-label="Początek">{{work.timestart}}</td>
+                        <td class="even" data-label="Koniec">{{work.timefinish}}</td>
+                        <td class="odd" data-label="Czas pracy">{{work.diff_time}}</td>
+                        <td class="even" data-label="Nadgodziny">{{work.over_time}}</td>
+                        {% if work.work_type %}
+                            <td class="odd" data-label="Czynność">{{work.work_type}}</td>
+                        {% else %}
+                            <td class="odd" data-label="Czynność"> - </td>
+                        {% endif %}
+                        <td class="even" data-label="Kawa/Posiłki">{{work.coffee_food}}</td>
+                        <td class="odd" data-label="Zaliczka">{{work.prepayment}}</td>
+                        <td class="even" data-label="Paliwo">{{work.fuel}}</td>
+                        <td class="odd" data-label="Telefon">{{work.phone_costs}}</td>
+                        <td class="even" data-label="Opłata">{{work.payment}}</td>
+                    </tr>
                 {% endfor %}
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td>{{total_work_time}}</td>
-                    <td>{{total_work_over_time}}</td>
-                    <td></td>
-                    <td>{{total_coffee_food}}</td>
-                    <td>{{total_fuel}}</td>
-                    <td>{{total_prepayment}}</td>
-                    <td>{{total_phone_costs}}</td>
-                    <td>{{total_payment}}</td>
-                </tr>
+                    <tr>
+                        <td data-label="RAZEM"></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td data-label="Czas pracy">{{total_work_time}}</td>
+                        <td data-label="Nadgodziny">{{total_work_over_time}}</td>
+                        <td ></td>
+                        <td data-label="Kawa/Posiłki">{{total_coffee_food}}</td>
+                        <td data-label="Zaliczka">{{total_fuel}}</td>
+                        <td data-label="Paliwo">{{total_prepayment}}</td>
+                        <td data-label="Telefon">{{total_phone_costs}}</td>
+                        <td data-label="Opłata">{{total_payment}}</td>
+                    </tr>
             </table>
 
         </div>

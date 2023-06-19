@@ -2,26 +2,32 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-left: 30px;
+    padding-left: 66px;
     padding-right: 30px;
 }
 
-
 @media only screen and (min-width: 600px) and (max-width: 2500px) {
+
     .cwo_input {
+        display: flex;
+        justify-content: center;
+        margin-top: 2%;
         border: 1px solid #434242;
         border-radius: 10px;
-        width: 80%;
+        width: 50%;
+        min-width: 300px;
         height: 35px;
         padding: 2px;
     }
   }
 
 @media all and (max-width: 600px) {
+
     .cwo_input {
+        margin-top: 2%;
         border: 1px solid #434242;
         border-radius: 10px;
-        width: 80%;
+        width: 50%;
         min-width: 200px;
         height: 35px;
         padding: 2px;
@@ -51,6 +57,7 @@
 .cwo_btn {
     padding: 5px;
     width: 19%;
+    min-width: 150px;
     height: 35px;
     background-color: var(--btn-bg-color);
     border: var(--border);

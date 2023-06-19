@@ -13,4 +13,11 @@ urlpatterns = [
     path('workobject_raport/<user_pk>/<object_pk>/', workObjectRaport, name='workobject_raport'),
     path('raports/', raports, name='raports'),
     path('chat/<pk>/', chat, name='chat'),
-    ]
+    path('vacations/', vacations, name='vacations'),
+    path('addVacation/', addVacation, name='addVacation'),
+    path('editVacation/<pk>/', editVacation, name='editVacation'),
+    path('deleteVacationPage/<pk>/', deleteVacationPage, name='deleteVacationPage'),
+    path('deleteVacation/<pk>/', deleteVacation, name='deleteVacation'),
+    path('allVacationRequests/', allVacationRequests, name='allVacationRequests'),
+    path('vacationRequest/<pk>/', vacationRequest, name='vacationRequest'),
+]

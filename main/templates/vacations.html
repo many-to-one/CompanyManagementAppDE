@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    {% block content %}
+
+        <div class="container">
+
+            {% if messages %}
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                  {{ message }}
+                  <button type="button" class="close" onclick="this.parentElement.style.display='none'">
+                      &times;
+                  </button>
+                </div>
+              {% endfor %}
+            {% endif %}
+
+            <div class="vacations_top_cont">
+                <h2>Zarządzanie urlopami</h2>
+                <button class="btn"><a class="btn-title" href="{% url 'addVacation' %}">+ Dodaj urlop</a></button>
+            </div>
+
+            <div class="vacations_grafic_container">
+
+                <div class="vacations_mini_cont">
+                    <p>{{ request.user }}</p>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <select name="year" class="vacations_input">
+                            <option value="">Wszystko</option>
+                            {% for year in years_list %}
+                                <option value="{{ year }}">{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn" type="submit">
+                            <span class="btn-title">Szukaj</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="vacations_mini_cont">
+                    <div>
+                        <p>Do użycia w bierzącym roku: &nbsp; {{ request.user.days_to_use_in_current_year }}</p>
+                        <p>Użyto w bieżącym roku: &nbsp; {{ days_used_in_current_year }}</p>
+                    </div>
+                    <div>
+                        <p>Do użycia za poprzedni rok: &nbsp; &nbsp; {{ request.user.last_year_vacations_days_quantity }}</p>
+                        <p>Dni urlopu od początku roku: &nbsp; {{ actually_days_to_use }}</p>
+                    </div>
+                    <div>
+                        <p>Ilość urlopu na żądanie: &nbsp; {{ request.user.vacacions_on_demand }} </p>
+                        <p>Ilość urlopu opiekuńczego: &nbsp; {{ request.user.cares_vacations }} </p>
+                    </div>
+                    <div>
+                        <p>Z powodu siły wyższej: &nbsp; {{ request.user.force_majeure_vacations }}g </p>
+                        <p>Urlop okolicznościowy: &nbsp; {{ request.user.compassionate_vacations }} </p>
+                    </div>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Typ urlopu</th>
+                        <th>Od</th>
+                        <th>Do</th>
+                        <th>Ilość dni</th>
+                        <th>Akceptacja</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                {% for v in vacations %}
+                    <tr>
+                        <td data-label="Data">{{ v.date }}</td>
+                        <td data-label="Typ urlopu">{{ v.type }}</td>
+                        <td data-label="Od">{{ v.v_from }}</td>
+                        <td data-label="Do">{{ v.v_to }}</td>
+                        <td data-label="Ilość dni">{{ v.days_planned }}</td>
+                        {% if  v.accepted is True %}
+                            <td data-label="Akceptacja">
+                                <img src="{% static 'images/accept.png' %}" width="20" height="20">
+                            </td>
+                            <td></td>
+                            <td></td>
+                        {% elif v.consideration is True %}
+                            <td data-label="Akceptacja">
+                                <img src="{% static 'images/question.png' %}" width="20" height="20">
+                            </td>
+                            <td data-label="Edytuj">
+                                <a href="{% url 'editVacation' v.pk %}">Edytuj</a>
+                                <!-- <img src="{% static 'images/question.png' %}" width="20" height="20"> -->
+                            </td>
+                            <td data-label="Usuń">
+                                <a href="{% url 'deleteVacationPage' v.pk %}">Usuń</a>
+                                <!-- <img src="{% static 'images/question.png' %}" width="20" height="20"> -->
+                            </td>
+                        {% elif v.accepted is False %}
+                            <td data-label="Akceptacja">
+                                <img src="{% static 'images/close.png' %}" width="20" height="20">
+                            </td>
+                            <td></td>
+                            <td></td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% endblock %}
+</body>
+</html>

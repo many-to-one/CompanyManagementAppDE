@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+    {% block content %}
+
+    <div class="cwo_cont">
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+              {{ message }}
+              <button type="button" class="close" onclick="this.parentElement.style.display='none'">
+                  &times;
+              </button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <h2>Wniosek o urlop</h2>
+        <form method="POST" >
+            {% csrf_token %}
+
+        <div class="add_vacations_grafic_container">
+
+            <div class="vacations_mini_cont">
+                <p>Imię i nazwisko:</p>
+                <p>{{ request.user }}</p>
+            </div>
+
+            <div class="vacations_mini_cont">
+                <p>Typ urlopu:</p>
+                <p>{{ vacation.type }}</p>
+            </div>
+
+            <div class="vacations_mini_cont">
+                <p>Zmienić na:</p>
+                <select class="vacations_input"  name="type" placeholder="Typ urlopu" id="select" onchange="changeOption()">
+                    {% for type in types %} 
+                        <option value="{{ type }}">{{ type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="steel">
+                <div class="vacations_mini_cont">
+                    <p>Od:</p>
+                    <input name="v_from" id="dateFrom" type="date" class="vacations_input" value="{{ vacation.v_from }}" >
+                </div>
+    
+                <div class="vacations_mini_cont">
+                    <p>Do:</p>
+                    <input name="v_to" id="dateTo" type="date" class="vacations_input" value="{{ vacation.v_to }}" oninput="sumDays()">
+                </div>
+    
+                <div class="vacations_mini_cont">
+                    <p>Liczba dni urlopu:</p>
+                    <input type="text" name="days_planned" id="days_planned" class="vacations_input" value="{{ vacation.days_planned }}">
+                </div>
+            </div>
+
+            <div id="output"></div>
+
+        </div>
+
+            <div class="btn_cont">
+                <button class="vacations_btn" type="submit">
+                    <p class="btn-title">Wysłać</p>
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+
+        // After input a last date, the quantity of days will shows automatically
+        function sumDays(){
+            var dateFrom = new Date(document.getElementById('dateFrom').value);
+            var dateTo = new Date(document.getElementById('dateTo').value);
+            
+            function calculateWeekdays(dateFrom, dateTo) {
+              var count = 0;
+              var currentDate = new Date(dateFrom);
+
+              while (currentDate <= dateTo) {
+                // Check if the current day is not Saturday (6) or Sunday (0)
+                if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+                  count++;
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
+              }
+          
+              return count;
+            }
+            var res = calculateWeekdays(dateFrom, dateTo)
+            document.getElementById('days_planned').value = res
+        }
+
+        // Changing the option on 'z powodu siły wyższej', the form will be changed
+        var sel = document.getElementById('select');
+        var out = document.getElementById('output');
+        var steel = document.getElementById('steel');
+
+        function changeOption() {
+          var selectedOption = sel.value;
+          if (selectedOption === 'z powodu siły wyższej') {
+            out.innerHTML = 
+
+            '<div class="vacations_mini_cont">' +
+                '<p>Od:</p>' +
+                '<input name="v_from" id="dateFrom" type="date" class="vacations_input" value="{{date}}" >' +
+            '</div>' +
+
+            '<div class="vacations_mini_cont">' +
+                '<p>Do:</p>' +
+                '<input name="v_to" id="dateTo" type="date" class="vacations_input" value="{{date}}" oninput="sumDays()">' +
+            '</div>' +
+
+            '<div class="vacations_mini_cont">' +
+              '<p>Liczba godzin urlopu:</p>' +
+              '<input type="text" name="days_planned" id="days_planned" class="vacations_input" value="1">' +
+            '</div>';
+            
+            steel.style.display = 'none';
+          } else {
+            out.innerHTML = '';
+            steel.style.display = 'block';
+          }
+        }
+
+
+    </script>
+
+    {% endblock %}
+
+    
+</body>
+</html>

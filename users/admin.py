@@ -44,6 +44,13 @@ class CustomUserAdmin(UserAdmin):
                 "work_clothes",
                 "rights",
                 "payment",
+                'vacations_days_quantity',
+                'last_year_vacations_days_quantity',
+                'days_to_use_in_current_year',
+                'vacacions_on_demand',
+                'cares_vacations',
+                'force_majeure_vacations',
+                'compassionate_vacations',
             )
         }),
 

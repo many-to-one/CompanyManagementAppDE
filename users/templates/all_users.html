@@ -12,11 +12,13 @@
 <body>
 
     {% block content %}
-        <div class="container">
-            {% for user in users %}   
-                <a class="label" href="{% url 'user_raport' user.pk %}">{{user.username}}</a>
-                <br>
-            {% endfor %}
+        <div class="page-container">
+            <div class="wo_container">
+                {% for user in users %}   
+                    <a class="label" href="{% url 'user_raport' user.pk %}">{{user.username}}</a>
+                    <br>
+                {% endfor %}
+            </div>
         </div>
     {% endblock %}
 

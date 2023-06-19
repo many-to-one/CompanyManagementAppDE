@@ -10,15 +10,41 @@
 </head>
 <body>
 
-    <div class="header-container">
+    <div id="header-container">
+        <img 
+            src="{% static 'images/menu.png' %}" 
+            id="toggle_menu"
+            width="30" height="30"
+            onclick="toggleMenu()"
+        >
+        <img 
+            src="{% static 'images/close_white.png' %}" 
+            id="close_menu"
+            style="display: none;"
+            width="30" height="30"
+            onclick="toggleMenu()"
+        >
         <div class="block"><a href="">Logo</a></div>
+        {% if request.user.is_authenticated %}
+            <div class="block"><a>Witaj, {{ request.user.username }}</a></div>
+        {% endif %}
         <div class="block">
             <ul class="navbar">
                 <li class="nav-el"><a href="{% url 'user' request.user.pk %}">PROFIL</a></li>
                 <li class="nav-el"><a href="{% url 'home' %}">HOME</a></li>
                 <li class="nav-el"><a href="{% url 'work_objects' %}">MIEJSCA PRACY</a></li>
                 <li class="nav-el"><a href="{% url 'all_users' %}">PRACOWNICY</a></li>
-                <li class="nav-el"><a href="{% url 'raports' %}">RAPORTY</a></li>
+                {% if request.user.is_superuser %}
+                    <li class="dropdown nav-el"><a href="#" onclick="toggleDropdown(event)">URLOPY</a>
+                        <ul class="dropdown-menu">
+                            <li class="nav-el"><a href="{% url 'vacations' %}"> - Moje urlopy</a></li>
+                            <li class="nav-el" id="req"><a href="{% url 'allVacationRequests' %}"> - Wnioski</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-el"><a href="{% url 'vacations' %}">URLOPY</a></li>
+                {% endif %}
+                <li class="nav-el" id="raports"><a href="{% url 'raports' %}">RAPORTY</a></li>
             </ul>
         </div>
         <div class="block">
@@ -32,6 +58,42 @@
             {% endif %}
         </div>
     </div>
+
+    <script>
+        // Close or Open menu
+        function toggleMenu(){
+            var sideMenu = document.getElementById('header-container')
+            var buttonMenu = document.getElementById('toggle_menu')
+            var closeMenu = document.getElementById('close_menu')
+            if (sideMenu.style.left === "0px") {
+              sideMenu.style.left = "-155px"; // Close the menu
+              toggle_menu.style.left = "3px"
+              closeMenu.style.display = 'none';
+              buttonMenu.style.display = 'block';
+            } else {
+              sideMenu.style.left = "0px"; // Open the menu
+              toggle_menu.style.left = "160px"
+              closeMenu.style.display = 'block';
+              buttonMenu.style.display = 'none'
+            }
+        }
+
+        // Dropdown menu
+        function toggleDropdown(event) {
+            event.preventDefault();
+            var dropdown = event.target.nextElementSibling;
+            dropdown.classList.toggle("show");
+            var styleRaports = document.getElementById('raports')
+            var styleReq = document.getElementById('req')
+            if (dropdown.classList.contains("show")) {
+                styleRaports.style.marginTop = '60px';
+                styleReq.style.marginTop = '-20px';
+            } else {
+                styleRaports.style.marginTop = '0px';
+                styleReq.style.marginTop = '0px';
+            }
+        }
+    </script>
     
 </body>
 </html>

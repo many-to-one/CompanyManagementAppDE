@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    {% block content %}
+            <div class="cwo_cont">
+                <h2>Wniosek o urlop #{{ pk }}</h2>
+
+                <div class="add_vacations_grafic_container">
+
+                    <form method="POST">
+                        {% csrf_token %}
+                    
+                        <div class="vacations_mini_cont">
+                            <p>Imię i nazwisko:</p>
+                            <p>{{ req.v_request.user }}</p>
+                        </div>
+                    
+                        <div class="vacations_mini_cont">
+                            <p>Data wniosku:</p>
+                            <p>{{ req.v_request.date }}</p>
+                        </div>
+                    
+                        <div class="vacations_mini_cont" name="type">
+                            <p>Typ urlopu:</p>
+                            <p>{{ req.v_request.type }}</p>
+                        </div>
+                    
+                        <div class="vacations_mini_cont">
+                            <p>Od:</p>
+                            <p>{{ req.v_request.v_from }}</p>
+                        </div>
+                    
+                        <div class="vacations_mini_cont">
+                            <p>Do:</p>
+                            <p>{{ req.v_request.v_to }}</p>
+                        </div>
+                    
+                        <div class="vacations_mini_cont">
+                            {% if req.v_request.type == 'z powodu siły wyższej' %}
+                                <p>Liczba godzin urlopu:</p>
+                                <p>{{ req.v_request.days_planned }}</p>
+                            {% else %}
+                                <p>Liczba dni urlopu:</p>
+                                <p>{{ req.v_request.days_planned }}</p>
+                            {% endif %}
+                        </div>
+
+            
+                        <div class="btn_cont">
+                            <button type="submit" class="btn_accept" name="accept">
+                                <span class="btn-title">Akceptuj</span>
+                                <img src="{% static 'images/accept.png' %}" width="20" height="20">
+                            </button>
+                            <button type="submit" class="btn_reject" name="reject">
+                                <span class="btn-title">Odrzóć</span>
+                                <img src="{% static 'images/close.png' %}" width="20" height="20">
+                            </button>
+                        </div>
+
+                    </form>
+                    
+                </div>
+
+            </div>
+
+    {% endblock %}
+    
+</body>
+</html>

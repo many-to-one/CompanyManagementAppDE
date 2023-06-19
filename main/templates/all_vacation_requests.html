@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    {% block content %}
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+          {{ message }}
+          <button type="button" class="close" onclick="this.parentElement.style.display='none'">
+              &times;
+          </button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <div class="filter-container">
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <input class="input_" name="sorted_from" id="datetimepicker" type="date" value="date">
+
+            <input class="input_" name="sorted_to" id="datetimepicker" type="date" value="date">
+
+            <select class="input_"  name="user" placeholder="Pracownicy">
+                <option value="">Wszyscy użytkownicy</option>
+                {% for user in users %}
+                    <option value="{{user.username}}">{{user.username}}</option>
+                {% endfor %}
+            </select>
+
+            <select class="input_"  name="type">
+                <option value="">Rodzaj urlopu:</option>
+                {% for type in types %}
+                    <option value="{{ type }}">{{ type }}</option>
+                {% endfor %}
+            </select> 
+
+            <select class="input_"  name="status">
+                <option disabled selected value="">Status</option>
+                <option value="Rozpatrywane">Rozpatrywane</option>
+                <option value="Zaakceptowane">Zaakceptowane</option>
+                <option value="Niezaakceptowane">Niezaakceptowane</option>
+            </select>
+        
+            <button class="btn"><p class="btn-title">Szukaj</p></button>
+
+        </form>
+    </div>
+
+        {% for r in reqs %}
+            <div class="cwo_cont">
+
+                <div class="req_vacations_container">
+
+                    <div class="vacations_mini">
+                        {% if r.v_request.consideration is True %}           
+                            <img src="{% static 'images/question.png' %}" width="50" height="50">
+                        {% elif r.v_request.accepted is True %} 
+                            <img src="{% static 'images/accept.png' %}" width="50" height="50">
+                        {% elif r.v_request.accepted is False %} 
+                            <img src="{% static 'images/close.png' %}" width="50" height="50">
+                        {% endif %}                                
+                    </div>
+
+                    <div class="vacations_mini">
+                        <p>{{ r.v_request.date }}</p>
+                    </div>
+
+                    <div class="vacations_mini">
+                        <p>{{ r.v_request.type }}</p>
+                    </div>
+
+                    <div class="vacations_mini">
+                        <p>{{ r.v_request.user }}</p>
+                    </div>
+
+                    <button class="btn">
+                        <a href="{% url 'vacationRequest' r.v_request.id %}"><p class="btn-title">Sprawdż</p></a>
+                    </button>
+
+                </div>
+            </div>
+            {% endfor %}
+
+    {% endblock %}
+    
+</body>
+</html>

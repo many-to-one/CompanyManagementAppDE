@@ -13,7 +13,7 @@
 
 {% block content %}
 
-<div class="cwo_cont">
+<div class="wo_container">
     <h1>MIEJSCA PRACY</h1>
     <br>
 
@@ -23,7 +23,7 @@
         {% endfor %}
         <br>
 
-    <div class="cwo_btn"><a href="{% url 'create_work_object' %}"><p class="btn-title">Dodaj</p></a></div>
+    <button class="cwo_btn"><a href="{% url 'create_work_object' %}"><p class="btn-title">Dodaj</p></a></button>
 </div>
 
 {% endblock %}

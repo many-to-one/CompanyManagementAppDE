@@ -1,14 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import ListView, DetailView
-from .forms import WorkobjectForm
-from .models import Work, WorkObject, WorkType, TotalWorkObject, Message
-from django.http import HttpResponse, JsonResponse
+from django.urls import reverse
+from django.views.generic import ListView
+from .models import VacationRequest, Vacations, Work, WorkObject, WorkType, TotalWorkObject, Message
+from django.http import JsonResponse
 from django.db.models import Sum
 from datetime import datetime
 from django.db.models import F
 from django.contrib.auth.decorators import login_required
-
+from django.contrib import messages
+from datetime import date
 from users.models import CustomUser
+
+
 def index(request):
     return render(request, "home.html")
 
@@ -32,6 +35,7 @@ class WorkObjects(ListView):
 
 
 def workObjectView(request, **kwargs):
+
     allusers = CustomUser.objects.all()
     work_object, created = WorkObject.objects.get_or_create(id=kwargs['pk'])
     users = work_object.user.all()
@@ -56,7 +60,7 @@ def workObjectView(request, **kwargs):
     # obj_work_over_time = 0
     for user in users:
         ############################################
-        ### Totals of all costs i current object ###
+        ### Totals of all costs in current object ###
         total_coffee_food = Work.objects.filter(
             user__id=user.id, 
             work_object=work_object
@@ -147,25 +151,6 @@ def workObjectView(request, **kwargs):
             work_object.save()
             work_object, created = WorkObject.objects.get_or_create(id=kwargs['pk'])
             users = work_object.user.all()
-            print('++')
-        ## Add new message to the chat
-        # elif 'chat' in request.POST:
-        #     r_user = request.user
-        #     content = request.POST.get('content')
-        #     messages = Message.objects.filter(
-        #         work_object=work_object,
-        #     )
-        #     new_message = Message(
-        #         name = r_user,
-        #         sender=r_user,
-        #         content=content,
-        #         work_object=work_object
-        #     )
-        #     new_message.save()
-        #     response = {
-        #         'new_message_id': new_message.id
-        #     }
-        #     print('--')
 
     context = {
         'current_time': datetime.now().strftime('%Y-%m-%d'),
@@ -291,6 +276,16 @@ def userWork(request, pk):
         timestart = request.POST.get('timestart')
         timefinish = request.POST.get('timefinish')
 
+        if date == '':
+            messages.warning(request, 'Wybierz date!')
+            return redirect(reverse('user_work', kwargs={'pk': pk}))
+        if timestart == '':
+            messages.warning(request, 'Zaznacz początek czasu pracy!')
+            return redirect(reverse('user_work', kwargs={'pk': pk}))
+        if timefinish == '':
+            messages.warning(request, 'Zaznacz koniec czasu pracy!')
+            return redirect(reverse('user_work', kwargs={'pk': pk}))
+
         ### Here we need to make str(date) => int(date) to sum it ###
         year, month, day = date.split('-')
         start_hr, start_min = timestart.split(':') 
@@ -325,7 +320,7 @@ def userWork(request, pk):
             print('wt', wt)
 
         ### if overtime/day is "0" ###
-        else:
+        else: 
             ot = '00.00'
             over_time = '00.00'
             dif_hours = diff.seconds // 3600
@@ -369,7 +364,7 @@ def userWork(request, pk):
         work.save()
         return redirect('user_work', pk=pk)
     else:
-        allworks = Work.objects.filter(user__id=pk)
+        allworks = Work.objects.prefetch_related('user').order_by('-date')
         work_objects = WorkObject.objects.filter(user__id=pk)
         work_type = WorkType.objects.all()
         total_coffee_food = Work.objects.filter(user__id=pk).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
@@ -543,7 +538,11 @@ def updateUserWork(request, work_pk):
 
 def getUserRaport(request, user_pk):
     work_objects = WorkObject.objects.filter(user__id=user_pk)
-    works = Work.objects.filter(user__id=user_pk).order_by('date')
+    # works = Work.objects.filter(user__id=user_pk).order_by('date')
+    if request.user.is_superuser:
+        works = Work.objects.prefetch_related('user').order_by('date')
+    else:
+        works = Work.objects.filter(user=request.user).order_by('date')
     ######################
     ### Totals for all ###
     total_coffee_food = Work.objects.filter(user__id=user_pk,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
@@ -632,19 +631,21 @@ def getUserRaport(request, user_pk):
         ###################################  WORK OBJECT  ###################################
         #####################################################################################
         if work_object: 
+            wo = WorkObject.objects.get(id=work_object)
             works = Work.objects.filter(
-                work_object=work_object,
+                work_object=wo.name,
                 user__id=user_pk,
                 ).order_by('date')
+            print('WO:', wo.name)
             ##############################
             ### Totals for sorted_from ###
-            total_coffee_food = Work.objects.filter(work_object=work_object,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = Work.objects.filter(work_object=work_object,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = Work.objects.filter(work_object=work_object,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = Work.objects.filter(work_object=work_object,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = Work.objects.filter(work_object=work_object,).aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = Work.objects.filter(work_object=work_object,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = Work.objects.filter(work_object=work_object,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+            total_coffee_food = Work.objects.filter(work_object=wo.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
+            total_fuel = Work.objects.filter(work_object=wo.name,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
+            total_prepayment = Work.objects.filter(work_object=wo.name,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+            total_phone_costs = Work.objects.filter(work_object=wo.name,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+            total_payment = Work.objects.filter(work_object=wo.name,).aggregate(total_payment=Sum('payment'))['total_payment']
+            total_sum_time_sec = Work.objects.filter(work_object=wo.name,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+            total_sum_over_time_sec = Work.objects.filter(work_object=wo.name,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
 
             if total_sum_time_sec:
                 ### total_sum_time_sec => hours:minutes ###
@@ -679,20 +680,21 @@ def getUserRaport(request, user_pk):
             year_, month_, day_ = sorted_to.split('-')
             start = datetime(int(year), int(month), int(day))
             end = datetime(int(year_), int(month_), int(day_))
+            wo = WorkObject.objects.get(id=work_object)
             works = Work.objects.filter(
                 date__range=(start, end),
-                work_object=work_object,
+                work_object=wo.name,
                 user__id=user_pk,
             ).order_by('date')
             ##############################
             ### Totals for sorted_from ###
-            total_coffee_food = Work.objects.filter(date__range=(start, end), work_object=work_object,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = Work.objects.filter(date__range=(start, end), work_object=work_object,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = Work.objects.filter(date__range=(start, end),work_object=work_object,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = Work.objects.filter(date__range=(start, end), work_object=work_object,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = Work.objects.filter(date__range=(start, end), work_object=work_object,).aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = Work.objects.filter(date__range=(start, end), work_object=work_object,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = Work.objects.filter(date__range=(start, end), work_object=work_object,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+            total_coffee_food = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
+            total_fuel = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
+            total_prepayment = Work.objects.filter(date__range=(start, end),work_object=wo.name,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+            total_phone_costs = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+            total_payment = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_payment=Sum('payment'))['total_payment']
+            total_sum_time_sec = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+            total_sum_over_time_sec = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
 
             if total_sum_time_sec:
                 ### total_sum_time_sec => hours:minutes ###
@@ -737,39 +739,6 @@ def getUserRaport(request, user_pk):
 
 
 def workObjectRaport(request, user_pk, object_pk):
-    #########################
-    ### Totals for choice ###
-
-    total_coffee_food = Work.objects.filter(user__id=user_pk).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-    total_fuel = Work.objects.filter(user__id=user_pk).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-    total_prepayment = Work.objects.filter(user__id=user_pk).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-    total_phone_costs = Work.objects.filter(user__id=user_pk).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-    total_payment = Work.objects.filter(user__id=user_pk).aggregate(total_payment=Sum('payment'))['total_payment']
-    total_sum_time_sec = Work.objects.filter(user__id=user_pk).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-    total_sum_over_time_sec = Work.objects.filter(user__id=user_pk).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
-
-    if total_sum_time_sec:
-        ### total_sum_time_sec => hours:minutes ###
-        total_hours = total_sum_time_sec // 3600
-        total_sec = total_sum_time_sec % 3600
-        total_min = total_sec // 60
-        total_work_time = f'{int(total_hours)}:{int(total_min)}'
-    else:
-        total_work_time = '0:00'
-    if total_sum_over_time_sec:
-        ### total_sum_over_time_sec => hours:minutes ###
-        total_hours = total_sum_over_time_sec // 3600
-        total_sec = total_sum_over_time_sec % 3600
-        total_min = total_sec // 60
-        if total_min < 10 or total_min == 0.0:
-            total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
-        else:
-            total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
-    else:
-        total_work_over_time = '0:00'
-
-    ### End Totals for choice ###
-    #############################
 
     if request.method == 'POST':
 
@@ -788,7 +757,6 @@ def workObjectRaport(request, user_pk, object_pk):
             ### Sorted by workobject ###
             work_object = WorkObject.objects.get(
                 pk=object_pk,
-                # user__id=user_pk,
                 )
 
              ### Sorted by date continue.. ###
@@ -835,9 +803,7 @@ def workObjectRaport(request, user_pk, object_pk):
         ### Sorted by workobject ###
         work_object = WorkObject.objects.get(
             pk=object_pk,
-            # user__id=user_pk,
             )
-        # wo = WorkObject.objects.get(id=work_object)
         ### Sorted by date continue.. ###
         work_by_date = Work.objects.filter(
             user__id=user_pk,
@@ -874,6 +840,18 @@ def workObjectRaport(request, user_pk, object_pk):
         else:
             total_work_over_time = '0:00'
 
+        ## Open page without filtering
+        if total_coffee_food is None and \
+           total_prepayment is None and \
+           total_fuel is None and \
+           total_phone_costs is None and \
+           total_payment is None:
+            total_coffee_food = 0.00
+            total_prepayment = 0.00
+            total_fuel = 0.00
+            total_phone_costs = 0.00
+            total_payment = 0.00
+
         ### End Totals for choice ###
         #############################
 
@@ -895,43 +873,82 @@ def workObjectRaport(request, user_pk, object_pk):
 #****************************************************** ALL RAPORTS ***************************************************#
 #**********************************************************************************************************************#
 
-
+from django.db.models import Prefetch
 def raports(request):
-    works = Work.objects.prefetch_related('user').order_by('date')
-    users = CustomUser.objects.all()
+    if request.user.is_superuser:
+        works = Work.objects.prefetch_related(Prefetch('user')).order_by('-date')
+    else:
+        works = Work.objects.prefetch_related(Prefetch('user')).filter(user=request.user).order_by('-date')
+    users = CustomUser.objects.all().values('id', 'username')
     work_objects = WorkObject.objects.all()
 
-    ##############################
-    ### Totals for sorted_from ###
-    total_coffee_food = Work.objects.all().aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-    total_fuel = Work.objects.all().aggregate(total_fuel=Sum('fuel'))['total_fuel']
-    total_prepayment = Work.objects.all().aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-    total_phone_costs = Work.objects.all().aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-    total_payment = Work.objects.all().aggregate(total_payment=Sum('payment'))['total_payment']
-    total_sum_time_sec = Work.objects.all().aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-    total_sum_over_time_sec = Work.objects.all().aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+    if request.user.is_superuser:
 
-    if total_sum_time_sec:
-        ### total_sum_time_sec => hours:minutes ###
-        total_hours = total_sum_time_sec // 3600
-        total_sec = total_sum_time_sec % 3600
-        total_min = total_sec // 60
-        total_work_time = f'{int(total_hours)}:{int(total_min)}'
-    else:
-        total_work_time = '0:00'
-    if total_sum_over_time_sec:
-        ### total_sum_over_time_sec => hours:minutes ###
-        total_hours = total_sum_over_time_sec // 3600
-        total_sec = total_sum_over_time_sec % 3600
-        total_min = total_sec // 60
-        if total_min < 10 or total_min == 0.0:
-            total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
+        ##############################
+        ### Totals for sorted_from ###
+        total_coffee_food = Work.objects.all().aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
+        total_fuel = Work.objects.all().aggregate(total_fuel=Sum('fuel'))['total_fuel']
+        total_prepayment = Work.objects.all().aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+        total_phone_costs = Work.objects.all().aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+        total_payment = Work.objects.all().aggregate(total_payment=Sum('payment'))['total_payment']
+        total_sum_time_sec = Work.objects.all().aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+        total_sum_over_time_sec = Work.objects.all().aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+
+        if total_sum_time_sec:
+            ### total_sum_time_sec => hours:minutes ###
+            total_hours = total_sum_time_sec // 3600
+            total_sec = total_sum_time_sec % 3600
+            total_min = total_sec // 60
+            total_work_time = f'{int(total_hours)}:{int(total_min)}'
         else:
-            total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
+            total_work_time = '0:00'
+        if total_sum_over_time_sec:
+            ### total_sum_over_time_sec => hours:minutes ###
+            total_hours = total_sum_over_time_sec // 3600
+            total_sec = total_sum_over_time_sec % 3600
+            total_min = total_sec // 60
+            if total_min < 10 or total_min == 0.0:
+                total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
+            else:
+                total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
+        else:
+            total_work_over_time = '0:00'
+        ### End Totals for sorted_from ###
+        ##################################
+
     else:
-        total_work_over_time = '0:00'
-    ### End Totals for sorted_from ###
-    ##################################
+        user = request.user
+        ##############################
+        ### Totals for sorted_from ###
+        total_coffee_food = Work.objects.filter(user__id=user.id).values('coffee_food').aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
+        total_fuel = Work.objects.filter(user__id=user.id).values('fuel').aggregate(total_fuel=Sum('fuel'))['total_fuel']
+        total_prepayment = Work.objects.filter(user__id=user.id).values('prepayment').aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+        total_phone_costs = Work.objects.filter(user__id=user.id).values('phone_costs').aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+        total_payment = Work.objects.filter(user__id=user.id).values('payment').aggregate(total_payment=Sum('payment'))['total_payment']
+        total_sum_time_sec = Work.objects.filter(user__id=user.id).values('sum_time_sec').aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+        total_sum_over_time_sec = Work.objects.filter(user__id=user.id).values('sum_over_time_sec').aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+
+        if total_sum_time_sec:
+            ### total_sum_time_sec => hours:minutes ###
+            total_hours = total_sum_time_sec // 3600
+            total_sec = total_sum_time_sec % 3600
+            total_min = total_sec // 60
+            total_work_time = f'{int(total_hours)}:{int(total_min)}'
+        else:
+            total_work_time = '0:00'
+        if total_sum_over_time_sec:
+            ### total_sum_over_time_sec => hours:minutes ###
+            total_hours = total_sum_over_time_sec // 3600
+            total_sec = total_sum_over_time_sec % 3600
+            total_min = total_sec // 60
+            if total_min < 10 or total_min == 0.0:
+                total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
+            else:
+                total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
+        else:
+            total_work_over_time = '0:00'
+        ### End Totals for sorted_from ###
+        ##################################
 
     if request.method == 'POST':
         sorted_from = request.POST.get('sorted_from')
@@ -949,7 +966,7 @@ def raports(request):
             end = datetime(int(year_), int(month_), int(day_))
             works = Work.objects.prefetch_related('user').filter(
                 date__range=(start, end),
-            ).order_by('date')
+            ).order_by('-date')
             ##############################
             ### Totals for sorted_from ###
             total_coffee_food = Work.objects.filter(date__range=(start, end)).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
@@ -988,7 +1005,7 @@ def raports(request):
         #####################################################################################
         if user:
             user = CustomUser.objects.get(username=user)
-            works = Work.objects.filter(user=user).order_by('date')
+            works = Work.objects.filter(user=user.id).order_by('-date')
             ##############################
             ### Totals for sorted_from ###
             total_coffee_food = Work.objects.filter(user__id=user.id).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
@@ -1027,8 +1044,7 @@ def raports(request):
         #####################################################################################
         if work_object: 
             wo = WorkObject.objects.get(id=work_object)
-            works = Work.objects.filter(work_object=wo.name).order_by('date')
-            print('WORK_OBJECT:', wo.name)
+            works = Work.objects.filter(work_object=wo.name).order_by('-date')
             ##############################
             ### Totals for sorted_from ###
             total_coffee_food = Work.objects.filter(work_object=wo.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
@@ -1071,11 +1087,12 @@ def raports(request):
             year_, month_, day_ = sorted_to.split('-')
             start = datetime(int(year), int(month), int(day))
             end = datetime(int(year_), int(month_), int(day_))
+            wo = WorkObject.objects.get(id=work_object)
             works = Work.objects.prefetch_related('user').filter(
                 date__range=(start, end),
-                work_object=work_object,
-            ).order_by('date')
-            wo = WorkObject.objects.get(id=work_object)
+                work_object=wo.name,
+            ).order_by('-date')
+            # print('WORK_OBJECT:', wo.name)
             ##############################
             ### Totals for sorted_from ###
             total_coffee_food = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
@@ -1122,7 +1139,7 @@ def raports(request):
             works = Work.objects.prefetch_related('user').filter(
                 date__range=(start, end),
                 user=user,
-            ).order_by('date')
+            ).order_by('-date')
 
             ##############################
             ### Totals for sorted_from ###
@@ -1161,12 +1178,12 @@ def raports(request):
         #################################  WORK OBJECT & USER  ##############################
         #####################################################################################
         if work_object and user:
-            # user = CustomUser.objects.get(username=user)
-            works = Work.objects.filter(
-                work_object=work_object,
-                user=user
-                ).order_by('date')
+            user = CustomUser.objects.get(username=user)
             wo = WorkObject.objects.get(id=work_object)
+            works = Work.objects.filter(
+                work_object=wo.name,
+                user=user
+                ).order_by('-date')
             ##############################
             ### Totals for sorted_from ###
             total_coffee_food = Work.objects.filter(user__id=user.id, work_object=wo.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
@@ -1204,13 +1221,13 @@ def raports(request):
         ##########################  SORTED FROM & WORK OBJECT & USER  #######################
         #####################################################################################  
         if sorted_from and user and work_object:
-            # user = CustomUser.objects.get(username=user)
+            user = CustomUser.objects.get(username=user)
+            wo = WorkObject.objects.get(id=work_object)
             works = Work.objects.filter(
                 date__range=(start, end),
-                work_object=work_object,
+                work_object=wo.name,
                 user=user,
-            ).order_by('date')
-            wo = WorkObject.objects.get(id=work_object)
+            ).order_by('-date')
             ##############################
             ### Totals for sorted_from ###
             total_coffee_food = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=wo.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
@@ -1260,31 +1277,541 @@ def raports(request):
 
 
 #**********************************************************************************************************************#
-#******************************************************* MESSAGES *****************************************************#
+#****************************************************** VACATIONS *****************************************************#
 #**********************************************************************************************************************#
 
+def vacations(request):
+    user = request.user
+    vacations = Vacations.objects.filter(user__id=user.id).order_by('-id')
+    years_list = [vacation.v_from[:4] for vacation in vacations] ## must be set, not list !!!
 
-# @login_required
-# def chat(request, receiver_id):
-#     receiver = get_object_or_404(CustomUser, id=receiver_id)
-#     messages = Message.objects.filter(
-#         sender=request.user,
-#         receiver=receiver
-#     ) | Message.objects.filter(
-#         sender=receiver,
-#         receiver=request.user
-#     ).order_by('timestamp')
-#     return render(request, 'work_object.html', {'receiver': receiver, 'messages': messages})
+    ## Days quantity from the first day of the year
+    today = date.today()
+    start_of_year = date(today.year, 1, 1)
+    days_since_start = (today - start_of_year).days
 
-# @login_required
-# def send_message(request, receiver_id):
-#     receiver = get_object_or_404(CustomUser, id=receiver_id)
-#     if request.method == 'POST':
-#         content = request.POST.get('content')
-#         if content:
-#             message = Message.objects.create(
-#                 sender=request.user,
-#                 receiver=receiver,
-#                 content=content
-#             )
-#     return redirect('chat', receiver_id=receiver_id)
+    ## Days of vacations actually to use in current year
+    days_to_use = user.vacations_days_quantity / 365 * days_since_start
+    actually_days_to_use = round(days_to_use)
+
+    today = date.today()
+    first_day_of_the_year = date(today.year, 1, 1)
+
+    ## Changes quantity of vacations to default when the new year is started
+    if today == first_day_of_the_year:
+        user.last_year_vacations_days_quantity = user.days_to_use_in_current_year
+        user.days_to_use_in_current_year = user.vacations_days_quantity
+        user.cares_vacacions = 5
+        user.vacacions_on_demand = 4
+        user.force_majeure_vacations = 16
+        user.save()
+
+    ## Making a vacation request
+    if request.method == 'POST':
+        year = request.POST.get('year')
+        if year is not None:
+            vacations = Vacations.objects.filter(
+                user__id=request.user.id,
+                v_from__startswith=year,
+                ).order_by('-id')
+
+    context = {
+        'vacations': vacations,
+        'actually_days_to_use': actually_days_to_use,
+        'years_list': years_list,
+        'days_used_in_current_year': user.vacations_days_quantity - user.days_to_use_in_current_year,
+        'last_year_vacations_used_days_quantity': user.vacations_days_quantity - user.last_year_vacations_days_quantity
+    }
+    return render(request, 'vacations.html', context)
+
+
+def addVacation(request):
+    date = datetime.now().strftime('%Y-%m-%d')
+    types = [
+        'wypoczynkowy',
+        'na żądanie',
+        'okolicznościowy',
+        'opiekuńczy',
+        'z powodu siły wyższej',
+        'szkoleniowy',
+        'bezpłatny',
+    ]
+    if request.method == 'POST':
+        v_from = request.POST.get('v_from')
+        v_to = request.POST.get('v_to')
+        type = request.POST.get('type')
+        days_planned = request.POST.get('days_planned')
+        
+        ## Potential mistakes from user
+        if int(days_planned) <= 0:
+            messages.warning(request, 'Prawdopodobnie została niepoprawnie podana data końcowa')
+            return redirect('vacations')
+        if type == 'wypoczynkowy' or type == 'na żądanie':   
+            if request.user.days_to_use_in_current_year == 0:
+                messages.warning(request, 'Nie masz więcej urlopu')
+                return redirect('vacations')
+            elif type == 'wypoczynkowy' and int(days_planned) > request.user.days_to_use_in_current_year :
+                messages.warning(request, f'Masz do dyspozycji tylko {request.user.days_to_use_in_current_year} dni urlopu wypoczynkowego')
+                return redirect('vacations')
+            elif type == 'na żądanie' and int(days_planned) > 4 :
+                messages.warning(request, 'Urlop na żądanie nie może wynosić więcej niż 4 dni')
+                return redirect('vacations')
+            elif type == 'na żądanie' and int(days_planned) > request.user.vacacions_on_demand :
+                messages.warning(request, f'Masz do dyspozycji tylko {request.user.vacacions_on_demand} dni urlopu na żądanie')
+                return redirect('vacations')
+            elif type == 'na żądanie' and request.user.vacacions_on_demand == 0:
+                messages.warning(request, 'Urlop na żądanie został wykorzystany')
+                return redirect('vacations')
+        elif type == 'opiekuńczy':
+            if int(days_planned) > request.user.cares_vacations:
+                messages.warning(request, 'Pozostało mniej dni niż potrzebujesz')
+                return redirect('vacations')
+            elif request.user.cares_vacations == 0:
+                    messages.warning(request, 'Urlop opiekuńczy został wykorzystany')
+                    return redirect('vacations')
+        elif type == 'z powodu siły wyższej':
+            if int(days_planned) > request.user.force_majeure_vacations:
+                messages.warning(request, 'Liczba dni urlopu musi być odpowiednia do pozostałej')
+                return redirect('vacations')
+            elif request.user.force_majeure_vacations == 0:
+                messages.warning(request, 'Urlop opiekuńczy został wykorzystany')
+                return redirect('vacations')
+        elif type == 'okolicznościowy':
+            if int(days_planned) > request.user.compassionate_vacations:
+                messages.warning(request, 'Liczba dni urlopu musi być odpowiednia do pozostałej')
+                return redirect('vacations')
+        elif not days_planned or int(days_planned) == 0:
+             messages.warning(request, 'Nie podałeś ilości dni urlopu')
+             return redirect('vacations')
+        elif int(days_planned) > request.user.days_to_use_in_current_year:
+            messages.warning(request, 'Pozostałych dni urlopu mniej niż potrzebujesz')
+            return redirect('vacations')
+
+        try:
+            vacation = Vacations(
+            user=request.user,
+            date=date,
+            v_from=v_from,
+            v_to=v_to,
+            type=type,
+            days_planned=days_planned,
+            consideration=True,
+            )
+            vacation.save()
+            req = VacationRequest(
+                v_request=vacation
+            )
+            req.save()
+            messages.success(request, 'Złożyłeś wniosek o urlop')
+            return redirect('vacations')
+        except Exception as e:
+            messages.warning(request, f'Błąd: {e}. Nie powiodło się, odśwież stronę i spróbój ponownie')
+            return redirect(reverse('vacations'))
+    
+    context = {
+        'date': date,
+        'types': types,
+    }
+    return render(request, 'add_vacation.html', context)
+
+
+## Editing request if it nos accepted yet (only)
+def editVacation(request, pk):
+    vacation = Vacations.objects.get(id=pk)
+    date = datetime.now().strftime('%Y-%m-%d')
+    types = [
+        'wypoczynkowy',
+        'na żądanie',
+        'okolicznościowy',
+        'opiekuńczy',
+        'z powodu siły wyższej',
+        'szkoleniowy',
+        'bezpłatny',
+    ]
+    if request.method == 'POST':
+        v_from = request.POST.get('v_from')
+        v_to = request.POST.get('v_to')
+        type = request.POST.get('type')
+        days_planned = request.POST.get('days_planned')
+        
+        ## Potential mistakes from user
+        if int(days_planned) <= 0:
+            messages.warning(request, 'Prawdopodobnie została niepoprawnie podana data końcowa')
+            return redirect('vacations')
+        if type == 'wypoczynkowy' or type == 'na żądanie':   
+            if request.user.days_to_use_in_current_year == 0:
+                messages.warning(request, 'Nie masz więcej urlopu')
+                return redirect('vacations')
+            elif type == 'na żądanie' and int(days_planned) > 4 :
+                messages.warning(request, 'Urlop na żądanie nie może wynosić więcej niż 4 dni')
+                return redirect('vacations')
+            elif type == 'na żądanie' and int(days_planned) > request.user.vacacions_on_demand :
+                messages.warning(request, f'Masz do dyspozycji tylko {request.user.vacacions_on_demand} dni urlopu na żądanie')
+                return redirect('vacations')
+            elif type == 'na żądanie' and request.user.vacacions_on_demand == 0:
+                messages.warning(request, 'Urlop na żądanie został wykorzystany')
+                return redirect('vacations')
+        elif type == 'opiekuńczy':
+            if int(days_planned) > request.user.cares_vacations:
+                messages.warning(request, 'Pozostało mniej dni niż potrzebujesz')
+                return redirect('vacations')
+            elif request.user.cares_vacations == 0:
+                    messages.warning(request, 'Urlop opiekuńczy został wykorzystany')
+                    return redirect('vacations')
+        elif type == 'z powodu siły wyższej':
+            if int(days_planned) > request.user.force_majeure_vacations:
+                messages.warning(request, 'Liczba dni urlopu musi być odpowiednia do pozostałej')
+                return redirect('vacations')
+            elif request.user.force_majeure_vacations == 0:
+                messages.warning(request, 'Urlop opiekuńczy został wykorzystany')
+                return redirect('vacations')
+        elif type == 'okolicznościowy':
+            if int(days_planned) > request.user.compassionate_vacations:
+                messages.warning(request, 'Pozostało mniej dni niż potrzebujesz')
+                return redirect('vacations')
+        elif not days_planned or int(days_planned) == 0:
+             messages.warning(request, 'Nie podałeś ilości dni urlopu')
+             return redirect('vacations')
+        elif int(days_planned) > request.user.days_to_use_in_current_year:
+            messages.warning(request, 'Pozostałych dni urlopu mniej niż potrzebujesz')
+            return redirect('vacations')
+        
+        print('days_planned', vacation.user) 
+        try:
+            vacation = Vacations.objects.get(id=pk)
+            vacation.date = date
+            vacation.v_from = v_from
+            vacation.v_to = v_to
+            vacation.type = type
+            vacation.days_planned = int(days_planned)
+            vacation.consideration = True
+            vacation.save() 
+            return redirect('vacations')
+        except Exception as e:
+            messages.warning(request, f'Błąd: {e}. Nie powiodło się, odśwież stronę i spróbój ponownie')
+            return redirect(reverse('vacations'))
+
+    context = {
+        'vacation': vacation,
+        'date': date,
+        'types': types,
+    }
+    return render(request, 'edit_vacation.html', context)
+
+
+def deleteVacationPage(request, pk):
+    vacation = Vacations.objects.get(id=pk)
+    context = {
+        'vacation': vacation,
+        }
+    return render(request, 'deleteVacationPage.html', context)
+
+
+def deleteVacation(request, pk):
+    Vacations.objects.filter(id=pk).delete()
+    return redirect('vacations')
+
+
+def allVacationRequests(request):
+    reqs = VacationRequest.objects.all().order_by('-v_request__id')
+    users = CustomUser.objects.all().values('username')
+    types = [
+        'wypoczynkowy',
+        'na żądanie',
+        'okolicznościowy',
+        'opiekuńczy',
+        'z powodu siły wyższej',
+        'szkoleniowy',
+        'bezpłatny',
+    ]
+
+    ## Filter
+    if request.method == 'POST':
+        sorted_from = request.POST.get('sorted_from')
+        sorted_to = request.POST.get('sorted_to')
+        user = request.POST.get('user')
+        type = request.POST.get('type')
+        status = request.POST.get('status')
+
+        #####################################################################################
+        ###################################  SORTED FROM  ###################################
+        #####################################################################################
+
+        if sorted_from and user and type and status:
+            year, month, day = sorted_from.split('-')
+            sorted_to = request.POST.get('sorted_to')
+            year_, month_, day_ = sorted_to.split('-')
+            start = datetime(int(year), int(month), int(day)).date()
+            end = datetime(int(year_), int(month_), int(day_)).date()
+            if status == 'Zaakceptowane':
+                reqs = VacationRequest.objects.filter(
+                    v_request__date__range=(start, end),
+                    v_request__user__username=user,
+                    v_request__type=type,
+                    v_request__accepted=True,
+                )
+            elif status == 'Niezaakceptowane':
+                reqs = VacationRequest.objects.filter(
+                    v_request__date__range=(start, end),
+                    v_request__user__username=user,
+                    v_request__type=type,
+                    v_request__accepted=False,
+                )
+            elif status == 'Rozpatrywane':
+                reqs = VacationRequest.objects.filter(
+                    v_request__date__range=(start, end),
+                    v_request__user__username=user,
+                    v_request__type=type,
+                    v_request__consideration=True,
+                )
+            print('sorted_from and user and type and status', reqs)
+           
+        elif sorted_from and user and type:
+            year, month, day = sorted_from.split('-')
+            sorted_to = request.POST.get('sorted_to')
+            year_, month_, day_ = sorted_to.split('-')
+            start = datetime(int(year), int(month), int(day)).date()
+            end = datetime(int(year_), int(month_), int(day_)).date()
+            reqs = VacationRequest.objects.filter(
+                v_request__date__range=(start, end),
+                v_request__user__username=user,
+                v_request__type=type,
+            )
+            print('sorted_from and user and type', reqs)
+
+        elif sorted_from and user:
+            year, month, day = sorted_from.split('-')
+            sorted_to = request.POST.get('sorted_to')
+            year_, month_, day_ = sorted_to.split('-')
+            start = datetime(int(year), int(month), int(day)).date()
+            end = datetime(int(year_), int(month_), int(day_)).date()
+            reqs = VacationRequest.objects.filter(
+                v_request__date__range=(start, end),
+                v_request__user__username=user,
+            )
+            print('sorted_from and user', reqs)
+
+        elif sorted_from and type:
+            year, month, day = sorted_from.split('-')
+            sorted_to = request.POST.get('sorted_to')
+            year_, month_, day_ = sorted_to.split('-')
+            start = datetime(int(year), int(month), int(day)).date()
+            end = datetime(int(year_), int(month_), int(day_)).date()
+            reqs = VacationRequest.objects.filter(
+                v_request__date__range=(start, end),
+                v_request__type=type,
+            )
+            print('sorted_from and type', reqs)
+
+        elif sorted_from and status:
+            year, month, day = sorted_from.split('-')
+            sorted_to = request.POST.get('sorted_to')
+            year_, month_, day_ = sorted_to.split('-')
+            start = datetime(int(year), int(month), int(day)).date()
+            end = datetime(int(year_), int(month_), int(day_)).date()
+            if status == 'Zaakceptowane':
+                reqs = VacationRequest.objects.filter(
+                    v_request__date__range=(start, end),
+                    v_request__accepted=True,
+                )
+            elif status == 'Niezaakceptowane':
+                reqs = VacationRequest.objects.filter(
+                    v_request__date__range=(start, end),
+                    v_request__accepted=False,
+                )
+            elif status == 'Rozpatrywane':
+                reqs = VacationRequest.objects.filter(
+                    v_request__date__range=(start, end),
+                    v_request__consideration=True,
+                )
+            print('sorted_from and status', reqs)
+
+        elif sorted_from:
+            year, month, day = sorted_from.split('-')
+            sorted_to = request.POST.get('sorted_to')
+            year_, month_, day_ = sorted_to.split('-')
+            start = datetime(int(year), int(month), int(day)).date()
+            end = datetime(int(year_), int(month_), int(day_)).date()
+            reqs = VacationRequest.objects.filter(
+                v_request__date__range=(start, end),
+            )
+            print('sorted_from', reqs)
+        
+        elif user and type and status:
+            if status == 'Zaakceptowane':
+                reqs = VacationRequest.objects.filter(
+                    v_request__user__username=user,
+                    v_request__type=type,
+                    v_request__accepted=True,
+                )
+            elif status == 'Niezaakceptowane':
+                reqs = VacationRequest.objects.filter(
+                    v_request__user__username=user,
+                    v_request__type=type,
+                    v_request__accepted=False,
+                )
+            elif status == 'Rozpatrywane':
+                reqs = VacationRequest.objects.filter(
+                    v_request__user__username=user,
+                    v_request__type=type,
+                    v_request__consideration=True,
+                )
+            print('user and type and status', reqs)
+
+        elif user and type:
+            reqs = VacationRequest.objects.filter(
+                v_request__user__username=user,
+                v_request__type=type,
+            )
+            print('user and type', reqs)
+
+        elif user and status:
+            if status == 'Zaakceptowane':
+                reqs = VacationRequest.objects.filter(
+                    v_request__user__username=user,
+                    v_request__accepted=True,
+                )
+            elif status == 'Niezaakceptowane':
+                reqs = VacationRequest.objects.filter(
+                    v_request__user__username=user,
+                    v_request__accepted=False,
+                )
+            elif status == 'Rozpatrywane':
+                reqs = VacationRequest.objects.filter(
+                    v_request__user__username=user,
+                    v_request__consideration=True,
+                )
+            print('user and status', reqs)
+
+        elif type and status:
+            if status == 'Zaakceptowane':
+                reqs = VacationRequest.objects.filter(
+                    v_request__type=type,
+                    v_request__accepted=True,
+                )
+            elif status == 'Niezaakceptowane':
+                reqs = VacationRequest.objects.filter(
+                    v_request__type=type,
+                    v_request__accepted=False,
+                )
+            elif status == 'Rozpatrywane':
+                reqs = VacationRequest.objects.filter(
+                    v_request__type=type,
+                    v_request__consideration=True,
+                )
+            print('type and status', reqs)
+
+        elif user:
+            reqs = VacationRequest.objects.filter(
+                v_request__user__username=user,
+            )
+            print('user', reqs)
+
+        elif type:
+            reqs = VacationRequest.objects.filter(
+                v_request__type=type,
+            )
+            print('type', reqs)
+
+        elif status:
+            if status == 'Zaakceptowane':
+                reqs = VacationRequest.objects.filter(
+                    v_request__accepted=True,
+                )
+            elif status == 'Niezaakceptowane':
+                reqs = VacationRequest.objects.filter(
+                    v_request__accepted=False,
+                )
+            elif status == 'Rozpatrywane':
+                reqs = VacationRequest.objects.filter(
+                    v_request__consideration=True,
+                )
+            print('status', status)
+            
+    context = {
+       'reqs': reqs, 
+       'users': users,
+       'types': types,
+    }
+    return render(request, 'all_vacation_requests.html', context)
+
+
+def vacationRequest(request, pk):
+    req = VacationRequest.objects.get(v_request__id=pk)
+    vacation = Vacations.objects.get(id=pk)
+    user = CustomUser.objects.get(id=vacation.user.id)
+    type = vacation.type
+
+    ## Days quantity from the first day of the year
+    today = date.today()
+    start_of_year = date(today.year, 1, 1)
+    days_since_start = (today - start_of_year).days
+
+    ## Days of vacations actually to use in current year
+    days_to_use = vacation.user.vacations_days_quantity / 365 * days_since_start
+    vacation.actually_days_to_use = round(days_to_use)
+
+    if request.method == 'POST':
+        if 'accept' in request.POST and type in ['wypoczynkowy', 'na żądanie']:
+            vacation.accepted = True
+            vacation.consideration = False
+            if type == 'na żądanie':
+                user.vacacions_on_demand -= req.v_request.days_planned 
+            if user.last_year_vacations_days_quantity > 0:
+                if req.v_request.days_planned >= user.last_year_vacations_days_quantity:
+                    vacation.days_used_in_last_year = user.vacations_days_quantity - vacation.days_to_use_in_last_year
+                    vacation.days_used_in_current_year = req.v_request.days_planned - user.last_year_vacations_days_quantity
+                    vacation.days_to_use_in_last_year = 0
+                    user.days_to_use_in_current_year = user.vacations_days_quantity - vacation.days_used_in_current_year
+                    user.last_year_vacations_days_quantity = 0
+                else:
+                    user.last_year_vacations_days_quantity -=  req.v_request.days_planned
+                    vacation.days_to_use_in_last_year = user.last_year_vacations_days_quantity  ## Duplicate for Vacations model
+                    vacation.days_used_in_last_year = user.vacations_days_quantity - user.last_year_vacations_days_quantity
+                    vacation.days_to_use_in_current_year = vacation.user.vacations_days_quantity - vacation.days_used_in_current_year
+            else:
+                user.days_to_use_in_current_year = user.days_to_use_in_current_year - req.v_request.days_planned
+                vacation.days_used_in_current_year = user.vacations_days_quantity - user.days_to_use_in_current_year
+                vacation.days_used_in_last_year = user.vacations_days_quantity - user.last_year_vacations_days_quantity
+            if today == start_of_year:
+                user.last_year_vacations_days_quantity = vacation.days_to_use_in_current_year
+                user.days_to_use_in_current_year = user.vacations_days_quantity
+            vacation.save()
+            user.save()
+            return redirect('allVacationRequests')
+        
+        elif 'accept' in request.POST and type == 'opiekuńczy':
+            vacation.accepted = True
+            vacation.consideration = False
+            user.cares_vacations -= req.v_request.days_planned
+            user.save()
+            vacation.save()
+            return redirect('allVacationRequests')
+
+        elif 'accept' in request.POST and type == 'z powodu siły wyższej':
+            vacation.accepted = True
+            vacation.consideration = False
+            user.force_majeure_vacations -= req.v_request.days_planned
+            user.save()
+            vacation.save()
+            return redirect('allVacationRequests')
+        
+        elif 'accept' in request.POST and type == 'okolicznościowy':
+            vacation.accepted = True
+            vacation.consideration = False
+            user.compassionate_vacations -= req.v_request.days_planned
+            user.save()
+            vacation.save()
+            return redirect('allVacationRequests')
+
+        elif 'reject' in request.POST:
+            vacation.accepted = False
+            vacation.consideration = False
+            vacation.save()
+            return redirect('allVacationRequests')
+    context = {
+        'req': req,
+        'pk': pk,
+    }
+    return render(request, 'vacation_request.html', context)
+    
