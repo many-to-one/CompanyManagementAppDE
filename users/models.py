@@ -142,7 +142,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         null=True,
     )
     vacations_days_quantity_de = models.IntegerField(
-        _('Ilość przysługujących dni urlopu de'),
+        _('Ilość przysługujących dni urlopu'),
         null=True,
     )
     vacacions_on_demand = models.IntegerField(
@@ -166,7 +166,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         null=True,
     )
     last_year_vacations_days_quantity_de = models.IntegerField(
-        _('Ilość przysługujących dni urlopu za zeszły rok de'),
+        _('Ilość przysługujących dni urlopu za zeszły rok'),
         null=True,
     )
     days_to_use_in_current_year = models.IntegerField(
@@ -174,7 +174,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         null=True,
     )
     days_to_use_in_current_year_de = models.IntegerField(
-        _('Do użycia w bieżącym roku de'),
+        _('Do użycia w bieżącym roku'),
         null=True,
     )
     is_staff = models.BooleanField(default=False)

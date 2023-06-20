@@ -1383,7 +1383,7 @@ def addVacation(request):
         elif not days_planned or int(days_planned) == 0:
              messages.warning(request, 'Nie podałeś ilości dni urlopu')
              return redirect('vacations')
-        elif int(days_planned) > request.user.days_to_use_in_current_year:
+        elif int(days_planned) > request.user.days_to_use_in_current_year and type != 'bezpłatny':
             messages.warning(request, 'Pozostałych dni urlopu mniej niż potrzebujesz')
             return redirect('vacations')
 
@@ -1801,6 +1801,12 @@ def vacationRequest(request, pk):
             vacation.consideration = False
             user.compassionate_vacations -= req.v_request.days_planned
             user.save()
+            vacation.save()
+            return redirect('allVacationRequests')
+        
+        elif 'accept' in request.POST and type == 'bezpłatny':
+            vacation.accepted = True
+            vacation.consideration = False
             vacation.save()
             return redirect('allVacationRequests')
 
