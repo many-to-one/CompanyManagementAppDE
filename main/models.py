@@ -271,31 +271,6 @@ class Vacations(models.Model):
         return str(self.id)
 
         # return self.user.username
-
-
-# class VacationDaysQuantity(models.Model):
-#     days_to_use_in_current_year = models.IntegerField(
-#         null=True,
-#         verbose_name='Do użycia w bieżącym roku',
-#     )
-#     days_used_in_current_year = models.IntegerField(
-#         default=0,
-#         verbose_name='Użyto w bieżącym roku',
-#     )
-#     days_to_use_in_last_year = models.IntegerField(
-#         default=0,
-#         verbose_name='Do użycia w poprzednim roku',
-#     )
-#     days_used_in_last_year = models.IntegerField(
-#         default=0,
-#         verbose_name='Użyto w poprzednim roku',
-#     )
-#     user = models.ManyToManyField(
-#         CustomUser, 
-#         )
-
-#     def __str__(self) -> str:
-#         return str(self.user.username)
     
 
 class VacationRequest(models.Model):
