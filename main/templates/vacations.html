@@ -26,44 +26,54 @@
 
             <div class="vacations_top_cont">
                 <h2>Zarządzanie urlopami</h2>
+                <p>{{ user.username }}</p>
                 <button class="btn"><a class="btn-title" href="{% url 'addVacation' %}">+ Dodaj urlop</a></button>
             </div>
 
             <div class="vacations_grafic_container">
 
                 <div class="vacations_mini_cont">
-                    <p>{{ request.user }}</p>
-                    <form method="POST">
+                    {% if request.user.is_superuser %}
+                        <form method="POST" id="users">
+                            {% csrf_token %}
+                            <select name="user" class="vacations_input" onchange="submitFormUsers()">
+                                <option value="">Urlopy</option>
+                                {% for user in users %}
+                                    <option value="{{ user }}">{{ user }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    {% else %}
+                        <p>{{ user.username }}</p>
+                    {% endif %}
+                    <form method="POST" id="years">
                         {% csrf_token %}
-                        <select name="year" class="vacations_input">
+                        <select name="year" class="vacations_input" onchange="submitFormYears()">
                             <option value="">Wszystko</option>
                             {% for year in years_list %}
                                 <option value="{{ year }}">{{ year }}</option>
                             {% endfor %}
                         </select>
-                        <button class="btn" type="submit">
-                            <span class="btn-title">Szukaj</span>
-                        </button>
                     </form>
                 </div>
 
                 <div class="vacations_mini_cont">
                     <div>
-                        <p>Do użycia w bierzącym roku: &nbsp; {{ request.user.days_to_use_in_current_year }}</p>
+                        <p>Do użycia w bierzącym roku: &nbsp; {{ request.user.days_to_use_in_current_year_de }}</p>
                         <p>Użyto w bieżącym roku: &nbsp; {{ days_used_in_current_year }}</p>
                     </div>
                     <div>
-                        <p>Do użycia za poprzedni rok: &nbsp; &nbsp; {{ request.user.last_year_vacations_days_quantity }}</p>
+                        <p>Do użycia za poprzedni rok: &nbsp; &nbsp; {{ request.user.last_year_vacations_days_quantity_de }}</p>
                         <p>Dni urlopu od początku roku: &nbsp; {{ actually_days_to_use }}</p>
                     </div>
-                    <div>
+                    <!-- <div>
                         <p>Ilość urlopu na żądanie: &nbsp; {{ request.user.vacacions_on_demand }} </p>
                         <p>Ilość urlopu opiekuńczego: &nbsp; {{ request.user.cares_vacations }} </p>
                     </div>
                     <div>
                         <p>Z powodu siły wyższej: &nbsp; {{ request.user.force_majeure_vacations }}g </p>
                         <p>Urlop okolicznościowy: &nbsp; {{ request.user.compassionate_vacations }} </p>
-                    </div>
+                    </div> -->
                 </div>
             </div>
 
@@ -116,6 +126,21 @@
                 {% endfor %}
             </table>
         </div>
+
+        <script> 
+
+            function submitFormUsers() {
+              var form = document.getElementById("users");
+              form.submit();
+            }
+
+            function submitFormYears() {
+              var form = document.getElementById("years");
+              form.submit();
+            }
+
+        </script>
+
     {% endblock %}
 </body>
 </html>

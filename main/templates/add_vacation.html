@@ -89,8 +89,8 @@
               var currentDate = new Date(dateFrom);
 
               while (currentDate <= dateTo) {
-                // Check if the current day is not Saturday (6) or Sunday (0)
-                if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+                // Check if the current day is not Sunday (0)
+                if (currentDate.getDay() !== 0) {
                   count++;
                 }
                 currentDate.setDate(currentDate.getDate() + 1);

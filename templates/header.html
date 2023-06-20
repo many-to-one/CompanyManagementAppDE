@@ -37,12 +37,12 @@
                 {% if request.user.is_superuser %}
                     <li class="dropdown nav-el"><a href="#" onclick="toggleDropdown(event)">URLOPY</a>
                         <ul class="dropdown-menu">
-                            <li class="nav-el"><a href="{% url 'vacations' %}"> - Moje urlopy</a></li>
+                            <li class="nav-el"><a href="{% url 'vacations' request.user.pk %}"> - Moje urlopy</a></li>
                             <li class="nav-el" id="req"><a href="{% url 'allVacationRequests' %}"> - Wnioski</a></li>
                         </ul>
                     </li>
                 {% else %}
-                    <li class="nav-el"><a href="{% url 'vacations' %}">URLOPY</a></li>
+                    <li class="nav-el"><a href="{% url 'vacations' request.user.pk %}">URLOPY</a></li>
                 {% endif %}
                 <li class="nav-el" id="raports"><a href="{% url 'raports' %}">RAPORTY</a></li>
             </ul>

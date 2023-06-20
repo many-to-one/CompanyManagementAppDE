@@ -1280,60 +1280,66 @@ def raports(request):
 #****************************************************** VACATIONS *****************************************************#
 #**********************************************************************************************************************#
 
-def vacations(request):
-    user = request.user
+def vacations(request, pk):
+    # user = request.user
+    user = get_object_or_404(CustomUser, id=pk)
+    users = CustomUser.objects.all().values('username')
+    username_list = [user['username'] for user in users]
     vacations = Vacations.objects.filter(user__id=user.id).order_by('-id')
-    years_list = [vacation.v_from[:4] for vacation in vacations] ## must be set, not list !!!
+    years_list = [vacation.v_from[:4] for vacation in vacations] 
 
     ## Days quantity from the first day of the year
     today = date.today()
     start_of_year = date(today.year, 1, 1)
     days_since_start = (today - start_of_year).days
 
-    ## Days of vacations actually to use in current year
-    days_to_use = user.vacations_days_quantity / 365 * days_since_start
-    actually_days_to_use = round(days_to_use)
+    ## Days of vacations DE actually to use in current year
+    current_month = datetime.now().month
+    days_to_use = user.vacations_days_quantity_de / 12 * current_month
+    vacations.actually_days_to_use = round(days_to_use)
 
     today = date.today()
     first_day_of_the_year = date(today.year, 1, 1)
 
     ## Changes quantity of vacations to default when the new year is started
     if today == first_day_of_the_year:
-        user.last_year_vacations_days_quantity = user.days_to_use_in_current_year
-        user.days_to_use_in_current_year = user.vacations_days_quantity
-        user.cares_vacacions = 5
-        user.vacacions_on_demand = 4
-        user.force_majeure_vacations = 16
+        user.last_year_vacations_days_quantity_de = user.days_to_use_in_current_year_de
+        user.days_to_use_in_current_year_de = user.vacations_days_quantity_de
         user.save()
 
     ## Making a vacation request
     if request.method == 'POST':
-        year = request.POST.get('year')
-        if year is not None:
-            vacations = Vacations.objects.filter(
-                user__id=request.user.id,
-                v_from__startswith=year,
-                ).order_by('-id')
+        if 'user' in request.POST:
+            user_option = request.POST.get('user')
+            user = get_object_or_404(CustomUser, username=user_option)
+            return redirect('vacations', user.id)
+
+        elif 'year' in request.POST:
+            year = request.POST.get('year')
+            if year is not None:
+                vacations = Vacations.objects.filter(
+                    user__id=request.user.id,
+                    v_from__startswith=year,
+                    ).order_by('-id')
 
     context = {
         'vacations': vacations,
-        'actually_days_to_use': actually_days_to_use,
-        'years_list': years_list,
-        'days_used_in_current_year': user.vacations_days_quantity - user.days_to_use_in_current_year,
-        'last_year_vacations_used_days_quantity': user.vacations_days_quantity - user.last_year_vacations_days_quantity
+        'user': user,
+        'users': username_list,
+        'actually_days_to_use': vacations.actually_days_to_use,
+        'years_list': set(years_list),
+        'days_used_in_current_year': user.vacations_days_quantity_de - user.days_to_use_in_current_year_de,
+        'last_year_vacations_used_days_quantity': user.vacations_days_quantity_de - user.last_year_vacations_days_quantity_de
     }
+    print(user.vacations_days_quantity, user.days_to_use_in_current_year)
     return render(request, 'vacations.html', context)
 
 
 def addVacation(request):
+    user = request.user
     date = datetime.now().strftime('%Y-%m-%d')
     types = [
         'wypoczynkowy',
-        'na żądanie',
-        'okolicznościowy',
-        'opiekuńczy',
-        'z powodu siły wyższej',
-        'szkoleniowy',
         'bezpłatny',
     ]
     if request.method == 'POST':
@@ -1345,47 +1351,47 @@ def addVacation(request):
         ## Potential mistakes from user
         if int(days_planned) <= 0:
             messages.warning(request, 'Prawdopodobnie została niepoprawnie podana data końcowa')
-            return redirect('vacations')
+            return redirect('vacations', user.id)
         if type == 'wypoczynkowy' or type == 'na żądanie':   
-            if request.user.days_to_use_in_current_year == 0:
+            if request.user.days_to_use_in_current_year_de == 0:
                 messages.warning(request, 'Nie masz więcej urlopu')
-                return redirect('vacations')
-            elif type == 'wypoczynkowy' and int(days_planned) > request.user.days_to_use_in_current_year :
-                messages.warning(request, f'Masz do dyspozycji tylko {request.user.days_to_use_in_current_year} dni urlopu wypoczynkowego')
-                return redirect('vacations')
+                return redirect('vacations', user.id)
+            elif type == 'wypoczynkowy' and int(days_planned) > request.user.days_to_use_in_current_year_de  :
+                messages.warning(request, f'Masz do dyspozycji tylko {request.user.days_to_use_in_current_year_de } dni urlopu wypoczynkowego')
+                return redirect('vacations', user.id)
             elif type == 'na żądanie' and int(days_planned) > 4 :
                 messages.warning(request, 'Urlop na żądanie nie może wynosić więcej niż 4 dni')
-                return redirect('vacations')
+                return redirect('vacations', user.id)
             elif type == 'na żądanie' and int(days_planned) > request.user.vacacions_on_demand :
                 messages.warning(request, f'Masz do dyspozycji tylko {request.user.vacacions_on_demand} dni urlopu na żądanie')
-                return redirect('vacations')
+                return redirect('vacations', user.id)
             elif type == 'na żądanie' and request.user.vacacions_on_demand == 0:
                 messages.warning(request, 'Urlop na żądanie został wykorzystany')
-                return redirect('vacations')
+                return redirect('vacations', user.id)
         elif type == 'opiekuńczy':
             if int(days_planned) > request.user.cares_vacations:
                 messages.warning(request, 'Pozostało mniej dni niż potrzebujesz')
-                return redirect('vacations')
+                return redirect('vacations', user.id)
             elif request.user.cares_vacations == 0:
                     messages.warning(request, 'Urlop opiekuńczy został wykorzystany')
-                    return redirect('vacations')
+                    return redirect('vacations', user.id)
         elif type == 'z powodu siły wyższej':
             if int(days_planned) > request.user.force_majeure_vacations:
                 messages.warning(request, 'Liczba dni urlopu musi być odpowiednia do pozostałej')
-                return redirect('vacations')
+                return redirect('vacations', user.id)
             elif request.user.force_majeure_vacations == 0:
                 messages.warning(request, 'Urlop opiekuńczy został wykorzystany')
-                return redirect('vacations')
+                return redirect('vacations', user.id)
         elif type == 'okolicznościowy':
             if int(days_planned) > request.user.compassionate_vacations:
                 messages.warning(request, 'Liczba dni urlopu musi być odpowiednia do pozostałej')
-                return redirect('vacations')
+                return redirect('vacations', user.id)
         elif not days_planned or int(days_planned) == 0:
              messages.warning(request, 'Nie podałeś ilości dni urlopu')
-             return redirect('vacations')
-        elif int(days_planned) > request.user.days_to_use_in_current_year and type != 'bezpłatny':
+             return redirect('vacations', user.id)
+        elif int(days_planned) > request.user.days_to_use_in_current_year_de  and type != 'bezpłatny':
             messages.warning(request, 'Pozostałych dni urlopu mniej niż potrzebujesz')
-            return redirect('vacations')
+            return redirect('vacations', user.id)
 
         try:
             vacation = Vacations(
@@ -1403,10 +1409,10 @@ def addVacation(request):
             )
             req.save()
             messages.success(request, 'Złożyłeś wniosek o urlop')
-            return redirect('vacations')
+            return redirect('vacations', user.id)
         except Exception as e:
             messages.warning(request, f'Błąd: {e}. Nie powiodło się, odśwież stronę i spróbój ponownie')
-            return redirect(reverse('vacations'))
+            return redirect(reverse('vacations', user.id))
     
     context = {
         'date': date,
@@ -1417,15 +1423,11 @@ def addVacation(request):
 
 ## Editing request if it nos accepted yet (only)
 def editVacation(request, pk):
+    user = request.user
     vacation = Vacations.objects.get(id=pk)
     date = datetime.now().strftime('%Y-%m-%d')
     types = [
         'wypoczynkowy',
-        'na żądanie',
-        'okolicznościowy',
-        'opiekuńczy',
-        'z powodu siły wyższej',
-        'szkoleniowy',
         'bezpłatny',
     ]
     if request.method == 'POST':
@@ -1437,46 +1439,48 @@ def editVacation(request, pk):
         ## Potential mistakes from user
         if int(days_planned) <= 0:
             messages.warning(request, 'Prawdopodobnie została niepoprawnie podana data końcowa')
-            return redirect('vacations')
+            return redirect('vacations', user.id)
         if type == 'wypoczynkowy' or type == 'na żądanie':   
-            if request.user.days_to_use_in_current_year == 0:
+            if request.user.days_to_use_in_current_year_de == 0:
                 messages.warning(request, 'Nie masz więcej urlopu')
-                return redirect('vacations')
+                return redirect('vacations', user.id)
+            elif int(days_planned) > request.user.days_to_use_in_current_year_de :
+                messages.warning(request, f'Masz do dyspozycji tylko {request.user.days_to_use_in_current_year_de } dni urlopu wypoczynkowego')
+                return redirect('vacations', user.id)
             elif type == 'na żądanie' and int(days_planned) > 4 :
                 messages.warning(request, 'Urlop na żądanie nie może wynosić więcej niż 4 dni')
-                return redirect('vacations')
-            elif type == 'na żądanie' and int(days_planned) > request.user.vacacions_on_demand :
-                messages.warning(request, f'Masz do dyspozycji tylko {request.user.vacacions_on_demand} dni urlopu na żądanie')
-                return redirect('vacations')
-            elif type == 'na żądanie' and request.user.vacacions_on_demand == 0:
+                return redirect('vacations', user.id)
+            elif type == 'na żądanie' and int(days_planned) > request.user.vacacions_on_demand  :
+                messages.warning(request, f'Masz do dyspozycji tylko {request.user.vacacions_on_demand } dni urlopu na żądanie')
+                return redirect('vacations', user.id)
+            elif type == 'na żądanie' and request.user.vacacions_on_demand  == 0:
                 messages.warning(request, 'Urlop na żądanie został wykorzystany')
-                return redirect('vacations')
+                return redirect('vacations', user.id)
         elif type == 'opiekuńczy':
             if int(days_planned) > request.user.cares_vacations:
                 messages.warning(request, 'Pozostało mniej dni niż potrzebujesz')
-                return redirect('vacations')
+                return redirect('vacations', user.id)
             elif request.user.cares_vacations == 0:
                     messages.warning(request, 'Urlop opiekuńczy został wykorzystany')
-                    return redirect('vacations')
+                    return redirect('vacations', user.id)
         elif type == 'z powodu siły wyższej':
             if int(days_planned) > request.user.force_majeure_vacations:
                 messages.warning(request, 'Liczba dni urlopu musi być odpowiednia do pozostałej')
-                return redirect('vacations')
+                return redirect('vacations', user.id)
             elif request.user.force_majeure_vacations == 0:
                 messages.warning(request, 'Urlop opiekuńczy został wykorzystany')
-                return redirect('vacations')
+                return redirect('vacations', user.id)
         elif type == 'okolicznościowy':
             if int(days_planned) > request.user.compassionate_vacations:
                 messages.warning(request, 'Pozostało mniej dni niż potrzebujesz')
-                return redirect('vacations')
+                return redirect('vacations', user.id)
         elif not days_planned or int(days_planned) == 0:
              messages.warning(request, 'Nie podałeś ilości dni urlopu')
-             return redirect('vacations')
-        elif int(days_planned) > request.user.days_to_use_in_current_year:
+             return redirect('vacations', user.id)
+        elif int(days_planned) > request.user.days_to_use_in_current_year_de and type != 'bezpłatny' :
             messages.warning(request, 'Pozostałych dni urlopu mniej niż potrzebujesz')
-            return redirect('vacations')
-        
-        print('days_planned', vacation.user) 
+            return redirect('vacations', user.id)
+    
         try:
             vacation = Vacations.objects.get(id=pk)
             vacation.date = date
@@ -1486,10 +1490,10 @@ def editVacation(request, pk):
             vacation.days_planned = int(days_planned)
             vacation.consideration = True
             vacation.save() 
-            return redirect('vacations')
+            return redirect('vacations', user.id)
         except Exception as e:
             messages.warning(request, f'Błąd: {e}. Nie powiodło się, odśwież stronę i spróbój ponownie')
-            return redirect(reverse('vacations'))
+            return redirect(reverse('vacations', user.id))
 
     context = {
         'vacation': vacation,
@@ -1508,8 +1512,9 @@ def deleteVacationPage(request, pk):
 
 
 def deleteVacation(request, pk):
+    user = request.user
     Vacations.objects.filter(id=pk).delete()
-    return redirect('vacations')
+    return redirect('vacations', user.id)
 
 
 def allVacationRequests(request):
@@ -1517,11 +1522,6 @@ def allVacationRequests(request):
     users = CustomUser.objects.all().values('username')
     types = [
         'wypoczynkowy',
-        'na żądanie',
-        'okolicznościowy',
-        'opiekuńczy',
-        'z powodu siły wyższej',
-        'szkoleniowy',
         'bezpłatny',
     ]
 
@@ -1747,62 +1747,61 @@ def vacationRequest(request, pk):
     start_of_year = date(today.year, 1, 1)
     days_since_start = (today - start_of_year).days
 
-    ## Days of vacations actually to use in current year
-    days_to_use = vacation.user.vacations_days_quantity / 365 * days_since_start
+    ## Days of vacations DE actually to use in current year
+    current_month = datetime.now().month
+    days_to_use = user.vacations_days_quantity_de / 12 * current_month
     vacation.actually_days_to_use = round(days_to_use)
 
     if request.method == 'POST':
         if 'accept' in request.POST and type in ['wypoczynkowy', 'na żądanie']:
             vacation.accepted = True
             vacation.consideration = False
-            if type == 'na żądanie':
-                user.vacacions_on_demand -= req.v_request.days_planned 
-            if user.last_year_vacations_days_quantity > 0:
-                if req.v_request.days_planned >= user.last_year_vacations_days_quantity:
-                    vacation.days_used_in_last_year = user.vacations_days_quantity - vacation.days_to_use_in_last_year
-                    vacation.days_used_in_current_year = req.v_request.days_planned - user.last_year_vacations_days_quantity
+            if user.last_year_vacations_days_quantity_de > 0: 
+                if req.v_request.days_planned >= user.last_year_vacations_days_quantity_de:
+                    vacation.days_used_in_last_year = user.vacations_days_quantity_de - vacation.days_to_use_in_last_year
+                    vacation.days_used_in_current_year = req.v_request.days_planned - user.last_year_vacations_days_quantity_de
                     vacation.days_to_use_in_last_year = 0
-                    user.days_to_use_in_current_year = user.vacations_days_quantity - vacation.days_used_in_current_year
-                    user.last_year_vacations_days_quantity = 0
+                    user.days_to_use_in_current_year_de = user.vacations_days_quantity_de - vacation.days_used_in_current_year
+                    user.last_year_vacations_days_quantity_de = 0
                 else:
-                    user.last_year_vacations_days_quantity -=  req.v_request.days_planned
-                    vacation.days_to_use_in_last_year = user.last_year_vacations_days_quantity  ## Duplicate for Vacations model
-                    vacation.days_used_in_last_year = user.vacations_days_quantity - user.last_year_vacations_days_quantity
+                    user.last_year_vacations_days_quantity_de -=  req.v_request.days_planned
+                    vacation.days_to_use_in_last_year = user.last_year_vacations_days_quantity_de  ## Duplicate for Vacations model
+                    vacation.days_used_in_last_year = user.vacations_days_quantity_de - user.last_year_vacations_days_quantity_de
                     vacation.days_to_use_in_current_year = vacation.user.vacations_days_quantity - vacation.days_used_in_current_year
             else:
-                user.days_to_use_in_current_year = user.days_to_use_in_current_year - req.v_request.days_planned
-                vacation.days_used_in_current_year = user.vacations_days_quantity - user.days_to_use_in_current_year
-                vacation.days_used_in_last_year = user.vacations_days_quantity - user.last_year_vacations_days_quantity
+                user.days_to_use_in_current_year_de = user.days_to_use_in_current_year_de - req.v_request.days_planned
+                vacation.days_used_in_current_year = user.vacations_days_quantity_de - user.days_to_use_in_current_year_de
+                vacation.days_used_in_last_year = user.vacations_days_quantity_de - user.last_year_vacations_days_quantity_de
             if today == start_of_year:
-                user.last_year_vacations_days_quantity = vacation.days_to_use_in_current_year
-                user.days_to_use_in_current_year = user.vacations_days_quantity
+                user.last_year_vacations_days_quantity_de = vacation.days_to_use_in_current_year
+                user.days_to_use_in_current_year_de = user.vacations_days_quantity_de
             vacation.save()
             user.save()
             return redirect('allVacationRequests')
         
-        elif 'accept' in request.POST and type == 'opiekuńczy':
-            vacation.accepted = True
-            vacation.consideration = False
-            user.cares_vacations -= req.v_request.days_planned
-            user.save()
-            vacation.save()
-            return redirect('allVacationRequests')
+        # elif 'accept' in request.POST and type == 'opiekuńczy':
+        #     vacation.accepted = True
+        #     vacation.consideration = False
+        #     user.cares_vacations -= req.v_request.days_planned
+        #     user.save()
+        #     vacation.save()
+        #     return redirect('allVacationRequests')
 
-        elif 'accept' in request.POST and type == 'z powodu siły wyższej':
-            vacation.accepted = True
-            vacation.consideration = False
-            user.force_majeure_vacations -= req.v_request.days_planned
-            user.save()
-            vacation.save()
-            return redirect('allVacationRequests')
+        # elif 'accept' in request.POST and type == 'z powodu siły wyższej':
+        #     vacation.accepted = True
+        #     vacation.consideration = False
+        #     user.force_majeure_vacations -= req.v_request.days_planned
+        #     user.save()
+        #     vacation.save()
+        #     return redirect('allVacationRequests')
         
-        elif 'accept' in request.POST and type == 'okolicznościowy':
-            vacation.accepted = True
-            vacation.consideration = False
-            user.compassionate_vacations -= req.v_request.days_planned
-            user.save()
-            vacation.save()
-            return redirect('allVacationRequests')
+        # elif 'accept' in request.POST and type == 'okolicznościowy':
+        #     vacation.accepted = True
+        #     vacation.consideration = False
+        #     user.compassionate_vacations -= req.v_request.days_planned
+        #     user.save()
+        #     vacation.save()
+        #     return redirect('allVacationRequests')
         
         elif 'accept' in request.POST and type == 'bezpłatny':
             vacation.accepted = True
