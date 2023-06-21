@@ -202,6 +202,9 @@ class Message(models.Model):
         null=True,
         max_length=50,
     )
+    is_read = models.BooleanField(
+        default=False
+    )
 
     def __str__(self) -> str:
         return self.sender.username

@@ -1,0 +1,15 @@
+.tags {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: blueviolet;
+}
+
+.tags_cont {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}

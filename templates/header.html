@@ -1,4 +1,5 @@
 {% load static %}
+{% load vacation_requests %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -35,10 +36,17 @@
                 <li class="nav-el"><a href="{% url 'work_objects' %}">MIEJSCA PRACY</a></li>
                 <li class="nav-el"><a href="{% url 'all_users' %}">PRACOWNICY</a></li>
                 {% if request.user.is_superuser %}
-                    <li class="dropdown nav-el"><a href="#" onclick="toggleDropdown(event)">URLOPY</a>
+                    <li class="dropdown nav-el">
+                        <a class="tags_cont" onclick="toggleDropdown(event)">
+                            URLOPY <span class="tags">{% request_quantity %}</span>
+                        </a>
                         <ul class="dropdown-menu">
                             <li class="nav-el"><a href="{% url 'vacations' request.user.pk %}"> - Moje urlopy</a></li>
-                            <li class="nav-el" id="req"><a href="{% url 'allVacationRequests' %}"> - Wnioski</a></li>
+                            <li class="nav-el" id="req">
+                                <a href="{% url 'allVacationRequests' %}" class="tags_cont"> 
+                                    - Wnioski <span class="tags">{% request_quantity %}</span>
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 {% else %}

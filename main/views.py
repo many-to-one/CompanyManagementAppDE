@@ -1779,29 +1779,6 @@ def vacationRequest(request, pk):
             user.save()
             return redirect('allVacationRequests')
         
-        # elif 'accept' in request.POST and type == 'opiekuńczy':
-        #     vacation.accepted = True
-        #     vacation.consideration = False
-        #     user.cares_vacations -= req.v_request.days_planned
-        #     user.save()
-        #     vacation.save()
-        #     return redirect('allVacationRequests')
-
-        # elif 'accept' in request.POST and type == 'z powodu siły wyższej':
-        #     vacation.accepted = True
-        #     vacation.consideration = False
-        #     user.force_majeure_vacations -= req.v_request.days_planned
-        #     user.save()
-        #     vacation.save()
-        #     return redirect('allVacationRequests')
-        
-        # elif 'accept' in request.POST and type == 'okolicznościowy':
-        #     vacation.accepted = True
-        #     vacation.consideration = False
-        #     user.compassionate_vacations -= req.v_request.days_planned
-        #     user.save()
-        #     vacation.save()
-        #     return redirect('allVacationRequests')
         
         elif 'accept' in request.POST and type == 'bezpłatny':
             vacation.accepted = True
