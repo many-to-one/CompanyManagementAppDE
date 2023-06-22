@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load messages %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -18,7 +19,28 @@
     <br>
 
         {% for wo in work_objects %}
-            <div><a class="label" href="{% url 'work_object' wo.pk %}">{{wo.name}}</a></div> 
+            <div >
+                <a class="label" href="{% url 'work_object' wo.pk %}">
+                    {{wo.name}} 
+                    <div class="tags_cont_mini">
+                        <span class="icon">
+                            <img src="{% static 'images/letters.png' %}" width="30" height="25">
+                        </span>
+                                
+                            {% messages_quantity request.user.username wo as count %}
+                            {% if count > 0 %}
+                                <span class="rotate_quantity">
+                                    {{ count }}
+                                </span>
+                            {% else %}
+                                <span class="quantity">
+                                    {{ count }}
+                                </span>
+                            {% endif %}
+                                   
+                    </div>
+                </a>
+            </div> 
             <br>
         {% endfor %}
         <br>

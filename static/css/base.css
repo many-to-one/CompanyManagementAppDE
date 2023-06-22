@@ -39,8 +39,8 @@
 #header-container {
   position: fixed;
   top: 0;
-  left: -155px;
-  width: 200px;
+  left: -170px;
+  width: 210px;
   height: var(--height);
   background-color: var(--header-bg-color);
 }
@@ -196,6 +196,7 @@ tr:nth-child(even) td {
 .label {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     background-color: var(--input-bg-color);
     color: #2a2a2a;
     border-radius: 5px;

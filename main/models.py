@@ -1,3 +1,4 @@
+import json
 from typing import Iterable, Optional
 from django.utils import timezone
 from django.db import models
@@ -180,7 +181,7 @@ class Message(models.Model):
     sender = models.ForeignKey(
         CustomUser, 
         on_delete=models.CASCADE, 
-        related_name='sent_messages'
+        related_name='nadawca',
         )
     name = models.CharField(
         null=True,
@@ -202,12 +203,43 @@ class Message(models.Model):
         null=True,
         max_length=50,
     )
-    is_read = models.BooleanField(
+    for_sender_is_read = models.BooleanField(
+        default=False
+    )
+    for_recipient_is_read = models.BooleanField(
         default=False
     )
 
+    # def set_data(self, data):
+    #     self.recipient = json.dumps(data)
+
+    # def get_data(self):
+    #     return json.loads(self.recipient)
+
     def __str__(self) -> str:
         return self.sender.username
+    
+
+class IsRead(models.Model):
+    message = models.ForeignKey(
+        Message,
+        on_delete=models.CASCADE, 
+    )
+    username = models.CharField(
+        null=True,
+        max_length=50,
+    )
+    work_object = models.ForeignKey(
+        WorkObject,
+        null=True, 
+        on_delete=models.CASCADE, 
+        )
+    is_read = models.BooleanField(
+        default=False,
+    )
+    
+    def __str__(self):
+        return str(self.id)
     
 
 class Vacations(models.Model):

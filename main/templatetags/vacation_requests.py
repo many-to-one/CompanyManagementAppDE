@@ -9,6 +9,5 @@ def request_quantity():
     count = 0
     for r in reqs:
         if r.v_request.consideration is True:
-            print('count', count)
             count += 1
     return count

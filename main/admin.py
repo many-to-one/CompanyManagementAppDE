@@ -7,6 +7,7 @@ from .models import (
     TotalWorkObject,
     Message,
     Vacations,
+    IsRead,
 )
 
 admin.site.register(Work)
@@ -16,3 +17,4 @@ admin.site.register(TotalWorkObject)
 admin.site.register(Message)
 admin.site.register(Vacations)
 admin.site.register(VacationRequest)
+admin.site.register(IsRead)

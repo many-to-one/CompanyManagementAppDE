@@ -18,18 +18,132 @@
 
     <div class="profile-cont">
  
-        <div class="userinfo">
-            <p>{{ user.username }}</p>
-            <p>{{ user.email }}</p>
-            <p>{{ user.birthday }}</p>
-            <p>{{ user.birthplace }}</p>
-            <p>{{ user.workplace }}</p>
-            <p>{{ user.religion }}</p>
-            <p>{{ user.insurance_number }}</p>
-            <p>{{ user.tax_number }}</p>
-            <p>{{ user.adress_pl }}</p>
-            <p>{{ user.adress_de }}</p>
-            <p>{{ user.profession }}</p>
+        <div class="add_vacations_grafic_container">
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="vacations_mini_cont">
+                    <p>Użytkownik:</p>
+                    <input class="vacations_input" type="text" value="{{user.username}}" name="username">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Email:</p>
+                    <input class="vacations_input" type="text" value="{{user.email}}" name="email">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Data urodzenia:</p>
+                    <input class="vacations_input" type="text" value="{{user.birthday}}" name="birthday">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Miejsce urodzenia:</p>
+                    <input class="vacations_input" type="text" value="{{user.birthplace }}" name="birthplace">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Miejsce pracy:</p>
+                    <input class="vacations_input" type="text" value="{{user.workplace}}" name="workplace">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Religia:</p>    
+                    <input class="vacations_input" type="text" value="{{user.religion}}" name="religion">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Numer ubezpieczenia:</p>
+                    <input class="vacations_input" type="text" value="{{user.insurance_number}}" name="insurance_number">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Numer podatkowy:</p>
+                    <input class="vacations_input" type="text" value="{{user.tax_number}}" name="tax_number">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Adres w Polsce:</p>
+                    <input class="vacations_input" type="text" value="{{user.adress_pl}}" name="adress_pl">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Adres w Niemczech:</p>
+                    <input class="vacations_input" type="text" value="{{user.adress_de}}" name="adress_de">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Zawód:</p>
+                    <input class="vacations_input" type="text" value="{{user.profession}}" name="profession">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Stanowisko (pracuje w):</p>
+                    <input class="vacations_input" type="text" value="{{user.position}}" name="position">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Wewnętrzny numer podatkowy:</p>
+                    <input class="vacations_input" type="text" value="{{user.internal_tax_number}}" name="internal_tax_number">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>NFZ - nazwa:</p>
+                    <input class="vacations_input" type="text" value="{{user.nfz_name}}" name="nfz_name">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>NFZ - adres:</p>
+                    <input class="vacations_input" type="text" value="{{user.nfz_adress}}" name="nfz_adress">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Telefon:</p>
+                    <input class="vacations_input" type="text" value="{{user.phone_number}}" name="phone_number"> 
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Nazwa banku:</p>
+                    <input class="vacations_input" type="text" value="{{user.bank}}" name="bank">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>BIC/SWIFT:</p>
+                    <input class="vacations_input" type="text" value="{{user.bic_swift}}" name="bic_swift">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Konto i właściciel:</p>
+                    <input class="vacations_input" type="text" value="{{user.bank_account}}" name="bank_account">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Ubezpieczenie w Niemczech:</p>
+                    <input class="vacations_input" type="text" value="{{user.health_insurance_de}}" name="health_insurance_de">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>KK VersNr:</p>
+                    <input class="vacations_input" type="text" value="{{user.health_insurance_de_number}}" name="health_insurance_de_number">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Rozmiar buta:</p>
+                    <input class="vacations_input" type="text" value="{{user.shoe_size}}" name="shoe_size">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Wzrost:</p>
+                    <input class="vacations_input" type="text" value="{{user.growth}}" name="growth">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Ubranie robocze:</p>
+                    <input class="vacations_input" type="text" value="{{user.work_clothes}}" name="work_clothes">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Uprawnienia:</p>
+                    <input class="vacations_input" type="text" value="{{user.rights}}" name="rights">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Stawka za godzinę:</p>
+                    <input class="vacations_input" type="text" value="{{user.payment}}" name="payment">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Ilość przysługujących dni urlopu:</p>
+                    <input class="vacations_input" type="text" value="{{user.vacations_days_quantity_de}}" name="vacations_days_quantity_de">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Do użycia za zeszły rok:</p>
+                    <input class="vacations_input" type="text" value="{{user.last_year_vacations_days_quantity_de}}" name="last_year_vacations_days_quantity_de">
+                </div>
+                <div class="vacations_mini_cont">
+                    <p>Do użycia w bieżącym roku:</p>
+                    <input class="vacations_input" type="text" value="{{user.days_to_use_in_current_year_de}}" name="days_to_use_in_current_year_de">
+                </div>
+
+                <div class="vacations_mini_cont">
+                    <button class="cwo_btn" type="submit"><a>Zapisz</a></button>
+                </div>
+
+            </form>
         </div> 
         
     </div>

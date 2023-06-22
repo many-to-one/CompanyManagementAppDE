@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views.generic import ListView
-from .models import VacationRequest, Vacations, Work, WorkObject, WorkType, TotalWorkObject, Message
+from .models import VacationRequest, Vacations, Work, WorkObject, WorkType, TotalWorkObject, Message, IsRead
 from django.http import JsonResponse
 from django.db.models import Sum
 from datetime import datetime
@@ -26,6 +26,21 @@ class WorkObjects(ListView):
     template_name = 'work_objects.html'
     queryset = WorkObject.objects.all()
     context_object_name = 'work_objects'
+
+
+# class WorkObjects(ListView):
+#     model = WorkObject
+#     template_name = 'work_objects.html'
+#     context_object_name = 'work_objects'
+#     queryset = WorkObject.objects.all()
+
+#     # def get_queryset(self):
+#     #     return WorkObject.objects.all()
+
+#     def get(self, request, *args, **kwargs):
+#         unread_messages = UnreadMessages.objects.filter(user=request.user)
+#         context = {'unread_messages': unread_messages}
+#         return render(request, self.template_name, context)
 
 
 
@@ -179,6 +194,14 @@ def chat(request, pk):
         messages = Message.objects.filter(
                     work_object=work_object,
                 )
+        for mess in messages:
+            read = IsRead.objects.filter(
+                message=mess
+            )
+            for r in read:
+                if r.username == request.user.username:
+                    r.is_read=True
+                    r.save()
         response = {
             'user': request.user.username,
             'messages': list(messages.values()),
@@ -187,20 +210,33 @@ def chat(request, pk):
         return JsonResponse(response)
     if request.method == 'POST':
         work_object, created = WorkObject.objects.get_or_create(id=pk)
+        # all_users = CustomUser.objects.filter(workobject__id=pk).values('username')
+        # users = [u['username'] for u in all_users]
+        # print('users', users)
+        users = CustomUser.objects.filter(workobject__id=pk)
         r_user = request.user
         content = request.POST.get('txt')
         messages = Message.objects.filter(
             work_object=work_object,
         )
         new_message = Message(
-            name = r_user,
-            sender=r_user,
-            content=content,
-            day = f"{datetime.now().strftime('%d %B %Y')}  ",
-            time = f'{datetime.now().hour}:{datetime.now().minute}',
-            work_object=work_object,
-        )
+                name = str(r_user),
+                sender=r_user,
+                content=content,
+                day = f"{datetime.now().strftime('%d %B %Y')}  ",
+                time = f'{datetime.now().hour}:{datetime.now().minute}',
+                work_object=work_object,
+                for_sender_is_read=True,
+            )
         new_message.save()
+        for u in users:
+            read = IsRead(
+                message=new_message,
+                username=u.username,
+                work_object=work_object,
+            )
+            read.save()
+    
         response = {
             'new_message_id': new_message.id
         }
@@ -537,6 +573,7 @@ def updateUserWork(request, work_pk):
 
 
 def getUserRaport(request, user_pk):
+    user = CustomUser.objects.get(pk=user_pk)
     work_objects = WorkObject.objects.filter(user__id=user_pk)
     # works = Work.objects.filter(user__id=user_pk).order_by('date')
     if request.user.is_superuser:
@@ -720,6 +757,7 @@ def getUserRaport(request, user_pk):
 
 
     context = {
+        'user': user,
         'works': works,
         'work_objects': work_objects,
         'total_coffee_food': total_coffee_food,

@@ -1,5 +1,6 @@
 {% load static %}
 {% load vacation_requests %}
+{% load messages %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -33,18 +34,22 @@
             <ul class="navbar">
                 <li class="nav-el"><a href="{% url 'user' request.user.pk %}">PROFIL</a></li>
                 <li class="nav-el"><a href="{% url 'home' %}">HOME</a></li>
-                <li class="nav-el"><a href="{% url 'work_objects' %}">MIEJSCA PRACY</a></li>
+                <li class="nav-el">
+                    <a href="{% url 'work_objects' %}" class="tags_cont_mini">
+                        MIEJSCA PRACY <span class="header_quantity">{% all_messages_quantity request.user.username %}</span>
+                    </a>
+                </li>
                 <li class="nav-el"><a href="{% url 'all_users' %}">PRACOWNICY</a></li>
                 {% if request.user.is_superuser %}
                     <li class="dropdown nav-el">
-                        <a class="tags_cont" onclick="toggleDropdown(event)">
-                            URLOPY <span class="tags">{% request_quantity %}</span>
+                        <a class="tags_cont_mini" onclick="toggleDropdown(event)">
+                            URLOPY <span class="header_quantity">{% request_quantity %}</span>
                         </a>
                         <ul class="dropdown-menu">
                             <li class="nav-el"><a href="{% url 'vacations' request.user.pk %}"> - Moje urlopy</a></li>
                             <li class="nav-el" id="req">
-                                <a href="{% url 'allVacationRequests' %}" class="tags_cont"> 
-                                    - Wnioski <span class="tags">{% request_quantity %}</span>
+                                <a href="{% url 'allVacationRequests' %}" class="tags_cont_mini"> 
+                                    - Wnioski <span class="header_quantity">{% request_quantity %}</span>
                                 </a>
                             </li>
                         </ul>
@@ -74,7 +79,7 @@
             var buttonMenu = document.getElementById('toggle_menu')
             var closeMenu = document.getElementById('close_menu')
             if (sideMenu.style.left === "0px") {
-              sideMenu.style.left = "-155px"; // Close the menu
+              sideMenu.style.left = "-160px"; // Close the menu
               toggle_menu.style.left = "3px"
               closeMenu.style.display = 'none';
               buttonMenu.style.display = 'block';

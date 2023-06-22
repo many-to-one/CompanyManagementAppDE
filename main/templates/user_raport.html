@@ -26,8 +26,10 @@
                 </select>            
 
                 <button class="btn"><p class="btn-title">Szukaj</p></button>
+                <a href="{% url 'user' user.pk %}" class="input_">{{ user.username }}</a>
             </form>
         </div>
+
         <div class="container">
 
             <table>
