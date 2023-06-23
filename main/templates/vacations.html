@@ -77,9 +77,15 @@
                 </div>
             </div>
 
-            <table>
+        
+            <table id="table">
+                <form method="POST">
+                    {% csrf_token %}
                 <thead>
                     <tr>
+                        <th>
+                            <input class="delete" type="image" src="{% static 'images/delete_icon.png' %}" width="30" height="30">
+                        </th>
                         <th>Data</th>
                         <th>Typ urlopu</th>
                         <th>Od</th>
@@ -90,8 +96,11 @@
                         <th></th>
                     </tr>
                 </thead>
-                {% for v in vacations %}
+                {% for v in page_obj %}
                     <tr>
+                        <td>
+                            <input type="checkbox" name="marked" value="{{ v.id }}">
+                        </td>
                         <td data-label="Data">{{ v.date }}</td>
                         <td data-label="Typ urlopu">{{ v.type }}</td>
                         <td data-label="Od">{{ v.v_from }}</td>
@@ -124,7 +133,26 @@
                         {% endif %}
                     </tr>
                 {% endfor %}
+            </form>
             </table>
+        
+
+            <div class="pagination">
+                <span class="step-links">
+                  {% if page_obj.has_previous %}
+                  <a class="page" href="?page=1"><</a>
+                  <a class="page" href="?page={{ page_obj.previous_page_number }}"> << </a>
+                  {% endif %}
+
+                    <span class="current-page"><p>{{ page_obj.number }}</p></span>
+              
+                  {% if page_obj.has_next %}
+                  <a class="page" href="?page={{ page_obj.next_page_number }}">>></a>
+                  <a class="page" href="?page={{ page_obj.paginator.num_pages }}">></a>
+                  {% endif %}
+                </span>
+            </div>
+            
         </div>
 
         <script> 

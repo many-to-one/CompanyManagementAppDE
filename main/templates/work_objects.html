@@ -14,38 +14,67 @@
 
 {% block content %}
 
-<div class="wo_container">
-    <h1>MIEJSCA PRACY</h1>
+<div class="page-container">
+
+    <div class="title">
+        <h3>MIEJSCA PRACY</h3>
+        <form method="POST" class="search_form">
+            {% csrf_token %}
+            <select name="object" class="search">
+                <option disabled selected hidden>Szukaj objekt</option>                        
+                <option >Wszystkie objekty</option>
+                {% for o in work_objects_list %}
+                    <option value="{{o}}">{{o}}</option>
+                {% endfor %}
+            </select> 
+            <input type="image" src="{% static 'images/search.png' %}" width="30" height="30">
+        </form>
+    </div>
     <br>
 
+    <div class="wo_container">
         {% for wo in work_objects %}
-            <div >
-                <a class="label" href="{% url 'work_object' wo.pk %}">
-                    {{wo.name}} 
-                    <div class="tags_cont_mini">
-                        <span class="icon">
-                            <img src="{% static 'images/letters.png' %}" width="30" height="25">
-                        </span>
-                                
-                            {% messages_quantity request.user.username wo as count %}
-                            {% if count > 0 %}
-                                <span class="rotate_quantity">
-                                    {{ count }}
-                                </span>
-                            {% else %}
-                                <span class="quantity">
-                                    {{ count }}
-                                </span>
-                            {% endif %}
-                                   
-                    </div>
-                </a>
-            </div> 
+
+            <a class="label" href="{% url 'work_object' wo.pk %}">
+                {{wo.name}} 
+                <div class="tags_cont_mini">
+                    <span class="icon">
+                        <img src="{% static 'images/letters.png' %}" width="30" height="25">
+                    </span>
+                            
+                        {% messages_quantity request.user.username wo as count %}
+                        {% if count > 0 %}
+                            <span class="rotate_quantity">
+                                {{ count }}
+                            </span>
+                        {% else %}
+                            <span class="quantity">
+                                {{ count }}
+                            </span>
+                        {% endif %}
+                               
+                </div>
+            </a>
             <br>
         {% endfor %}
         <br>
 
     <button class="cwo_btn"><a href="{% url 'create_work_object' %}"><p class="btn-title">Dodaj</p></a></button>
+    <div class="pagination">
+        <span class="step-links">
+          {% if work_objects.has_previous %}
+          <a class="page" href="?page=1"><</a>
+          <a class="page" href="?page={{ work_objects.previous_page_number }}"> << </a>
+          {% endif %}
+
+            <span class="current-page"><p>{{ work_objects.number }}</p></span>
+      
+          {% if work_objects.has_next %}
+          <a class="page" href="?page={{ work_objects.next_page_number }}">>></a>
+          <a class="page" href="?page={{ work_objects.paginator.num_pages }}">></a>
+          {% endif %}
+        </span>
+    </div>
 </div>
 
 {% endblock %}

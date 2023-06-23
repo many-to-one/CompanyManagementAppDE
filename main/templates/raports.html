@@ -48,7 +48,7 @@
             </form>
         </div>
 
-        <div class="container">
+        <div class="container"> 
 
             <table>
                 <thead>
@@ -69,7 +69,7 @@
                         <th></th>
                     </tr>
                 </thead>
-                {% for work in works %}
+                {% for work in page_obj %}
                     <tr>
                         <td class="nch" data-label="Data">{{work.date}}</td>
                         {% for user in work.user.all %}
@@ -96,7 +96,7 @@
                     </tr>
                 {% endfor %}
                     <tr>
-                        <td data-label="RAZEM"></td>
+                        <td data-label="RAZEM">RAZEM:</td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -114,6 +114,22 @@
                         {% endif %}
                     </tr>
             </table>
+
+            <div class="pagination">
+                <span class="step-links">
+                  {% if page_obj.has_previous %}
+                  <a class="page" href="?page=1"><</a>
+                  <a class="page" href="?page={{ page_obj.previous_page_number }}"> << </a>
+                  {% endif %}
+
+                    <span class="current-page"><p>{{ page_obj.number }}</p></span>
+              
+                  {% if page_obj.has_next %}
+                  <a class="page" href="?page={{ page_obj.next_page_number }}">>></a>
+                  <a class="page" href="?page={{ page_obj.paginator.num_pages }}">></a>
+                  {% endif %}
+                </span>
+            </div>
 
         </div>
     </div>

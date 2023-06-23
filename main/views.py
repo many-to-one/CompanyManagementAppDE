@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from datetime import date
 from users.models import CustomUser
+from django.core.paginator import Paginator
 
 
 def index(request):
@@ -21,26 +22,26 @@ def index(request):
 #**********************************************************************************************************************#
 
 
-class WorkObjects(ListView):
-    model = WorkObject
-    template_name = 'work_objects.html'
-    queryset = WorkObject.objects.all()
-    context_object_name = 'work_objects'
+def WorkObjects(request):
+    work_objects = WorkObject.objects.all()
+    work_objects_list = WorkObject.objects.values_list('name', flat=True)
+    paginator = Paginator(work_objects, 2) 
+    page_number = request.GET.get('page')
+    work_objects = paginator.get_page(page_number)
 
+    if request.method == 'POST':
+        select = request.POST.get('object')
+        if select == 'Wszystkie objekty':
+            work_objects = WorkObject.objects.all()
+        else:
+            work_objects = WorkObject.objects.filter(name=select)
 
-# class WorkObjects(ListView):
-#     model = WorkObject
-#     template_name = 'work_objects.html'
-#     context_object_name = 'work_objects'
-#     queryset = WorkObject.objects.all()
+    context = {
+        'work_objects': work_objects,
+        'work_objects_list': work_objects_list,
+    }
 
-#     # def get_queryset(self):
-#     #     return WorkObject.objects.all()
-
-#     def get(self, request, *args, **kwargs):
-#         unread_messages = UnreadMessages.objects.filter(user=request.user)
-#         context = {'unread_messages': unread_messages}
-#         return render(request, self.template_name, context)
+    return render(request,'work_objects.html', context)
 
 
 
@@ -919,6 +920,9 @@ def raports(request):
         works = Work.objects.prefetch_related(Prefetch('user')).filter(user=request.user).order_by('-date')
     users = CustomUser.objects.all().values('id', 'username')
     work_objects = WorkObject.objects.all()
+    paginator = Paginator(works, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     if request.user.is_superuser:
 
@@ -1310,6 +1314,7 @@ def raports(request):
         'total_payment': total_payment,
         'total_work_time': total_work_time,
         'total_work_over_time': total_work_over_time,
+        'page_obj': page_obj,
     }
     return render(request, 'raports.html', context)
 
@@ -1325,6 +1330,9 @@ def vacations(request, pk):
     username_list = [user['username'] for user in users]
     vacations = Vacations.objects.filter(user__id=user.id).order_by('-id')
     years_list = [vacation.v_from[:4] for vacation in vacations] 
+    paginator = Paginator(vacations, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     ## Days quantity from the first day of the year
     today = date.today()
@@ -1359,6 +1367,11 @@ def vacations(request, pk):
                     user__id=request.user.id,
                     v_from__startswith=year,
                     ).order_by('-id')
+        elif 'marked' in request.POST:
+            marked = request.POST.getlist('marked')
+            if marked is not None:
+                request.session['marked'] = marked # Here we need to send this list to the delete_vacations_requests function
+                return redirect('delete_vacations_requests_question')
 
     context = {
         'vacations': vacations,
@@ -1367,10 +1380,30 @@ def vacations(request, pk):
         'actually_days_to_use': vacations.actually_days_to_use,
         'years_list': set(years_list),
         'days_used_in_current_year': user.vacations_days_quantity_de - user.days_to_use_in_current_year_de,
-        'last_year_vacations_used_days_quantity': user.vacations_days_quantity_de - user.last_year_vacations_days_quantity_de
+        'last_year_vacations_used_days_quantity': user.vacations_days_quantity_de - user.last_year_vacations_days_quantity_de,
+        'page_obj': page_obj,
     }
-    print(user.vacations_days_quantity, user.days_to_use_in_current_year)
     return render(request, 'vacations.html', context)
+
+def delete_vacations_requests_question(request):
+
+    return render(request, 'delete_vacations_requests_question.html')
+
+
+def delete_vacations_requests(request):
+    marked = request.session.get('marked') # Here we get this list from vacations marked form
+    pk = request.user.pk
+    markeds = Vacations.objects.filter(
+                    id__in=marked
+                )
+    if markeds:
+        for marked in markeds:
+            marked.delete()
+        return redirect('vacations', pk)
+    context = {
+        'pk': pk
+    }
+    return render(request, 'delete_vacations_requests_question.html', context)
 
 
 def addVacation(request):
@@ -1562,6 +1595,10 @@ def allVacationRequests(request):
         'wypoczynkowy',
         'bezpłatny',
     ]
+    paginator = Paginator(reqs, 10)  
+
+    page_number = request.GET.get('page')
+    reqs = paginator.get_page(page_number)
 
     ## Filter
     if request.method == 'POST':

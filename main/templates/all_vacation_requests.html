@@ -93,6 +93,22 @@
             </div>
             {% endfor %}
 
+            <div class="pagination">
+                <span class="step-links">
+                  {% if reqs.has_previous %}
+                  <a class="page" href="?page=1"><</a>
+                  <a class="page" href="?page={{ reqs.previous_page_number }}"> << </a>
+                  {% endif %}
+
+                    <span class="current-page"><p>{{ reqs.number }}</p></span>
+              
+                  {% if reqs.has_next %}
+                  <a class="page" href="?page={{ reqs.next_page_number }}">>></a>
+                  <a class="page" href="?page={{ reqs.paginator.num_pages }}">></a>
+                  {% endif %}
+                </span>
+            </div>
+
     {% endblock %}
     
 </body>

@@ -1,7 +1,7 @@
-from base64 import urlsafe_b64decode
-from typing import Any, Dict
-from django.db import models
-from django.http import HttpRequest, HttpResponse
+# from base64 import urlsafe_b64decode
+# from typing import Any, Dict
+# from django.db import models
+# from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, CreateView, UpdateView, ListView 
@@ -14,14 +14,7 @@ from .utils import forgot_password_mail
 from .forms import CustomUserChangeForm, CustomUserCreationForm, \
                    AuthenticationForm, ForgotPassword
 from .models import CustomUser
-
-
-# def success(request):
-#     return render(request, 'success.html')
-
-# class Login(LoginView):
-#     authentication_form = CustomAuthenticationForm
-#     redirect_authenticated_user = True
+from django.core.paginator import Paginator
 
 
 class Register(CreateView):
@@ -105,16 +98,6 @@ def changePassword(request, token, uidb64):
     except Exception as e:
         print(e)
     return render(request, 'change_password.html')
-
-
-
-# class Profile(DetailView):
-#     model = CustomUser
-#     context_object_name = 'user'
-#     template_name = 'profile.html'
-
-#     def get_queryset(self):
-#         return CustomUser.objects.filter(id=self.kwargs['pk'])
     
 
 def Profile(request, pk):
@@ -266,16 +249,25 @@ def Profile(request, pk):
     }
 
     return render(request, 'profile.html', context)
-    
 
-class AllUsers(ListView):
-    ### This view is created for raports ###
-    model = CustomUser
-    context_object_name = 'users'
-    template_name = 'all_users.html'
 
-    def get_context_data(self, **kwargs) :
-        context = super().get_context_data(**kwargs)
-        context['users'] = CustomUser.objects.all()
-        return context
+def AllUsers(request):
+    users = CustomUser.objects.all()
+    users_list = CustomUser.objects.values_list('username', flat=True)
+    paginator = Paginator(users, 10) 
+    page_number = request.GET.get('page')
+    users = paginator.get_page(page_number)
+
+    if request.method == 'POST':
+        select = request.POST.get('user')
+        if select == 'Wszyscy pracownicy':
+            users = CustomUser.objects.all()
+        else:
+            users = CustomUser.objects.filter(username=select)
+
+    context = {
+        'users': users,
+        'users_list': users_list,
+    }
+    return render(request, 'all_users.html', context)
     

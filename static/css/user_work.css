@@ -7,12 +7,45 @@
     gap: 50px;
 }
 
-/* .allworks-cont {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    gap: 15px;
-} */
+.add {
+  background-color: var(--input-bg-color);
+  color: #2a2a2a;
+  border-radius: 5px;
+  border: transparent;
+  width: 100px;
+  height: 25px;
+  font-size: 14px;
+  padding-left: 5px;
+}
+
+@media screen and (max-width: 820px) {
+  .add {
+    background-color: var(--input-bg-color);
+    color: #2a2a2a;
+    border-radius: 5px;
+    border: transparent;
+    width: 180px;
+    height: 25px;
+    font-size: 14px;
+    padding-left: 5px;
+  }
+}
+
+.add:hover {
+background-color: #a2b3d1;
+transition: background-color 0.3s ease;
+}
+
+.work_type {
+  background-color: var(--input-bg-color);
+  color: #2a2a2a;
+  border-radius: 5px;
+  border: transparent;
+  width: 180px;
+  height: 25px;
+  font-size: 14px;
+  padding-left: 5px;
+}
 
 .addwork {
     display: flex;

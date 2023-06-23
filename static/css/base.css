@@ -4,6 +4,7 @@
     --main-bg-color: #F1F6F9;
     --header-bg-color: #212A3E;
     --input-bg-color: #d4dced;
+    --title-bg-color: #9fadcc;
     --text-color: white;
     --height: 120vh;
     --width: 100vw;
@@ -11,6 +12,8 @@
 
 .base{
     background-color: var(--main-bg-color);
+    height: auto;
+    min-height: var(--height);
 }
 
 .container {
@@ -43,6 +46,15 @@
   width: 210px;
   height: var(--height);
   background-color: var(--header-bg-color);
+}
+
+form table {
+  border: 0;
+  margin-left: 10px;
+}
+
+.delete_icon {
+  display: none;
 }
   
 table tr {
@@ -85,6 +97,7 @@ tr:nth-child(even) td {
     .filter-container {
       justify-content: center;
       padding: 10px; 
+      background-color: var(--title-bg-color);
     }
 
     .filter-cont form {
@@ -96,6 +109,13 @@ tr:nth-child(even) td {
     table {
       border: 0;
       margin-left: 10px;
+    }
+
+    .delete_icon {
+      display: block;
+      /* position: absolute;
+      top: 300px;
+      left: 60px; */
     }
   
     table caption {
@@ -133,10 +153,6 @@ tr:nth-child(even) td {
       font-weight: bold;
       text-transform: uppercase;
     }
-
-    /* td:first-child {
-      background-color: var(--header-bg-color);
-    } */
     
     table td:last-child {
       border-bottom: 0;
@@ -151,20 +167,27 @@ tr:nth-child(even) td {
     }
   }
 
-  @media screen and (max-width: 400px) {
+  @media screen and (max-width: 450px) {
     table {
       border: 0;
       margin-left: -15px;
+    }
+    .delete_icon {
+      display: block;
+      /* position: absolute;
+      top: 550px;
+      left: 60px; */
     }
   }
 
 .filter-container {
     display: flex;
-    margin-left: 55px;
+    margin-left: 40px;
     flex-direction: row;
     align-items: center;
     justify-content: center;
     padding: 10px;
+    background-color: var(--title-bg-color);
 }
 
 .filter-cont {
@@ -192,6 +215,52 @@ tr:nth-child(even) td {
     cursor: pointer;
 }
 
+.title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--title-bg-color);
+    color: #2a2a2a;
+    border-radius: 5px;
+    border: transparent;
+    width: 100vw;
+    height: 40px;
+    font-size: 20px;
+    padding: 10px;
+    gap: 15px;
+} 
+
+@media screen and (max-width: 450px) {
+  .title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--title-bg-color);
+    color: #2a2a2a;
+    border-radius: 5px;
+    border: transparent;
+    width: 100vw;
+    height: 40px;
+    font-size: 10px;
+    padding: 10px;
+    gap: 2px;
+}
+}
+
+.search {
+  border: 1px solid #434242;
+  border-radius: 10px;
+  width: 40vw;
+  height: 35px;
+  padding: 2px;
+} 
+
+.search_form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
 .label {
     display: flex;
@@ -266,33 +335,6 @@ select:hover {
 
 .work {
     padding: 5px;
-}
-
-.add {
-    background-color: var(--input-bg-color);
-    color: #2a2a2a;
-    border-radius: 5px;
-    border: transparent;
-    width: 100px;
-    height: 25px;
-    font-size: 14px;
-    padding-left: 5px;
-}
-
-.add:hover {
-  background-color: #a2b3d1;
-  transition: background-color 0.3s ease;
-}
-
-.work_type {
-    background-color: var(--input-bg-color);
-    color: #2a2a2a;
-    border-radius: 5px;
-    border: transparent;
-    width: 180px;
-    height: 25px;
-    font-size: 14px;
-    padding-left: 5px;
 }
 
 .btn {
