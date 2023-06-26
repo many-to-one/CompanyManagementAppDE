@@ -26,11 +26,17 @@ def index(request):
 #*************************************************** ALL WORK OBJECTS *************************************************#
 #**********************************************************************************************************************#
 
-
-def WorkObjects(request):
-    work_objects = WorkObject.objects.all()
+@login_required
+def WorkObjects(request, pk):
+    user = CustomUser.objects.get(id=pk)
+    if user.is_superuser:
+        work_objects = WorkObject.objects.all()
+    else:
+        work_objects = WorkObject.objects.filter(
+            user=user
+        )
     work_objects_list = WorkObject.objects.values_list('name', flat=True)
-    paginator = Paginator(work_objects, 2) 
+    paginator = Paginator(work_objects, 10) 
     page_number = request.GET.get('page')
     work_objects = paginator.get_page(page_number)
 
@@ -58,7 +64,7 @@ def WorkObjects(request):
 def workObjectView(request, **kwargs):
 
     allusers = CustomUser.objects.all()
-    work_object, created = WorkObject.objects.get_or_create(id=kwargs['pk'])
+    work_object = WorkObject.objects.get(id=kwargs['pk'])
     users = work_object.user.all()
     messages = Message.objects.filter(
         work_object=work_object,
@@ -190,6 +196,26 @@ def workObjectView(request, **kwargs):
         'u_total_coffee_food': u_total_coffee_food,
     }
     return render(request, 'work_object.html', context)
+
+def deleteUserFromObjectQuestion(request, user_pk, work_object_pk):
+    context = {
+        'user_pk': user_pk,
+        'work_object_pk': work_object_pk,
+    }
+    return render (request, 'deleteUserFromObjectQuestion.html', context)
+
+
+def deleteUserFromObject(request, user_pk, work_object_pk):
+    work_object = WorkObject.objects.get(id=work_object_pk)
+    user = CustomUser.objects.get(id=user_pk)
+    try:
+        work_object.user.remove(user)
+        work_object.save()
+        print('pk', user_pk, work_object_pk)
+        return redirect('work_object', work_object_pk)
+    except Exception as e:
+        print('e', e)
+    return redirect('work_object', work_object_pk)
 
 
 def chat(request, pk):

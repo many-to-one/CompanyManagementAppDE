@@ -67,12 +67,6 @@ def changePassword(request, token, uidb64):
     time_now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     one_minute = datetime.timedelta(minutes=1)
     new_time = str(time_now) + str(one_minute)
-    # print(token_time)
-    # print(type(token_time))
-    # print(time_now)
-    # print(type(time_now))
-    # print(new_time[:-7])
-    # print(type(new_time[:-7]))
     
     try:
         if request.method == 'POST' and token_time == str(time_now) or request.method == 'POST' and str(time_now) == str(new_time[:-7]):
@@ -270,4 +264,31 @@ def AllUsers(request):
         'users_list': users_list,
     }
     return render(request, 'all_users.html', context)
-    
+
+
+def deleteQuestion(request, pk):
+    user = CustomUser.objects.get(id=pk)
+    context = {
+        'pk': pk,
+        'user': user.username,
+    }
+    return render(request, 'deleteQuestion.html', context)
+
+
+def deleteUser(request, pk, user):
+    u = CustomUser.objects.get(id=pk)
+    try:
+        u.delete()
+        print('user was deleted', u)
+        messages.warning(request, f'Użytkownik {user} został usunięty')
+        return redirect('success_delete_user', user)
+    except Exception as e:
+        print('e', e)
+    return redirect('all_users')
+
+
+def success_delete_user(request, user):
+    context = {
+        'user': user,
+    }
+    return render(request, 'success_delete_user.html', context)

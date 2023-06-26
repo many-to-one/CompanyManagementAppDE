@@ -32,7 +32,12 @@
             <div class="wo_container">
 
                 {% for user in users %}   
-                    <a class="label" href="{% url 'user_raport' user.pk %}">{{user.username}}</a>
+                <div class="label">
+                    <a href="{% url 'user_raport' user.pk %}">{{user.username}}</a>
+                    <a href="{% url 'deleteQuestion' user.pk %}">
+                      <img src="{% static 'images/delete_icon.png' %}" width="30" height="30">
+                    </a>
+                </div>
                     <br>
                 {% endfor %}
                 <div class="pagination">

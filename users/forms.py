@@ -7,14 +7,33 @@ from .models import CustomUser
 
 class CustomUserCreationForm(UserCreationForm):
 
+    username = forms.CharField(
+        widget=forms.TextInput(
+            attrs={'class': 'input'}
+        ),
+        label='Nazwa użytkownika',
+        max_length=150,
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(
+            attrs={'class': 'input'}
+        ),
+        label='Adres email',
+        max_length=254,
+    )
+
     password1 = forms.CharField(
-        widget=forms.PasswordInput,
-        label='Password',
+        widget=forms.PasswordInput(
+            attrs={'class': 'input'}
+        ),
+        label='Hasło',
         max_length=20,
     )
     password2 = forms.CharField(
-        widget=forms.PasswordInput,
-        label='Confirm password',
+        widget=forms.PasswordInput(
+            attrs={'class': 'input'}
+        ),
+        label='Powtórz hasło',
         max_length=20,
     )
 

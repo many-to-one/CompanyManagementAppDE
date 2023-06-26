@@ -267,6 +267,10 @@ tr:nth-child(even) td {
     transition: background-color 0.3s ease;
 }
 
+.label a {
+  color: var(--header-bg-color);
+}
+
 .input_ {
     background-color: var(--input-bg-color);
     color: #2a2a2a;

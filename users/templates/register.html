@@ -15,10 +15,16 @@
 
     <p>Register</p>
     
-    <form method="POST" enctype="multipart/form-data">
+    <form method="POST" class="auth-form" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Sign up</button>
+        {% for f in form %}
+            <label for="{{ f.auto_id }}">{{ f.label }}</label>
+            {{f}}
+            <!-- <input type="text" class="input" name="{{ as_p }}" value="{{ as_p }}"> -->
+        {% endfor %}
+        <button class="auth-btn" type="submit">
+            <p class="btn-title">Zarejestruj się</p>
+        </button>
     </form>
 
 {% endblock %}    

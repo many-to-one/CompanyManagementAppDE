@@ -10,4 +10,7 @@ urlpatterns = [
     path('forgot_password/', forgotPassword, name='forgot_password'),
     path('change_password/<token>/<uidb64>/', changePassword, name='change_password'),
     path('all_users/', AllUsers, name='all_users'),
+    path('deleteQuestion/<pk>/', deleteQuestion, name='deleteQuestion'),
+    path('deleteUser/<pk>/<user>/', deleteUser, name='deleteUser'),
+    path('success_delete_user/<user>/', success_delete_user, name='success_delete_user'),
     ]

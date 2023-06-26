@@ -5,8 +5,6 @@ from django.db import models
 from django.urls import reverse
 from datetime import datetime
 from users.models import CustomUser
-
-# from users.models import CustomUser
     
 
 class Work(models.Model):
@@ -96,7 +94,7 @@ class Work(models.Model):
         verbose_name='Stawka za godzinę',
     )
     user = models.ManyToManyField(
-        CustomUser
+        CustomUser,
     )
     work_objects = models.ManyToManyField(
         'WorkObject'
@@ -170,7 +168,7 @@ class WorkType(models.Model):
         max_length=150,
     )
     user = models.ManyToManyField(
-        CustomUser
+        CustomUser,
     )
 
     def __str__(self):
@@ -180,8 +178,8 @@ class WorkType(models.Model):
 class Message(models.Model):
     sender = models.ForeignKey(
         CustomUser, 
-        on_delete=models.CASCADE, 
         related_name='nadawca',
+        on_delete=models.PROTECT,
         )
     name = models.CharField(
         null=True,
@@ -190,7 +188,7 @@ class Message(models.Model):
     work_object = models.ForeignKey(
         WorkObject,
         null=True, 
-        on_delete=models.CASCADE, 
+        on_delete=models.PROTECT, 
         related_name='objekt'
         )
     content = models.TextField()
@@ -232,7 +230,7 @@ class IsRead(models.Model):
     work_object = models.ForeignKey(
         WorkObject,
         null=True, 
-        on_delete=models.CASCADE, 
+        on_delete=models.PROTECT, 
         )
     is_read = models.BooleanField(
         default=False,
@@ -245,8 +243,8 @@ class IsRead(models.Model):
 class Vacations(models.Model):
     user = models.ForeignKey(
         CustomUser, 
-        on_delete=models.CASCADE, 
-        related_name='user'
+        related_name='user',
+        on_delete=models.PROTECT,
         )
     year = models.CharField(
         default='0000',

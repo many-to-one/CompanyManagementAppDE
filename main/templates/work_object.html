@@ -15,24 +15,36 @@
     {% block content %}
     <div class="wo_container">
         <h1>WORK OBJECT: {{work_object.name}}</h1>
-        <form  method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            <select name="user" class="wo_input">
-                <option value="">Dodaj pracownika</option>
-                {% for user in allusers %}
-                    <option value="{{user}}">{{user.username}}</option>
-                {% endfor %}
-            </select> 
-            <button class="wo_btn" type="submit" name="add_user"><p class="btn-title">+</p></button>
-        </form>  
+        {% if request.user.is_superuser %}
+            <form  method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <select name="user" class="wo_input">
+                    <option value="">Dodaj pracownika</option>
+                    {% for user in allusers %}
+                        <option value="{{user}}">{{user.username}}</option>
+                    {% endfor %}
+                </select> 
+                <button class="wo_btn" type="submit" name="add_user"><p class="btn-title">+</p></button>
+            </form>  
+        {% endif %}
         <br>  
 
             {% for user in users %} 
                 {% if request.user.is_superuser %}
-                    <a class="label" href="{% url 'workobject_raport' user.pk work_object.pk %}">{{user.username}}</a>   
+                    <div class="label" >
+                        <a href="{% url 'workobject_raport' user.pk work_object.pk %}">
+                            {{user.username}}
+                        </a>
+                        <a href="{% url 'deleteUserFromObjectQuestion' user.pk work_object.pk %}">
+                            <img src="{% static 'images/delete_icon.png' %}" width="30" height="30">
+                          </a>
+                        </div> 
+  
                     <br>
                 {% else %}
-                    <p class="label">{{user.username}}</p>   
+                    <div class="label">
+                        <p>{{user.username}}</p>
+                    </div>   
                     <br>
                 {% endif %}
             {% endfor %}
