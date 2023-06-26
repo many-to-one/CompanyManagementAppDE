@@ -66,6 +66,18 @@ transition: background-color 0.3s ease;
     border-radius: 4px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
+  }
+
+  .allert-btn {
+    padding: 5px;
+    margin: 10px;
+    background-color: var(--btn-bg-color);
+    border: var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    width: 50px;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
   }
   
   .alert-info {

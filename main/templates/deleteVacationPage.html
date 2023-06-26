@@ -17,7 +17,7 @@
                     <a href="{% url 'deleteVacation' vacation.pk %}">Tak</a>
                 </button>
                 <button type="submit" class="btn">
-                    <a href="{% url 'vacations' %}">Nie</a>
+                    <a href="{% url 'vacations' request.user.pk %}">Nie</a>
                 </button>
             </div>
         </div>

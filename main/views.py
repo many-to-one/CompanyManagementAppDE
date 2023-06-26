@@ -6,7 +6,7 @@ from django.views.generic import ListView
 from .models import VacationRequest, Vacations, Work, WorkObject, WorkType, TotalWorkObject, Message, IsRead
 from django.http import JsonResponse
 from django.db.models import Sum
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.db.models import F
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -14,6 +14,7 @@ from datetime import date
 from users.models import CustomUser
 from django.core.paginator import Paginator
 import openpyxl
+from openpyxl.utils import get_column_letter
 from django.http import HttpResponse
 
 
@@ -1412,40 +1413,56 @@ def delete_vacations_requests(request):
 
 
 ####################################################################################
-#                                         EXEL                                     #
+#                                       EXCEL                                      #
 ####################################################################################
 
 def toExcel(request):
-    vacations = Vacations.objects.all()
-    print('vacations', vacations)
+    vacations = Vacations.objects.all().order_by('-id')
     wb = openpyxl.Workbook()
 
     # Get the default active sheet
     sheet = wb.active
 
     # Add the table headers
-    headers = ['Username', 'Start Date', 'End Date']  # Specify your desired headers
+    headers = [
+        'UŻYTKOWNIK', 
+        'DATA WNIOSKU', 
+        'TYP',
+        'OD',
+        'DO',
+        'ILOŚĆ DNI',
+        'AKCEPTACJA',
+        ]  # Specify your desired headers
     for col_num, header in enumerate(headers, 1):
         sheet.cell(row=1, column=col_num).value = header
 
     # Add the table data
     for row_num, vacation in enumerate(vacations, 2):
         sheet.cell(row=row_num, column=1).value = vacation.user.username
-        sheet.cell(row=row_num, column=2).value = vacation.v_from
-        sheet.cell(row=row_num, column=3).value = vacation.v_to
+        sheet.cell(row=row_num, column=2).value = vacation.date
+        sheet.cell(row=row_num, column=3).value = vacation.type
+        sheet.cell(row=row_num, column=4).value = vacation.v_from
+        sheet.cell(row=row_num, column=5).value = vacation.v_to
+        sheet.cell(row=row_num, column=6).value = vacation.days_planned
+        if vacation.accepted == True:
+            sheet.cell(row=row_num, column=7).value = 'Tak'
+        else:
+            sheet.cell(row=row_num, column=7).value = 'Nie'
+
+    # Set the width of columns
+    column_widths = [15, 15, 25, 15, 15, 10, 10]  # Specify the desired width for each column
+    for col_num, width in enumerate(column_widths, 1):
+        column_letter = get_column_letter(col_num)
+        sheet.column_dimensions[column_letter].width = width
 
     # Specify the file name for the Excel file
-    file_name = 'table_data.xlsx'
+    file_name = 'urlopy.xlsx'
 
     # Construct the full file path
     file_path = os.path.join(settings.MEDIA_ROOT, file_name)
 
     # Save the workbook to the file path
     wb.save(file_path)
-
-    # Create a response to indicate successful saving of the file
-    # response = HttpResponse("Table data saved to Excel.")
-    # return response
 
     # Create a response to serve the Excel file for download
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -1455,7 +1472,7 @@ def toExcel(request):
     return response
 
 ####################################################################################
-#                                  END EXEL                                        #
+#                                  END EXCEL                                       #
 ####################################################################################
 
 
@@ -1532,6 +1549,26 @@ def addVacation(request):
                 v_request=vacation
             )
             req.save()
+
+            ## Looking for same vacations days
+            vacs = Vacations.objects.filter(
+                accepted=True,
+            )
+            requesteded_start_date = datetime.strptime(vacation.v_from, '%Y-%m-%d')
+            requesteded_end_date = datetime.strptime(vacation.v_to, '%Y-%m-%d')
+            for v in vacs:
+                accepted_start_date = datetime.strptime(v.v_from, '%Y-%m-%d')
+                accepted_end_date = datetime.strptime(v.v_to, '%Y-%m-%d')
+                x_date = accepted_start_date
+                while x_date <= accepted_end_date:
+                    if x_date == requesteded_start_date or x_date == requesteded_end_date:
+                        messages.warning(request, 'Ten termin już zarezerwowany, wybierz inny')
+                        vacation.delete()
+                        return redirect('addVacation')
+                        # return redirect('vacations', user.id)
+                    else:
+                        x_date += timedelta(days=1)
+
             messages.success(request, 'Złożyłeś wniosek o urlop')
             return redirect('vacations', user.id)
         except Exception as e:
