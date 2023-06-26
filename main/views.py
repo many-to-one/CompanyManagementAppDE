@@ -1,3 +1,5 @@
+import os
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views.generic import ListView
@@ -11,6 +13,8 @@ from django.contrib import messages
 from datetime import date
 from users.models import CustomUser
 from django.core.paginator import Paginator
+import openpyxl
+from django.http import HttpResponse
 
 
 def index(request):
@@ -1369,6 +1373,7 @@ def vacations(request, pk):
                     ).order_by('-id')
         elif 'marked' in request.POST:
             marked = request.POST.getlist('marked')
+            print('marked', marked)
             if marked is not None:
                 request.session['marked'] = marked # Here we need to send this list to the delete_vacations_requests function
                 return redirect('delete_vacations_requests_question')
@@ -1404,6 +1409,54 @@ def delete_vacations_requests(request):
         'pk': pk
     }
     return render(request, 'delete_vacations_requests_question.html', context)
+
+
+####################################################################################
+#                                         EXEL                                     #
+####################################################################################
+
+def toExcel(request):
+    vacations = Vacations.objects.all()
+    print('vacations', vacations)
+    wb = openpyxl.Workbook()
+
+    # Get the default active sheet
+    sheet = wb.active
+
+    # Add the table headers
+    headers = ['Username', 'Start Date', 'End Date']  # Specify your desired headers
+    for col_num, header in enumerate(headers, 1):
+        sheet.cell(row=1, column=col_num).value = header
+
+    # Add the table data
+    for row_num, vacation in enumerate(vacations, 2):
+        sheet.cell(row=row_num, column=1).value = vacation.user.username
+        sheet.cell(row=row_num, column=2).value = vacation.v_from
+        sheet.cell(row=row_num, column=3).value = vacation.v_to
+
+    # Specify the file name for the Excel file
+    file_name = 'table_data.xlsx'
+
+    # Construct the full file path
+    file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+
+    # Save the workbook to the file path
+    wb.save(file_path)
+
+    # Create a response to indicate successful saving of the file
+    # response = HttpResponse("Table data saved to Excel.")
+    # return response
+
+    # Create a response to serve the Excel file for download
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=table_data.xlsx'
+    wb.save(response)
+
+    return response
+
+####################################################################################
+#                                  END EXEL                                        #
+####################################################################################
 
 
 def addVacation(request):

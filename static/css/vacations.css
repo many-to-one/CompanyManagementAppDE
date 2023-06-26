@@ -10,36 +10,61 @@ h2 {
     background-color: var(--title-bg-color);
 }
 
+.vacations_filter_cont {
+    position: fixed;
+    top: 0;
+    left: 40px;
+    width: 95%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px; 
+    background-color: var(--title-bg-color);
+  }
+
+.vacations_filter_cont p {
+  background-color: var(--main-bg-color);
+  width: 220px;
+  height: 20px;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 10px;
+}
+
+.delete {
+    display: none;
+}
+
 .vacations_grafic_container {
-    /* display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap; */
-    margin-top: 30px;
+    margin-left: 50px;
+    margin-top: 125px;
     width: 93vw;
     height: auto;
     background-color: var(--input-bg-color);
-    padding: 10px;
-    border-radius: 10px;
+    padding: 10px; 
+    border-radius: 10px; 
 }
 
 @media screen and (max-width: 1180px) {
     .vacations_grafic_container {
-        /* display: flex;
-        flex-wrap: wrap; */
-        margin-top: 30px;
+        margin-left: 50px;
+        margin-top: 125px;
         width: 92vw;
         height: auto;
         background-color: var(--input-bg-color);
         padding: 10px;
         border-radius: 10px;
     }
+
+    .delete {
+        display: flex;
+        align-items: center;
+    }
 }
 
 @media screen and (max-width: 844px) {
     .vacations_grafic_container {
-        /* display: flex;
-        flex-wrap: wrap; */
-        margin-top: 30px;
+        margin-top: 125px;
         width: 88vw;
         height: auto;
         background-color: var(--input-bg-color);
@@ -52,13 +77,25 @@ h2 {
     .vacations_grafic_container {
         display: flex;
         flex-wrap: wrap;
-        margin-top: 30px;
+        margin-top: 200px;
         width: 76vw;
         height: auto;
         background-color: var(--input-bg-color);
         padding: 10px;
         border-radius: 10px;
     }
+
+    .vacations_filter_cont {
+        position: fixed;
+        top: 0;
+        left: 10px;
+        width: 95%;
+        display: flex;
+        flex-wrap: wrap;
+        padding: 10px; 
+        margin-left: 30px;
+        background-color: var(--title-bg-color);
+      }
 }
 
 .vacations_mini {

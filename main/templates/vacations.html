@@ -10,8 +10,7 @@
 </head>
 <body>
     {% block content %}
-
-        <div class="container">
+    <div class="page-container">
 
             {% if messages %}
               {% for message in messages %}
@@ -24,14 +23,16 @@
               {% endfor %}
             {% endif %}
 
-            <div class="vacations_top_cont">
-                <h2>Zarządzanie urlopami</h2>
+            <div class="vacations_filter_cont">
+                <p>Zarządzanie urlopami</p>
                 <p>{{ user.username }}</p>
-                <button class="btn"><a class="btn-title" href="{% url 'addVacation' %}">+ Dodaj urlop</a></button>
+                <div>
+                    <button class="btn download"><a href="{% url 'toExcel' %}">Pobierz</a></button>
+                    <button class="btn"><a class="btn-title" href="{% url 'addVacation' %}">+ Dodaj urlop</a></button>
+                </div>
             </div>
 
             <div class="vacations_grafic_container">
-
                 <div class="vacations_mini_cont">
                     {% if request.user.is_superuser %}
                         <form method="POST" id="users">
@@ -75,16 +76,24 @@
                         <p>Urlop okolicznościowy: &nbsp; {{ request.user.compassionate_vacations }} </p>
                     </div> -->
                 </div>
+                <!-- <form method="POST">
+                    {% csrf_token %}
+                    <button class="btn download"><a href="">Pobierz</a></button>
+                </form> -->
             </div>
 
-        
+        <div class="container">
             <table id="table">
                 <form method="POST">
                     {% csrf_token %}
+                    <div class="delete">
+                        <input type="image" src="{% static 'images/delete_icon.png' %}" width="30" height="30">
+                        <p>Usuń zaznaczone</p>
+                    </div>
                 <thead>
                     <tr>
                         <th>
-                            <input class="delete" type="image" src="{% static 'images/delete_icon.png' %}" width="30" height="30">
+                            <input type="image" src="{% static 'images/delete_icon.png' %}" width="30" height="30">
                         </th>
                         <th>Data</th>
                         <th>Typ urlopu</th>
@@ -136,7 +145,6 @@
             </form>
             </table>
         
-
             <div class="pagination">
                 <span class="step-links">
                   {% if page_obj.has_previous %}
@@ -152,8 +160,8 @@
                   {% endif %}
                 </span>
             </div>
-            
         </div>
+    </div>
 
         <script> 
 

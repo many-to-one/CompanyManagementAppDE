@@ -16,6 +16,7 @@ urlpatterns = [
     path('vacations/<pk>/', vacations, name='vacations'),
     path('delete_vacations_requests_question/', delete_vacations_requests_question, name='delete_vacations_requests_question'),
     path('delete_vacations_requests/', delete_vacations_requests, name='delete_vacations_requests'),
+    path('toExcel/', toExcel, name='toExcel'),
     path('addVacation/', addVacation, name='addVacation'),
     path('editVacation/<pk>/', editVacation, name='editVacation'),
     path('deleteVacationPage/<pk>/', deleteVacationPage, name='deleteVacationPage'),
