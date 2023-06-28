@@ -32,10 +32,15 @@
             {% for user in users %} 
                 {% if request.user.is_superuser %}
                     <div class="label" >
-                        <a href="{% url 'workobject_raport' user.pk work_object.pk %}">
-                            {{user.username}}
-                        </a>
-                        <a href="{% url 'deleteUserFromObjectQuestion' user.pk work_object.pk %}">
+
+                        <div class="row_cont_in_label">
+                            <a class="label_img" href="{% url 'workobject_raport' user.pk work_object.pk %}">
+                                <img src="{% static 'images/enter.png' %}" width="30" height="30">
+                            </a>
+                            {{user.username}} 
+                        </div>
+
+                        <a class="label_img" href="{% url 'deleteUserFromObjectQuestion' user.pk work_object.pk %}">
                             <img src="{% static 'images/delete_icon.png' %}" width="30" height="30">
                           </a>
                         </div> 
@@ -43,7 +48,7 @@
                     <br>
                 {% else %}
                     <div class="label">
-                        <p>{{user.username}}</p>
+                        <p>{{user.username}}</p> 
                     </div>   
                     <br>
                 {% endif %}
@@ -57,17 +62,51 @@
             
             <form id="chat-form" method="POST">
                 {% csrf_token %}
-                <textarea name="content" class="chat_input" placeholder="Napisz coś..." wrap="soft" id="content"></textarea>
-                <button id="chat_push" type="button" onclick="sendChatMessage()" name="chat" class="cwo_btn" ><p class="btn-title">Wyślij</p></button>
+                <div class="chat_input_cont">
+                    <textarea name="content" class="chat_input" placeholder="Napisz coś..." wrap="soft" id="content"></textarea>
+                    <a
+                        id="chat_push" 
+                        class="label_img" 
+                        onclick="sendChatMessage()"
+                        name="chat"
+                        type="button"
+                    >
+                        <img src="{% static 'images/send.png' %}" width="40" height="40">
+                    </a>
+                </div>
+        
             </form>
             <br>
 
-            <!-- <p>Razem: {{finally_obj_work_time}}</p>
-            <p>Kawa/Posiłki: {{obj_coffee_food}}</p>
-            <p>Zaliczka{{obj_prepayment}}</p>
-            <p>Telefon{{obj_phone_costs}}</p> -->
+            <div class="label">
+                <p>Razem:</p>
+                <p id="total_payment">{{ total_payment }}</p>
+            </div>
+            <br>
+            <div class="label">
+                <p>Kawa/Posiłki:</p>
+                <p id="total_coffee_food">{{ total_coffee_food }}</p>
+            </div>
+            <br>
+            <div class="label">
+                <p>Paliwo:</p>
+                <p id="total_fuel">{{ total_fuel }}</p>
+            </div>
+            <br>
+            <div class="label">
+                <p>Telefon:</p>
+                <p id="total_phone_costs">{{ total_phone_costs }}</p>
+            </div>
+            <br>
+
+            <div class="chart">
+                <canvas id="myChart" width="400" height="400"></canvas>
+            </div>
+
+              
     </div>   
-    
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
     <script> 
@@ -131,9 +170,48 @@
             })
         },1000)
     })
-        
 
-   
+    // CHART
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // Retrieve the data from the Django view
+        var total_payment = JSON.parse(document.getElementById('total_payment').textContent);
+        var total_fuel = JSON.parse(document.getElementById('total_fuel').textContent);
+        var total_coffee_food = JSON.parse(document.getElementById('total_coffee_food').textContent);
+        var total_phone_costs = JSON.parse(document.getElementById('total_phone_costs').textContent);
+        var values = [
+            total_payment,
+            total_fuel,
+            total_coffee_food,
+            total_phone_costs,
+        ]
+        var labels = [
+            'Razem',
+            'Paliwo',
+            'Kawa/Posiłki',
+            'Telefon',
+        ]
+        console.log(values, labels)
+        // Create the pie chart using Chart.js
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: [
+                        '#9fadcc',
+                        '#212A3E',
+                        '#394867',
+                        '#485268'
+                    ]
+                }]
+            },
+        });
+    });
+        
     </script>  
 
 

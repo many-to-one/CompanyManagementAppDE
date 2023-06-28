@@ -13,15 +13,17 @@
     {% block content  %}
         <div class="cwo_cont">
 
-            <p>Chcesz napewno chcesz usunąć {{ user }} z tego objektu?</p>
+            <p>Chcesz napewno chcesz usunąć raport za {{ work.date }}?</p>
+
                 <div class="vacations_mini">
                     <button class="btn" name="yes" type="submit">
-                        <a href="{% url 'deleteUserFromObject' user_pk work_object_pk %}">Tak</a>
+                        <a href="{% url 'deleteUserWork' work.pk %}">Tak</a>
                     </button>
                     <button class="btn" name="no">
-                        <a href="{% url 'work_object' work_object_pk %}">Nie</a>
+                        <a href="{% url 'raports' %}">Nie</a>
                     </button>
                 </div>
+
         </div>
     {% endblock  %}
     

@@ -59,6 +59,7 @@ h2 {
     .delete {
         display: flex;
         align-items: center;
+        justify-content: space-around;
     }
 }
 
@@ -88,8 +89,8 @@ h2 {
     .vacations_filter_cont {
         position: fixed;
         top: 0;
-        left: 10px;
-        width: 95%;
+        left: 9px;
+        width: 85%;
         display: flex;
         flex-wrap: wrap;
         padding: 10px; 

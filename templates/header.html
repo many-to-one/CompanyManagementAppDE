@@ -77,16 +77,19 @@
             var sideMenu = document.getElementById('header-container')
             var buttonMenu = document.getElementById('toggle_menu')
             var closeMenu = document.getElementById('close_menu')
+            var vacations = document.getElementById('vacations_filter_cont')
             if (sideMenu.style.left === "0px") {
-              sideMenu.style.left = "-160px"; // Close the menu
+              sideMenu.style.left = "-170px"; // Close the menu
               toggle_menu.style.left = "3px"
               closeMenu.style.display = 'none';
               buttonMenu.style.display = 'block';
+              vacations.style.position = 'fixed'; // make the header in the vacations.html fixed 
             } else {
               sideMenu.style.left = "0px"; // Open the menu
-              toggle_menu.style.left = "160px"
+              toggle_menu.style.left = "160px";
               closeMenu.style.display = 'block';
-              buttonMenu.style.display = 'none'
+              buttonMenu.style.display = 'none'; 
+              vacations.style.position = 'static'; // make the header in the vacations.html static
             }
         }
 

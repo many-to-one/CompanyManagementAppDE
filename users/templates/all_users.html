@@ -33,10 +33,24 @@
 
                 {% for user in users %}   
                 <div class="label">
-                    <a href="{% url 'user_raport' user.pk %}">{{user.username}}</a>
-                    <a href="{% url 'deleteQuestion' user.pk %}">
-                      <img src="{% static 'images/delete_icon.png' %}" width="30" height="30">
-                    </a>
+                    <div class="row_cont_in_label">
+                        <a class="label_img" href="{% url 'user' user.pk %}">
+                            <img src="{% static 'images/profil.png' %}" width="30" height="30">
+                        </a>
+                        {{ user.username }}
+                        <br>
+                    </div>
+                    <div class="row_cont_in_label">
+                        <a class="label_img" href="{% url 'user_raport' user.pk %}">
+                            <img src="{% static 'images/raports.png' %}" width="30" height="30">
+                        </a>
+                        <a class="label_img" href="{% url 'vacations' user.pk %}">
+                            <img src="{% static 'images/vacations.png' %}" width="30" height="30">
+                        </a>
+                        <a class="label_img" href="{% url 'deleteQuestion' user.pk %}">
+                          <img src="{% static 'images/delete.png' %}" width="30" height="30">
+                        </a>
+                    </div>
                 </div>
                     <br>
                 {% endfor %}

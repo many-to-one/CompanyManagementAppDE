@@ -34,32 +34,53 @@
 
     <div class="wo_container">
         {% for wo in work_objects %}
+            <div class="label">
 
-            <a class="label" href="{% url 'work_object' wo.pk %}">
-                {{wo.name}} 
-                <div class="tags_cont_mini">
-                    <span class="icon">
-                        <img src="{% static 'images/letters.png' %}" width="30" height="25">
-                    </span>
-                            
-                        {% messages_quantity request.user.username wo as count %}
-                        {% if count > 0 %}
-                            <span class="rotate_quantity">
-                                {{ count }}
-                            </span>
-                        {% else %}
-                            <span class="quantity">
-                                {{ count }}
-                            </span>
-                        {% endif %}
-                               
+                <div class="row_cont_in_label">
+                    <a class="label_img" href="{% url 'work_object' wo.pk %}">
+                        <img src="{% static 'images/enter.png' %}" width="30" height="30">
+                    </a>
+                    {{wo.name}}
                 </div>
-            </a>
+
+                <div class="row_cont_in_label">
+                    <div class="tags_cont_mini">
+                        <span class="icon">
+                            <img src="{% static 'images/letters.png' %}" width="30" height="25">
+                        </span>
+                                
+                            {% messages_quantity request.user.username wo as count %}
+                            {% if count > 0 %}
+                                <span class="rotate_quantity">
+                                    {{ count }}
+                                </span>
+                            {% else %}
+                                <span class="quantity">
+                                    {{ count }}
+                                </span>
+                            {% endif %}
+                                   
+                    </div>
+                
+                    <a class="label_img" href="{% url 'deleteWorkObjectQuestion' wo.pk %}">
+                      <img src="{% static 'images/delete.png' %}" width="30" height="30"> 
+                    </a>
+                </div>
+
+            </div>
             <br>
         {% endfor %}
         <br>
 
-    <button class="cwo_btn"><a href="{% url 'create_work_object' %}"><p class="btn-title">Dodaj</p></a></button>
+    {% if request.user.is_superuser %}
+        <button class="cwo_btn">
+            <a href="{% url 'create_work_object' %}">
+                <p class="btn-title">
+                    Dodaj
+                </p>
+            </a>
+        </button>
+    {% endif %}
     <div class="pagination">
         <span class="step-links">
           {% if work_objects.has_previous %}

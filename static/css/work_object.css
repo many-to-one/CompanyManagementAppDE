@@ -114,7 +114,7 @@
 }
 
 .chat_input {
-    width: 64vw;
+    width: 60vw;
     min-height: 50px;
     height: auto;
     border-color: transparent;
@@ -123,7 +123,51 @@
     padding: 10px;
 }
 
+#chat_push {
+    align-self: flex-end;
+}
+
+.chat_input_cont {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 10px;
+    background-color: var(--input-bg-color);
+    padding: 10px;
+    width: 64 vw;
+}
+
 .simple_row_cont {
     display: inline;
     gap: 20px;
+}
+
+.chart {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 400px;
+    height: 400px;
+    background: transparent;
+}
+
+@media all and (max-width: 450px){
+    .chart {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 350px;
+        height: 350px;
+        background: transparent;
+    }
+
+    .chat_input {
+        width: 50vw;
+        min-height: 50px;
+        height: auto;
+        border-color: transparent;
+        border-radius: 10px;
+        background-color: var(--input-bg-color);
+        padding: 10px;
+    }
 }

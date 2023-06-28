@@ -101,8 +101,11 @@ class Work(models.Model):
     )
 
     def __str__(self) -> str:
-        for user in self.user.all():
-            return str(user.username)
+        return self.work_object
+
+    # def __str__(self) -> str:
+    #     for user in self.user.all():
+    #         return str(user.username)
     
     # def work_payment(self):
         # self.user = CustomUser.objects.get(id=pk)

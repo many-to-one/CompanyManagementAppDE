@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load vacation_requests %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -23,12 +24,17 @@
               {% endfor %}
             {% endif %}
 
-            <div class="vacations_filter_cont">
+            <div class="vacations_filter_cont" id="vacations_filter_cont">
                 <p>Zarządzanie urlopami</p>
                 <p>{{ user.username }}</p>
                 <div>
                     <button class="btn download"><a href="{% url 'toExcel' %}">Pobierz</a></button>
                     <button class="btn"><a class="btn-title" href="{% url 'addVacation' %}">+ Dodaj urlop</a></button>
+                    {% if request.user.is_superuser %}
+                        <button class="btn download tags_cont_mini"><a href="{% url 'allVacationRequests' %}">
+                            Wnioski <span class="header_quantity">{% request_quantity %}</span>
+                        </a></button>
+                    {% endif %}
                 </div>
             </div>
 
@@ -87,13 +93,17 @@
                 <form method="POST">
                     {% csrf_token %}
                     <div class="delete">
-                        <input type="image" src="{% static 'images/delete_icon.png' %}" width="30" height="30">
+                        <input type="checkbox" onclick="checkAll()">
                         <p>Usuń zaznaczone</p>
+                        <input type="image" src="{% static 'images/delete.png' %}" width="30" height="30">
                     </div>
                 <thead>
                     <tr>
                         <th>
-                            <input type="image" src="{% static 'images/delete_icon.png' %}" width="30" height="30">
+                            <input type="checkbox" onclick="checkAll()">
+                        </th>
+                        <th>
+                            <input type="image" src="{% static 'images/delete.png' %}" width="30" height="30">
                         </th>
                         <th>Data</th>
                         <th>Typ urlopu</th>
@@ -108,8 +118,9 @@
                 {% for v in page_obj %}
                     <tr>
                         <td>
-                            <input type="checkbox" name="marked" value="{{ v.id }}">
+                            <input id="check" type="checkbox" name="marked" value="{{ v.id }}" >
                         </td>
+                        <td></td>
                         <td data-label="Data">{{ v.date }}</td>
                         <td data-label="Typ urlopu">{{ v.type }}</td>
                         <td data-label="Od">{{ v.v_from }}</td>
@@ -126,12 +137,14 @@
                                 <img src="{% static 'images/question.png' %}" width="20" height="20">
                             </td>
                             <td data-label="Edytuj">
-                                <a href="{% url 'editVacation' v.pk %}">Edytuj</a>
-                                <!-- <img src="{% static 'images/question.png' %}" width="20" height="20"> -->
+                                <a href="{% url 'editVacation' v.pk %}">
+                                    <img src="{% static 'images/edit.png' %}" width="20" height="20">
+                                </a>
                             </td>
                             <td data-label="Usuń">
-                                <a href="{% url 'deleteVacationPage' v.pk %}">Usuń</a>
-                                <!-- <img src="{% static 'images/question.png' %}" width="20" height="20"> -->
+                                <a href="{% url 'deleteVacationPage' v.pk %}">
+                                    <img src="{% static 'images/delete.png' %}" width="20" height="20">
+                                </a>
                             </td>
                         {% elif v.accepted is False %}
                             <td data-label="Akceptacja">
@@ -174,6 +187,18 @@
               var form = document.getElementById("years");
               form.submit();
             }
+
+            function checkAll() {
+            var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+
+            for (var i = 0; i < checkboxes.length; i++) {
+                if( checkboxes[i].checked == false){
+                    checkboxes[i].checked = true;
+                }else{
+                    checkboxes[i].checked = false;
+                }
+            }
+        }
 
         </script>
 

@@ -3,6 +3,7 @@
     --border: 1px solid #434242;
     --main-bg-color: #F1F6F9;
     --header-bg-color: #212A3E;
+
     --input-bg-color: #d4dced;
     --title-bg-color: #9fadcc;
     --text-color: white;
@@ -56,7 +57,7 @@ form table {
 table tr {
     /* background-color: #f8f8f8; */
     border: 1px solid #ddd;
-    padding: .35em;
+    padding: .25em;
 }
   
 table th,
@@ -65,7 +66,7 @@ table td {
 }
   
 table th {
-  font-size: .85em;
+  font-size: .55em;
   letter-spacing: .1em;
   text-transform: uppercase;
 }
@@ -257,18 +258,36 @@ tr:nth-child(even) td {
     height: 40px;
     font-size: 20px;
     padding: 10px;
-    cursor: pointer;
     box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
     overflow-x: auto;
 }
 
-.label:hover {
-    background-color: #a2b3d1;
-    transition: background-color 0.3s ease;
-}
-
 .label a {
   color: var(--header-bg-color);
+}
+
+.row_cont_in_label {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.label_img {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 35px;
+  height: 35px;
+  border-radius: 5px;
+  /* background-color: #d3e1ff; */
+  background-color: var(--main-bg-color);
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+  cursor: pointer;
+}
+
+.label_img:hover {
+  background-color: #a2b3d1;
+  transition: background-color 0.3s ease;
 }
 
 .input_ {

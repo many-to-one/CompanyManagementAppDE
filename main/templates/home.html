@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load vacation_requests %}
+{% load messages %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -13,7 +15,57 @@
 
     {% block content %}
 
-    <p>Hello frome home page</p>
+    <div class="page-container">
+        <div class="row-container">
+
+            <a class="home_part" href="{% url 'user' request.user.pk %}">
+                <img src="{% static 'images/profil.png' %}" width="150" height="150">
+                <p>PROFIL</p>
+            </a>
+
+            <a class="home_part" href="{% url 'user_work' request.user.pk %}">
+                <img src="{% static 'images/addwork.png' %}" width="150" height="150">
+                <p>DODAJ PRACĘ</p>
+            </a>
+
+            <a class="home_part" href="{% url 'work_objects' request.user.pk %}">
+                <img src="{% static 'images/workobject.png' %}" width="150" height="150">
+                {% if request.user.is_superuser %}
+                    <div class="tags_cont_mini">
+                        <p>MIEJSCA PRACY </p>
+                        <span class="header_quantity">{% all_messages_quantity request.user.username %}</span>
+                    </div>
+                {% else %}
+                    <p>MIEJSCA PRACY</p>
+                {% endif %}
+            </a>
+
+            <a class="home_part" href="{% url 'vacations' request.user.pk %}">
+                <img src="{% static 'images/vacations.png' %}" width="150" height="150">
+                {% if request.user.is_superuser %}
+                    <div class="tags_cont_mini">
+                        <p>URLOPY</p>
+                        <span class="header_quantity">{% request_quantity %}</span>
+                    </div>
+                {% else %}
+                    <p>URLOPY</p>
+                {% endif %}
+            </a>
+
+            <a class="home_part" href="{% url 'raports' %}">
+                <img src="{% static 'images/raports.png' %}" width="150" height="150">
+                <p>RAPORTY</p>
+            </a>
+
+            {% if request.user.is_superuser %}
+                <a class="home_part" href="{% url 'all_users' %}">
+                    <img src="{% static 'images/workers.png' %}" width="150" height="150">
+                    <p>PRACOWNICY</p>
+                </a>
+            {% endif %}
+
+        </div>
+    </div>
 
     {% endblock %}
 </body>

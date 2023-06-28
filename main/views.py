@@ -1,3 +1,5 @@
+from io import BytesIO
+import json
 import os
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
@@ -16,6 +18,7 @@ from django.core.paginator import Paginator
 import openpyxl
 from openpyxl.utils import get_column_letter
 from django.http import HttpResponse
+import matplotlib.pyplot as plt
 
 
 def index(request):
@@ -60,7 +63,6 @@ def WorkObjects(request, pk):
 #*************************************************** WORK OBJECT VIEW *************************************************#
 #**********************************************************************************************************************#
 
-
 def workObjectView(request, **kwargs):
 
     allusers = CustomUser.objects.all()
@@ -69,104 +71,38 @@ def workObjectView(request, **kwargs):
     messages = Message.objects.filter(
         work_object=work_object,
        )
-    ############################################################
-    ## get_or_create function wit the ManyToMany relationship ##
-    #
-    total, created = TotalWorkObject.objects.get_or_create(name=work_object.name)
-    total.work_object.add(work_object)
-    ############################################################
-    u_total_coffee_food = 0
-    obj_coffee_food = 0
-    obj_fuel = 0
-    obj_prepayment = 0
-    obj_phone_costs = 0
-    obj_sum_time_sec = 0
-    obj_sum_over_time_sec = 0
-    obj_work_time = 0
-    finally_obj_work_time = 0
-    # obj_work_over_time = 0
-    for user in users:
-        ############################################
-        ### Totals of all costs in current object ###
-        total_coffee_food = Work.objects.filter(
-            user__id=user.id, 
-            work_object=work_object
-            ).aggregate(
-            total_coffee_food=Sum('coffee_food')
-            )['total_coffee_food']
-        if total_coffee_food is not None:
-            obj_coffee_food += total_coffee_food
-            # total.obj_coffee_food = F('obj_coffee_food') + total_coffee_food
 
-        total_fuel = Work.objects.filter(
-            user__id=user.id, 
-            work_object=work_object
-            ).aggregate(
-            total_fuel=Sum('fuel')
-            )['total_fuel']
-        if total_fuel is not None:
-            obj_fuel += total_fuel
+    ##############################
+    ### Totals for sorted_from ###
+    total_coffee_food = Work.objects.filter(work_object=work_object.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
+    total_fuel = Work.objects.filter(work_object=work_object.name,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
+    total_prepayment = Work.objects.filter(work_object=work_object.name,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+    total_phone_costs = Work.objects.filter(work_object=work_object.name,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+    total_payment = Work.objects.filter(work_object=work_object.name,).aggregate(total_payment=Sum('payment'))['total_payment']
+    total_sum_time_sec = Work.objects.filter(work_object=work_object.name,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+    total_sum_over_time_sec = Work.objects.filter(work_object=work_object.name,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
 
-        total_prepayment = Work.objects.filter(
-            user__id=user.id, 
-            work_object=work_object
-            ).aggregate(
-            total_prepayment=Sum('prepayment')
-            )['total_prepayment']
-        if total_prepayment is not None:
-            obj_prepayment += total_prepayment
-
-        total_phone_costs = Work.objects.filter(
-            user__id=user.id, 
-            work_object=work_object
-            ).aggregate(
-            total_phone_costs=Sum('phone_costs')
-            )['total_phone_costs']
-        if total_phone_costs is not None:
-            obj_phone_costs += total_phone_costs
-
-        total_sum_time_sec = Work.objects.filter(
-            user__id=user.id, 
-            work_object=work_object
-            ).aggregate(
-            total_sum_time_sec=Sum('sum_time_sec')
-            )['total_sum_time_sec']
-        if total_sum_time_sec is not None:
-            obj_sum_time_sec += total_sum_time_sec
-
-        total_sum_over_time_sec = Work.objects.filter(
-            user__id=user.id, 
-            work_object=work_object
-            ).aggregate(
-            total_sum_over_time_sec=Sum('sum_over_time_sec')
-            )['total_sum_over_time_sec']
-        if total_sum_over_time_sec is not None:
-            obj_sum_over_time_sec += total_sum_over_time_sec
-
-        if total_sum_time_sec:
-            ### total_sum_time_sec => hours:minutes ###
-            total_hours = obj_sum_time_sec // 3600
-            total_sec = obj_sum_time_sec % 3600
-            total_min = total_sec // 60
-            obj_work_time = f'{int(total_hours)}:{int(total_min)}'
-            if obj_work_time is not None:
-                finally_obj_work_time = obj_work_time
+    if total_sum_time_sec:
+        ### total_sum_time_sec => hours:minutes ###
+        total_hours = total_sum_time_sec // 3600
+        total_sec = total_sum_time_sec % 3600
+        total_min = total_sec // 60
+        total_work_time = f'{int(total_hours)}:{int(total_min)}'
+    else:
+        total_work_time = '0:00'
+    if total_sum_over_time_sec:
+        ### total_sum_over_time_sec => hours:minutes ###
+        total_hours = total_sum_over_time_sec // 3600
+        total_sec = total_sum_over_time_sec % 3600
+        total_min = total_sec // 60
+        if total_min < 10 or total_min == 0.0:
+            total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
         else:
-            obj_work_time = '0:00'
-        if total_sum_over_time_sec:
-            ### total_sum_over_time_sec => hours:minutes ###
-            total_hours = obj_sum_over_time_sec // 3600
-            total_sec = obj_sum_over_time_sec % 3600
-            total_min = total_sec // 60
-            if total_min < 10 or total_min == 0.0:
-                obj_sum_over_time = f'{int(total_hours)}:0{int(total_min)}'
-            else:
-                obj_sum_over_time = f'{int(total_hours)}:{int(total_min)}'
-        else:
-            obj_sum_over_time = '0:00'
-            
-        ### End Totals for all ###
-        ##########################
+            total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
+    else:
+        total_work_over_time = '0:00'
+    ### End Totals for sorted_from ###
+    ################################## 
     
     ## Add new user to the object & make chat with all users belong to it
     if request.method == 'POST':
@@ -178,22 +114,33 @@ def workObjectView(request, **kwargs):
             work_object.save()
             work_object, created = WorkObject.objects.get_or_create(id=kwargs['pk'])
             users = work_object.user.all()
+    data = [
+        total_fuel,
+        total_coffee_food,
+        total_phone_costs,
+        total_payment,
+    ]
 
+    labels = [
+        'Paliwo',
+        'Kawa',
+        'Telefon',
+        'Koszt',
+    ]
     context = {
         'current_time': datetime.now().strftime('%Y-%m-%d'),
         'messages': messages,
         'work_object': work_object,
         'users': users,
         'allusers': allusers,
-        'finally_obj_work_time': finally_obj_work_time,
-        'obj_coffee_food': obj_coffee_food,
-        "obj_fuel": obj_fuel,
-        'obj_prepayment': obj_prepayment,
-        'obj_phone_costs': obj_phone_costs,
-        'obj_sum_time_sec': obj_sum_time_sec,
-        'obj_sum_over_time_sec': obj_sum_over_time_sec,
-        'obj_work_time': obj_work_time,
-        'u_total_coffee_food': u_total_coffee_food,
+        'total_coffee_food': total_coffee_food,
+        'total_fuel': total_fuel,
+        'total_prepayment': total_prepayment,
+        'total_phone_costs': total_phone_costs,
+        'total_payment': total_payment,
+        'total_work_time': total_work_time,
+        'data': data,
+        'labels': labels,
     }
     return render(request, 'work_object.html', context)
 
@@ -214,8 +161,33 @@ def deleteUserFromObject(request, user_pk, work_object_pk):
         print('pk', user_pk, work_object_pk)
         return redirect('work_object', work_object_pk)
     except Exception as e:
-        print('e', e)
+        messages.warning(request, f'{e}')
     return redirect('work_object', work_object_pk)
+
+
+def deleteWorkObjectQuestion(request, work_object_pk):
+    work_object = WorkObject.objects.get(id=work_object_pk)
+    context = {
+        'work_object': work_object,
+    }
+    return render (request, 'deleteWorkObjectQuestion.html', context)
+
+
+def deleteWorkObject(request, work_object_pk):   
+    try:
+        work_object = WorkObject.objects.get(id=work_object_pk)
+        work_object.delete()
+        return redirect('success_delete_workobject', work_object.name)
+    except Exception as e:
+        messages.warning(request, f'{e}')
+    return redirect('work_objects', request.user.pk)
+
+
+def success_delete_workobject(request, work_object_name):
+    context = {
+        'work_object_name': work_object_name
+    }
+    return render(request, 'success_delete_workobject.html', context)
 
 
 def chat(request, pk):
@@ -400,6 +372,7 @@ def userWork(request, pk):
                 wt = f'{dif_hours}:{dif_min}'
 
         work_object = request.POST.get('work_object')
+        print('work_object', work_object)
         work_type = request.POST.get('work_type')
         coffee_food = request.POST.get('coffee_food')
         fuel = request.POST.get('fuel')
@@ -597,6 +570,59 @@ def updateUserWork(request, work_pk):
         'work_type': work_type,
         }
     return render(request, 'update_user_work.html', context)
+
+
+def deleteUserWorkQuastion(request, work_pk):
+    marked = request.session.get('marked')
+    try:
+        work = Work.objects.get(id=work_pk)
+        print('work_pk', work_pk)
+    except Exception as e:
+        error = f'Wystąpił błąd: {e}'
+        return render(request, 'error.html', {'error': error})
+
+    context = {
+        'work': work,
+        'marked': marked,
+    }
+    return render(request, 'deleteUserWorkQuastion.html', context)
+
+
+def deleteUserWork(request, work_pk):
+
+    try:
+        work = Work.objects.get(id=work_pk)
+        work.delete()
+        print('work deleted', work)
+        return redirect('success_delete_user_work', work.date)
+    except Exception as e:
+        error = f'Wystąpił błąd: {e}'
+        return render(request, 'error.html', {'error': error})
+    
+
+def success_delete_user_work(request, work_date):
+    return render(request, 'success_delete_user_work.html', {'work_date': work_date})
+
+
+def deleteListUserWorkQuestion(request):
+    return render(request, 'deleteListUserWorkQuestion.html')
+
+
+def deleteListUserWork(request):
+    marked = request.session.get('marked')
+    try:
+        for m in marked:
+            work = Work.objects.get(id=m)
+            work.delete()
+        return redirect ('success_delete_list_user_work')
+    except Exception as e:
+        error = f'Wystąpił błąd: {e}'
+        return render(request, 'error.html', {'error': error})
+    
+
+def success_delete_list_user_work(request):
+    return render(request, 'success_delete_list_user_work.html')
+
 
 
 #**********************************************************************************************************************#
@@ -951,9 +977,6 @@ def raports(request):
         works = Work.objects.prefetch_related(Prefetch('user')).filter(user=request.user).order_by('-date')
     users = CustomUser.objects.all().values('id', 'username')
     work_objects = WorkObject.objects.all()
-    paginator = Paginator(works, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
 
     if request.user.is_superuser:
 
@@ -1024,6 +1047,13 @@ def raports(request):
         ##################################
 
     if request.method == 'POST':
+
+        if 'marked' in request.POST:
+            marked = request.POST.getlist('marked')
+            request.session['marked'] = marked
+            if marked is not None:
+                return redirect ('deleteListUserWorkQuestion')
+
         sorted_from = request.POST.get('sorted_from')
         user = request.POST.get('user')
         work_object = request.POST.get('work_object')
@@ -1333,7 +1363,9 @@ def raports(request):
             ### End Totals for sorted_from ###
             ##################################
 
-    
+    paginator = Paginator(works, 35)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     context = {
         'works': works,
         'users': users, 
@@ -1361,7 +1393,7 @@ def vacations(request, pk):
     username_list = [user['username'] for user in users]
     vacations = Vacations.objects.filter(user__id=user.id).order_by('-id')
     years_list = [vacation.v_from[:4] for vacation in vacations] 
-    paginator = Paginator(vacations, 10)
+    paginator = Paginator(vacations, 2)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -1400,7 +1432,6 @@ def vacations(request, pk):
                     ).order_by('-id')
         elif 'marked' in request.POST:
             marked = request.POST.getlist('marked')
-            print('marked', marked)
             if marked is not None:
                 request.session['marked'] = marked # Here we need to send this list to the delete_vacations_requests function
                 return redirect('delete_vacations_requests_question')
