@@ -30,14 +30,10 @@
 
             <a class="home_part" href="{% url 'work_objects' request.user.pk %}">
                 <img src="{% static 'images/workobject.png' %}" width="150" height="150">
-                {% if request.user.is_superuser %}
-                    <div class="tags_cont_mini">
-                        <p>MIEJSCA PRACY </p>
-                        <span class="header_quantity">{% all_messages_quantity request.user.username %}</span>
-                    </div>
-                {% else %}
-                    <p>MIEJSCA PRACY</p>
-                {% endif %}
+                <div class="tags_cont_mini">
+                    <p>MIEJSCA PRACY </p>
+                    <span class="header_quantity">{% all_messages_quantity request.user.username %}</span>
+                </div>
             </a>
 
             <a class="home_part" href="{% url 'vacations' request.user.pk %}">

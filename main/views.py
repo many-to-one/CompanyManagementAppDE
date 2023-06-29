@@ -39,9 +39,6 @@ def WorkObjects(request, pk):
             user=user
         )
     work_objects_list = WorkObject.objects.values_list('name', flat=True)
-    paginator = Paginator(work_objects, 10) 
-    page_number = request.GET.get('page')
-    work_objects = paginator.get_page(page_number)
 
     if request.method == 'POST':
         select = request.POST.get('object')
@@ -50,6 +47,9 @@ def WorkObjects(request, pk):
         else:
             work_objects = WorkObject.objects.filter(name=select)
 
+    paginator = Paginator(work_objects, 10) 
+    page_number = request.GET.get('page')
+    work_objects = paginator.get_page(page_number)
     context = {
         'work_objects': work_objects,
         'work_objects_list': work_objects_list,
@@ -114,19 +114,8 @@ def workObjectView(request, **kwargs):
             work_object.save()
             work_object, created = WorkObject.objects.get_or_create(id=kwargs['pk'])
             users = work_object.user.all()
-    data = [
-        total_fuel,
-        total_coffee_food,
-        total_phone_costs,
-        total_payment,
-    ]
 
-    labels = [
-        'Paliwo',
-        'Kawa',
-        'Telefon',
-        'Koszt',
-    ]
+    total = total_payment +total_phone_costs + total_fuel + total_coffee_food
     context = {
         'current_time': datetime.now().strftime('%Y-%m-%d'),
         'messages': messages,
@@ -139,15 +128,17 @@ def workObjectView(request, **kwargs):
         'total_phone_costs': total_phone_costs,
         'total_payment': total_payment,
         'total_work_time': total_work_time,
-        'data': data,
-        'labels': labels,
+        'total': total,
     }
     return render(request, 'work_object.html', context)
 
 def deleteUserFromObjectQuestion(request, user_pk, work_object_pk):
+    user_query = CustomUser.objects.filter(id=user_pk).values_list('username')
+    user = [user[0] for user in user_query]
     context = {
+        'user': user[0],
         'user_pk': user_pk,
-        'work_object_pk': work_object_pk,
+        'work_object_pk': work_object_pk
     }
     return render (request, 'deleteUserFromObjectQuestion.html', context)
 
@@ -158,11 +149,14 @@ def deleteUserFromObject(request, user_pk, work_object_pk):
     try:
         work_object.user.remove(user)
         work_object.save()
-        print('pk', user_pk, work_object_pk)
-        return redirect('work_object', work_object_pk)
+        context = {
+        'username': user.username,
+        'work_object': work_object,
+        }
+        return render(request, 'success_delete_user_from_workobject.html', context)
     except Exception as e:
-        messages.warning(request, f'{e}')
-    return redirect('work_object', work_object_pk)
+        error = f'Wystąpił błąd: {e}'
+        return render(request, 'error.html', {'error': error})
 
 
 def deleteWorkObjectQuestion(request, work_object_pk):
@@ -177,17 +171,13 @@ def deleteWorkObject(request, work_object_pk):
     try:
         work_object = WorkObject.objects.get(id=work_object_pk)
         work_object.delete()
-        return redirect('success_delete_workobject', work_object.name)
+        context = {
+            'work_object_name': work_object.name
+        }
+        return render(request, 'success_delete_workobject.html', context)
     except Exception as e:
-        messages.warning(request, f'{e}')
-    return redirect('work_objects', request.user.pk)
-
-
-def success_delete_workobject(request, work_object_name):
-    context = {
-        'work_object_name': work_object_name
-    }
-    return render(request, 'success_delete_workobject.html', context)
+        error = f'Wystąpił błąd: {e}'
+        return render(request, 'error.html', {'error': error})
 
 
 def chat(request, pk):
@@ -213,7 +203,7 @@ def chat(request, pk):
         }
         return JsonResponse(response)
     if request.method == 'POST':
-        work_object, created = WorkObject.objects.get_or_create(id=pk)
+        work_object = WorkObject.objects.get(id=pk)
         # all_users = CustomUser.objects.filter(workobject__id=pk).values('username')
         # users = [u['username'] for u in all_users]
         # print('users', users)
@@ -257,19 +247,17 @@ def chat(request, pk):
 def createWorkObject(request):
     users = CustomUser.objects.all()
     if request.method == 'POST':
-        users = CustomUser.objects.all()
         work = WorkObject.objects.create()
         workname = request.POST.get('workname')
         print('workname ---', workname)
         if workname != '':
             work.name = workname
             print('workname +++', workname)
-            users_email = request.POST.getlist('users')
-            print('user_email: ', users_email)
-            print('users: ', users)
-            work.user.add(*users_email)
+            users_list = request.POST.getlist('users')
+            print('users_list: ', users_list)
+            work.user.add(*users_list)
             work.save()
-            return redirect('work_objects')
+            return redirect('work_objects', request.user.pk)
         work_none = WorkObject.objects.filter(name=None)
         work_none.delete()
         return redirect('home')
@@ -372,7 +360,6 @@ def userWork(request, pk):
                 wt = f'{dif_hours}:{dif_min}'
 
         work_object = request.POST.get('work_object')
-        print('work_object', work_object)
         work_type = request.POST.get('work_type')
         coffee_food = request.POST.get('coffee_food')
         fuel = request.POST.get('fuel')
@@ -381,6 +368,7 @@ def userWork(request, pk):
         user = CustomUser.objects.get(id=pk)
         work = Work.objects.create()
         work.date = date
+        work.username = user.username
         work.timestart = timestart
         work.timefinish = timefinish
         work.diff_time = wt 
@@ -403,7 +391,7 @@ def userWork(request, pk):
         work.payment = (user.payment / 3600) * diff.seconds
         work.user.add(user)
         work.save()
-        return redirect('user_work', pk=pk)
+        return redirect('raports')
     else:
         allworks = Work.objects.prefetch_related('user').order_by('-date')
         work_objects = WorkObject.objects.filter(user__id=pk)
@@ -614,15 +602,10 @@ def deleteListUserWork(request):
         for m in marked:
             work = Work.objects.get(id=m)
             work.delete()
-        return redirect ('success_delete_list_user_work')
+        return render (request, 'success_delete_list_user_work.html')
     except Exception as e:
         error = f'Wystąpił błąd: {e}'
         return render(request, 'error.html', {'error': error})
-    
-
-def success_delete_list_user_work(request):
-    return render(request, 'success_delete_list_user_work.html')
-
 
 
 #**********************************************************************************************************************#
@@ -635,9 +618,9 @@ def getUserRaport(request, user_pk):
     work_objects = WorkObject.objects.filter(user__id=user_pk)
     # works = Work.objects.filter(user__id=user_pk).order_by('date')
     if request.user.is_superuser:
-        works = Work.objects.prefetch_related('user').order_by('date')
+        works = Work.objects.prefetch_related('user').order_by('-date')
     else:
-        works = Work.objects.filter(user=request.user).order_by('date')
+        works = Work.objects.filter(user=request.user).order_by('-date')
     ######################
     ### Totals for all ###
     total_coffee_food = Work.objects.filter(user__id=user_pk,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
@@ -672,6 +655,13 @@ def getUserRaport(request, user_pk):
     ##########################
 
     if request.method == 'POST':
+
+        if 'marked' in request.POST:
+            marked = request.POST.getlist('marked')
+            request.session['marked'] = marked
+            if marked is not None:
+                return redirect ('deleteListUserWorkQuestion')
+            
         ### Sorted by date ###
         sorted_from = request.POST.get('sorted_from')
         work_object = request.POST.get('work_object')
@@ -813,6 +803,9 @@ def getUserRaport(request, user_pk):
             ### End Totals for sorted_from ###
             ##################################
 
+    paginator = Paginator(works, 35)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     context = {
         'user': user,
@@ -825,6 +818,7 @@ def getUserRaport(request, user_pk):
         'total_payment': total_payment,
         'total_work_time': total_work_time,
         'total_work_over_time': total_work_over_time,
+        'page_obj': page_obj,
     }
     return render(request, 'user_raport.html', context)
 
@@ -1049,6 +1043,7 @@ def raports(request):
     if request.method == 'POST':
 
         if 'marked' in request.POST:
+            sub_button = request.POST.get('sub_button')
             marked = request.POST.getlist('marked')
             request.session['marked'] = marked
             if marked is not None:
@@ -1366,6 +1361,13 @@ def raports(request):
     paginator = Paginator(works, 35)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+
+    ## List of users, even if the someone has been deleted can be find in raports
+    works = Work.objects.values_list('username')
+    users_list = set()
+    users_list = {wo[0] for wo in works}
+
+    total = total_coffee_food + total_fuel + total_phone_costs + total_payment
     context = {
         'works': works,
         'users': users, 
@@ -1378,6 +1380,8 @@ def raports(request):
         'total_work_time': total_work_time,
         'total_work_over_time': total_work_over_time,
         'page_obj': page_obj,
+        'users_list': users_list,
+        'total': total,
     }
     return render(request, 'raports.html', context)
 
@@ -1527,6 +1531,140 @@ def toExcel(request):
     wb.save(response)
 
     return response
+
+
+def raportsToExcel(request):
+
+    if request.method == 'POST':
+        visible_values = request.POST.getlist('visible_values[]')
+        raports = Work.objects.filter(id__in=visible_values)
+
+        ##############################
+        ### Totals for sorted_from ###
+        total_coffee_food = raports.aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
+        total_fuel = Work.objects.filter(id__in=visible_values).aggregate(total_fuel=Sum('fuel'))['total_fuel']
+        total_prepayment = Work.objects.filter(id__in=visible_values).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+        total_phone_costs = Work.objects.filter(id__in=visible_values).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+        total_payment = Work.objects.filter(id__in=visible_values).aggregate(total_payment=Sum('payment'))['total_payment']
+        total_sum_time_sec = Work.objects.filter(id__in=visible_values).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+        total_sum_over_time_sec = Work.objects.filter(id__in=visible_values).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+
+        if total_sum_time_sec:
+            ### total_sum_time_sec => hours:minutes ###
+            total_hours = total_sum_time_sec // 3600
+            total_sec = total_sum_time_sec % 3600
+            total_min = total_sec // 60
+            total_work_time = f'{int(total_hours)}:{int(total_min)}'
+        else:
+            total_work_time = '0:00'
+        if total_sum_over_time_sec:
+            ### total_sum_over_time_sec => hours:minutes ###
+            total_hours = total_sum_over_time_sec // 3600
+            total_sec = total_sum_over_time_sec % 3600
+            total_min = total_sec // 60
+            if total_min < 10 or total_min == 0.0:
+                total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
+            else:
+                total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
+        else:
+            total_work_over_time = '0:00'
+
+        total = total_coffee_food + total_fuel + total_phone_costs + total_payment
+        ### End Totals for sorted_from ###
+        ##################################
+
+
+        wb = openpyxl.Workbook()
+
+        # Get the default active sheet
+        sheet = wb.active
+
+        # Add the table headers
+        headers = [
+            'Data', 
+            'Pracownik', 
+            'Objekt',
+            'Początek',
+            'Koniec',
+            'Czas pracy',
+            'Nadgodziny',
+            'Czynność',
+            'Kawa/Posiłki',
+            'Zaliczka',
+            'Paliwo',
+            'Telefon',
+            'Opłata',
+            ]  # Specify your desired headers
+        for col_num, header in enumerate(headers, 1):
+            sheet.cell(row=1, column=col_num).value = header
+
+        print('raports', raports)
+        # Add the table data
+        for row_num, raport in enumerate(raports, 3):
+            sheet.cell(row=row_num, column=1).value = raport.date
+            sheet.cell(row=row_num, column=2).value = raport.username
+            sheet.cell(row=row_num, column=3).value = raport.work_object
+            sheet.cell(row=row_num, column=4).value = raport.timestart
+            sheet.cell(row=row_num, column=5).value = raport.timefinish
+            sheet.cell(row=row_num, column=6).value = raport.diff_time
+            sheet.cell(row=row_num, column=7).value = raport.over_time
+            sheet.cell(row=row_num, column=8).value = raport.work_type
+            sheet.cell(row=row_num, column=9).value = raport.coffee_food
+            sheet.cell(row=row_num, column=10).value = raport.prepayment
+            sheet.cell(row=row_num, column=11).value = raport.fuel
+            sheet.cell(row=row_num, column=12).value = raport.phone_costs
+            sheet.cell(row=row_num, column=13).value = raport.payment
+
+        for raport in range(0, 16):
+            column_values = ['RAZEM:', '', '', '', '', total_work_time, total_work_over_time, '', total_coffee_food,
+                            total_prepayment, total_fuel, total_phone_costs, total_payment, '', total]
+
+        for column, value in enumerate(column_values, 1):
+            sheet.cell(row=len(raports)+4, column=column).value = value
+
+
+        # for raport in range(0, 16):
+        #     sheet.cell(row=row_num, column=1).value = 'RAZEM'
+        #     sheet.cell(row=row_num, column=2).value = ''
+        #     sheet.cell(row=row_num, column=3).value = ""
+        #     sheet.cell(row=row_num, column=4).value = ''
+        #     sheet.cell(row=row_num, column=5).value = ''
+        #     sheet.cell(row=row_num, column=6).value = ''
+        #     sheet.cell(row=row_num, column=7).value = total_work_time
+        #     sheet.cell(row=row_num, column=8).value = total_work_over_time
+        #     sheet.cell(row=row_num, column=9).value = ''
+        #     sheet.cell(row=row_num, column=10).value = total_coffee_food
+        #     sheet.cell(row=row_num, column=11).value = total_prepayment
+        #     sheet.cell(row=row_num, column=12).value = total_fuel
+        #     sheet.cell(row=row_num, column=13).value = total_phone_costs
+        #     sheet.cell(row=row_num, column=14).value = total_payment
+        #     sheet.cell(row=row_num, column=15).value = ''
+        #     sheet.cell(row=row_num, column=16).value = total
+
+
+
+        # Set the width of columns
+        column_widths = [15, 15, 40, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15]  # Specify the desired width for each column
+        for col_num, width in enumerate(column_widths, 1):
+            column_letter = get_column_letter(col_num)
+            sheet.column_dimensions[column_letter].width = width
+
+        # Specify the file name for the Excel file
+        file_name = 'raporty.xlsx'
+
+        # Construct the full file path
+        file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+
+        # Save the workbook to the file path
+        wb.save(file_path)
+
+        # Create a response to serve the Excel file for download
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=table_data.xlsx'
+        wb.save(response)
+
+        return response
+
 
 ####################################################################################
 #                                  END EXCEL                                       #

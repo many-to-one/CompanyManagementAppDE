@@ -15,10 +15,15 @@
         <div class="page-container">
 
             <div class="title">
-                <h3>PRACOWNICY</h3>
-                <form method="POST" class="search_form">
+                <div class="back">
+                    <a class="label_img" href="{% url 'work_objects' request.user.pk %}">
+                        <img src="{% static 'images/back.png' %}" width="30" height="30">
+                    </a>
+                    <h3>PRACOWNICY</h3>
+                </div>
+                <form method="POST" class="search_form" id="users">
                     {% csrf_token %}
-                    <select name="user" class="search">
+                    <select name="user" class="search" onchange="submitFormUsers()">
                         <option disabled selected hidden>Szukaj pracownika</option>                        
                         <option >Wszyscy pracownicy</option>
                         {% for user in users_list %}
@@ -72,6 +77,14 @@
             </div>
 
         </div>
+
+        <script>
+            function submitFormUsers() {
+              var form = document.getElementById("users");
+              form.submit();
+            }
+        </script>
+
     {% endblock %}
 
 </body>

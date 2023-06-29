@@ -14,6 +14,11 @@ class Work(models.Model):
         max_length=8,
         verbose_name='Data',
     )
+    username = models.CharField(
+        null=True,
+        max_length=125,
+        verbose_name='Imię użytkownika',
+    )
     timestart = models.CharField(
         null=False,
         default='00:00',
@@ -182,7 +187,7 @@ class Message(models.Model):
     sender = models.ForeignKey(
         CustomUser, 
         related_name='nadawca',
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         )
     name = models.CharField(
         null=True,

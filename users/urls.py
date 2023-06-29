@@ -12,5 +12,4 @@ urlpatterns = [
     path('all_users/', AllUsers, name='all_users'),
     path('deleteQuestion/<pk>/', deleteQuestion, name='deleteQuestion'),
     path('deleteUser/<pk>/<user>/', deleteUser, name='deleteUser'),
-    path('success_delete_user/<user>/', success_delete_user, name='success_delete_user'),
     ]

@@ -279,16 +279,7 @@ def deleteUser(request, pk, user):
     u = CustomUser.objects.get(id=pk)
     try:
         u.delete()
-        print('user was deleted', u)
-        messages.warning(request, f'Użytkownik {user} został usunięty')
-        return redirect('success_delete_user', user)
+        return render(request, 'success_delete_user.html', {'user': u.username})
     except Exception as e:
-        print('e', e)
-    return redirect('all_users')
-
-
-def success_delete_user(request, user):
-    context = {
-        'user': user,
-    }
-    return render(request, 'success_delete_user.html', context)
+        error = f'Wystąpił błąd: {e}'
+        return render(request, 'error.html', {'error': error})

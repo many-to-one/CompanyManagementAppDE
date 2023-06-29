@@ -26,7 +26,10 @@
             <button class="auth-btn" type="submit">
                 <p class="btn-title">Zaloguj się</p>
             </button>
-            <a href="{% url 'forgot_password' %}">Nie pamiętam hasła</a>
+            <div class="back">
+                <a href="{% url 'register' %}">Załóż konto</a>
+                <a href="{% url 'forgot_password' %}">Nie pamiętam hasła</a>
+            </div>
         
         
         </form>

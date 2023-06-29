@@ -155,12 +155,20 @@ tr:nth-child(even) td {
     tr:nth-child(even) td {
         background-color: #b4bfd8;
     }
+
+    .total {
+      display: none;
+    }
   }
 
   @media screen and (max-width: 450px) {
     table {
       border: 0;
       margin-left: -15px;
+    }
+
+    .total {
+      display: none;
     }
   }
 
@@ -201,6 +209,7 @@ tr:nth-child(even) td {
 
 .title {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     background-color: var(--title-bg-color);
@@ -208,7 +217,8 @@ tr:nth-child(even) td {
     border-radius: 5px;
     border: transparent;
     width: 100vw;
-    height: 40px;
+    height: auto;
+    min-height: 100px;
     font-size: 20px;
     padding: 10px;
     gap: 15px;
@@ -219,13 +229,14 @@ tr:nth-child(even) td {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: space-around;
     background-color: var(--title-bg-color);
     color: #2a2a2a;
     border-radius: 5px;
     border: transparent;
     width: 100vw;
-    height: 40px;
+    height: auto;
+    min-height: 100px;
     font-size: 10px;
     padding: 10px;
     gap: 2px;
@@ -321,28 +332,6 @@ select {
     box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 }
 
-.work select {
-    background-color: var(--input-bg-color);
-    color: #2a2a2a;
-    border-radius: 5px;
-    border: transparent;
-    width: 180px;
-    height: 25px;
-    font-size: 14px;
-    padding-left: 5px;
-    cursor: pointer;
-    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
-}
-
-select:hover {
-    background-color: #a2b3d1;
-    transition: background-color 0.3s ease;
-}
-
-.work {
-    padding: 5px;
-}
-
 .btn {
     padding: 5px;
     margin: 10px;
@@ -377,4 +366,13 @@ li {
 
 .dropdown-menu.show {
   display: block;
+}
+
+.back {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 80vw;
+  gap: 20px;
 }

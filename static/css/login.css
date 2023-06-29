@@ -57,4 +57,5 @@
     background-color: var(--btn-bg-color);
     border: 1px solid #434242;
     border-radius: 10px;
+    cursor: pointer;
 }

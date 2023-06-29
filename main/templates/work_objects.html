@@ -18,16 +18,16 @@
 
     <div class="title">
         <h3>MIEJSCA PRACY</h3>
-        <form method="POST" class="search_form">
+        <form method="POST" class="search_form" id="objects">
             {% csrf_token %}
-            <select name="object" class="search">
-                <option disabled selected hidden>Szukaj objekt</option>                        
+            <select name="object" class="search" onchange="submitFormObjects()">
+                <option disabled selected hidden>Szukaj objekt</option>                       
                 <option >Wszystkie objekty</option>
                 {% for o in work_objects_list %}
                     <option value="{{o}}">{{o}}</option>
                 {% endfor %}
             </select> 
-            <input type="image" src="{% static 'images/search.png' %}" width="30" height="30">
+            <img src="{% static 'images/search.png' %}" width="30" height="30"> 
         </form>
     </div>
     <br>
@@ -45,9 +45,9 @@
 
                 <div class="row_cont_in_label">
                     <div class="tags_cont_mini">
-                        <span class="icon">
+                        <a class="icon" href="{% url 'work_object' wo.pk %}">
                             <img src="{% static 'images/letters.png' %}" width="30" height="25">
-                        </span>
+                        </a>
                                 
                             {% messages_quantity request.user.username wo as count %}
                             {% if count > 0 %}
@@ -97,6 +97,15 @@
         </span>
     </div>
 </div>
+
+<script>
+
+    function submitFormObjects() {
+              var form = document.getElementById("objects");
+              form.submit();
+            }
+
+</script>
 
 {% endblock %}
     

@@ -33,8 +33,19 @@
         <div class="container">
 
             <table>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="delete">
+                        <input type="checkbox" onclick="checkAll()">
+                        <p>Usuń zaznaczone</p>
+                        <input type="image" src="{% static 'images/delete.png' %}" width="30" height="30">
+                    </div>
                 <thead>
                     <tr>
+                        <th>
+                            <input type="checkbox" onclick="checkAll()">
+                            <input type="image" src="{% static 'images/delete.png' %}" width="30" height="30">
+                        </th>
                         <th>Data</th>
                         <th>Objekt</th>
                         <th>Początek</th>
@@ -49,8 +60,11 @@
                         <th>Opłata</th>
                     </tr>
                 </thead>
-                {% for work in works %}
+                {% for work in page_obj %}
                     <tr>
+                        <td>
+                            <input id="check" type="checkbox" name="marked" value="{{ work.id }}" >
+                        </td>
                         <td data-label="Data">{{work.date}}</td>
                         <td data-label="Objekt">{{work.work_object}}</td>
                         <td data-label="Początek">{{work.timestart}}</td>
@@ -67,10 +81,21 @@
                         <td data-label="Paliwo">{{work.fuel}}</td>
                         <td data-label="Telefon">{{work.phone_costs}}</td>
                         <td data-label="Opłata">{{work.payment}}</td>
+                        <td class="ch">
+                            <a class="label_img" href="{% url 'update_user_work' work.pk %}" >
+                                <img src="{% static 'images/edit.png' %}" width="30" height="30">
+                            </a>
+                        </td>
+                        <td class="nch">
+                            <a class="label_img" href="{% url 'deleteUserWorkQuastion' work.pk %}">
+                                <img src="{% static 'images/delete.png' %}" width="30" height="30">
+                            </a>
+                        </td>
                     </tr>
                 {% endfor %}
                     <tr>
-                        <td data-label="RAZEM"></td>
+                        <td data-label="RAZEM">RAZEM:</td>
+                        <td></td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -82,11 +107,45 @@
                         <td data-label="Paliwo">{{total_prepayment}}</td>
                         <td data-label="Telefon">{{total_phone_costs}}</td>
                         <td data-label="Opłata">{{total_payment}}</td>
+                        <td></td>
+                        <td></td>
                     </tr>
+                </form>
             </table>
+
+            <div class="pagination">
+                <span class="step-links">
+                  {% if page_obj.has_previous %}
+                  <a class="page" href="?page=1"><</a>
+                  <a class="page" href="?page={{ page_obj.previous_page_number }}"> << </a>
+                  {% endif %}
+
+                    <span class="current-page"><p>{{ page_obj.number }}</p></span>
+              
+                  {% if page_obj.has_next %}
+                  <a class="page" href="?page={{ page_obj.next_page_number }}">>></a>
+                  <a class="page" href="?page={{ page_obj.paginator.num_pages }}">></a>
+                  {% endif %}
+                </span>
+            </div>
 
         </div>
     </div>
+
+    <script>
+        function checkAll() {
+            var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+
+            for (var i = 0; i < checkboxes.length; i++) {
+                if( checkboxes[i].checked == false){
+                    checkboxes[i].checked = true;
+                }else{
+                    checkboxes[i].checked = false;
+                }
+            }
+        }
+    </script>
+
     {% endblock %}
 </body>
 </html>

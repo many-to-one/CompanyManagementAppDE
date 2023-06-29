@@ -33,14 +33,14 @@
             <input class="input_" name="sorted_to" id="datetimepicker" type="date" value="date">
 
             <select class="input_"  name="user" placeholder="Pracownicy">
-                <option value="">Wszyscy użytkownicy</option>
+                <option disabled selected value="">Wszyscy użytkownicy</option>
                 {% for user in users %}
                     <option value="{{user.username}}">{{user.username}}</option>
                 {% endfor %}
             </select>
 
             <select class="input_"  name="type">
-                <option value="">Rodzaj urlopu:</option>
+                <option disabled selected value="">Rodzaj urlopu:</option>
                 {% for type in types %}
                     <option value="{{ type }}">{{ type }}</option>
                 {% endfor %}

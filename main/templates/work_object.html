@@ -13,22 +13,35 @@
 <body>
 
     {% block content %}
-    <div class="wo_container">
-        <h1>WORK OBJECT: {{work_object.name}}</h1>
+    <div class="page-container">
+
+        <div class="title">
+                <div class="back">
+                    <a class="label_img" href="{% url 'work_objects' request.user.pk %}">
+                        <img src="{% static 'images/back.png' %}" width="30" height="30">
+                    </a>
+                    <h3>{{ work_object.name }}</h3>
+                </div>
         {% if request.user.is_superuser %}
             <form  method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
-                <select name="user" class="wo_input">
-                    <option value="">Dodaj pracownika</option>
-                    {% for user in allusers %}
-                        <option value="{{user}}">{{user.username}}</option>
-                    {% endfor %}
-                </select> 
-                <button class="wo_btn" type="submit" name="add_user"><p class="btn-title">+</p></button>
+                <div class="back">
+                    <select name="user" class="search">
+                        <option value="">Dodaj pracownika</option>
+                        {% for user in allusers %}
+                            <option value="{{user}}">{{user.username}}</option>
+                        {% endfor %}
+                    </select> 
+                    <button type="image" class="label_img" name="add_user">
+                        <img src="{% static 'images/addwork.png' %}" width="30" height="30">
+                    </button>
+                </div>
             </form>  
         {% endif %}
+    </div>
         <br>  
 
+        <div class="wo_container">
             {% for user in users %} 
                 {% if request.user.is_superuser %}
                     <div class="label" >
@@ -41,7 +54,7 @@
                         </div>
 
                         <a class="label_img" href="{% url 'deleteUserFromObjectQuestion' user.pk work_object.pk %}">
-                            <img src="{% static 'images/delete_icon.png' %}" width="30" height="30">
+                            <img src="{% static 'images/delete.png' %}" width="30" height="30">
                           </a>
                         </div> 
   
@@ -78,8 +91,9 @@
             </form>
             <br>
 
+            {% if request.user.is_superuser %}
             <div class="label">
-                <p>Razem:</p>
+                <p>Pensje:</p>
                 <p id="total_payment">{{ total_payment }}</p>
             </div>
             <br>
@@ -98,11 +112,17 @@
                 <p id="total_phone_costs">{{ total_phone_costs }}</p>
             </div>
             <br>
+            <div class="label">
+                <p>Koszty projektu:</p>
+                <p id="total_phone_costs">{{ total }}</p>
+            </div>
+            <br>
 
             <div class="chart">
                 <canvas id="myChart" width="400" height="400"></canvas>
             </div>
-
+        </div>
+        {% endif %}
               
     </div>   
 
@@ -112,7 +132,8 @@
     <script> 
 
     // POST
-    function sendChatMessage(){
+    function sendChatMessage(event){
+        event.preventDefault();
           var txt = document.getElementById("content").value;
 
           $.ajax({
@@ -138,7 +159,7 @@
     // GET
     $(document).ready(function(){
         var Ty = 'Ty:'
-        var user = 
+        // var user = 
 
         setInterval(function(){
             $.ajax({
@@ -187,7 +208,7 @@
             total_phone_costs,
         ]
         var labels = [
-            'Razem',
+            'Pensje',
             'Paliwo',
             'Kawa/Posiłki',
             'Telefon',
