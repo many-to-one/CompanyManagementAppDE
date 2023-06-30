@@ -182,9 +182,9 @@ def deleteWorkObject(request, work_object_pk):
 
 def chat(request, pk):
     if request.method == 'GET':
-        path = pk
+        # path = pk
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        work_object, created = WorkObject.objects.get_or_create(id=pk)
+        work_object = get_object_or_404(WorkObject, id=pk)
         messages = Message.objects.filter(
                     work_object=work_object,
                 )
@@ -203,18 +203,20 @@ def chat(request, pk):
         }
         return JsonResponse(response)
     if request.method == 'POST':
-        work_object = WorkObject.objects.get(id=pk)
+        work_object = get_object_or_404(WorkObject, id=pk)
         # all_users = CustomUser.objects.filter(workobject__id=pk).values('username')
         # users = [u['username'] for u in all_users]
         # print('users', users)
         users = CustomUser.objects.filter(workobject__id=pk)
         r_user = request.user
         content = request.POST.get('txt')
+        user = request.POST.get('user')
+        print('user', user)
         messages = Message.objects.filter(
             work_object=work_object,
         )
         new_message = Message(
-                name = str(r_user),
+                name = user,
                 sender=r_user,
                 content=content,
                 day = f"{datetime.now().strftime('%d %B %Y')}  ",
@@ -1043,7 +1045,6 @@ def raports(request):
     if request.method == 'POST':
 
         if 'marked' in request.POST:
-            sub_button = request.POST.get('sub_button')
             marked = request.POST.getlist('marked')
             request.session['marked'] = marked
             if marked is not None:
@@ -1057,6 +1058,9 @@ def raports(request):
         ###################################  SORTED FROM  ###################################
         #####################################################################################
         if sorted_from:
+            # if sorted_to == '':
+            #     messages.warning(request, 'Puste pole musi być uzupełnione')
+            #     return redirect('raports')
             year, month, day = sorted_from.split('-')
             sorted_to = request.POST.get('sorted_to')
             year_, month_, day_ = sorted_to.split('-')
@@ -1065,6 +1069,14 @@ def raports(request):
             works = Work.objects.prefetch_related('user').filter(
                 date__range=(start, end),
             ).order_by('-date')
+            ### Making the excel file of raports ###
+            if user == '' and work_object == '':
+                filterRaport = request.POST.get('filterRaport')
+                if filterRaport == 'download':
+                    print('SORTED FROM', works)
+                    request.session['works'] = list(works.values())
+                    return redirect('raportsToExcel')
+            
             ##############################
             ### Totals for sorted_from ###
             total_coffee_food = Work.objects.filter(date__range=(start, end)).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
@@ -1102,17 +1114,24 @@ def raports(request):
         #######################################  USER  ######################################
         #####################################################################################
         if user:
-            user = CustomUser.objects.get(username=user)
-            works = Work.objects.filter(user=user.id).order_by('-date')
+            works = Work.objects.filter(username=user).order_by('-date')
+            if sorted_from == '' and work_object == '':
+                ### Making the excel file of raports ###
+                filterRaport = request.POST.get('filterRaport')
+                if filterRaport == 'download':
+                    print('USER', works)
+                    request.session['works'] = list(works.values())
+                    return redirect('raportsToExcel')
+            
             ##############################
             ### Totals for sorted_from ###
-            total_coffee_food = Work.objects.filter(user__id=user.id).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = Work.objects.filter(user__id=user.id).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = Work.objects.filter(user__id=user.id).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = Work.objects.filter(user__id=user.id).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = Work.objects.filter(user__id=user.id).aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = Work.objects.filter(user__id=user.id).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = Work.objects.filter(user__id=user.id).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+            total_coffee_food = works.aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
+            total_fuel = works.aggregate(total_fuel=Sum('fuel'))['total_fuel']
+            total_prepayment = works.aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+            total_phone_costs = works.aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+            total_payment = works.aggregate(total_payment=Sum('payment'))['total_payment']
+            total_sum_time_sec = works.aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+            total_sum_over_time_sec = works.aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
 
             if total_sum_time_sec:
                 ### total_sum_time_sec => hours:minutes ###
@@ -1143,6 +1162,14 @@ def raports(request):
         if work_object: 
             wo = WorkObject.objects.get(id=work_object)
             works = Work.objects.filter(work_object=wo.name).order_by('-date')
+            if sorted_from == '' and user == '':
+                ### Making the excel file of raports ###
+                filterRaport = request.POST.get('filterRaport')
+                if filterRaport == 'download':
+                    print('WORK OBJECT', works)
+                    request.session['works'] = list(works.values())
+                    return redirect('raportsToExcel')
+            
             ##############################
             ### Totals for sorted_from ###
             total_coffee_food = Work.objects.filter(work_object=wo.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
@@ -1190,7 +1217,14 @@ def raports(request):
                 date__range=(start, end),
                 work_object=wo.name,
             ).order_by('-date')
-            # print('WORK_OBJECT:', wo.name)
+            if user == '':
+                ### Making the excel file of raports ###
+                filterRaport = request.POST.get('filterRaport')
+                if filterRaport == 'download':
+                    print('SORTED FROM & WORK OBJECT', works)
+                    request.session['works'] = list(works.values())
+                    return redirect('raportsToExcel')
+            
             ##############################
             ### Totals for sorted_from ###
             total_coffee_food = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
@@ -1228,26 +1262,32 @@ def raports(request):
         #################################  SORTED FROM & USER  ##############################
         #####################################################################################
         if sorted_from and user:
-            user = CustomUser.objects.get(username=user)
             year, month, day = sorted_from.split('-')
             sorted_to = request.POST.get('sorted_to')
             year_, month_, day_ = sorted_to.split('-')
             start = datetime(int(year), int(month), int(day))
             end = datetime(int(year_), int(month_), int(day_))
-            works = Work.objects.prefetch_related('user').filter(
+            works = Work.objects.filter(
                 date__range=(start, end),
-                user=user,
+                username=user,
             ).order_by('-date')
+            if work_object == '':
+                ### Making the excel file of raports ###
+                filterRaport = request.POST.get('filterRaport')
+                if filterRaport == 'download':
+                    print('SORTED FROM & USER', works)
+                    request.session['works'] = list(works.values())
+                    return redirect('raportsToExcel')
 
             ##############################
             ### Totals for sorted_from ###
-            total_coffee_food = Work.objects.filter(date__range=(start, end), user__id=user.id).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = Work.objects.filter(date__range=(start, end), user__id=user.id).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = Work.objects.filter(date__range=(start, end), user__id=user.id).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = Work.objects.filter(date__range=(start, end), user__id=user.id).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = Work.objects.filter(date__range=(start, end), user__id=user.id).aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = Work.objects.filter(date__range=(start, end), user__id=user.id).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = Work.objects.filter(date__range=(start, end), user__id=user.id).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+            total_coffee_food = works.aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
+            total_fuel = works.aggregate(total_fuel=Sum('fuel'))['total_fuel']
+            total_prepayment = works.aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+            total_phone_costs = works.aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+            total_payment = works.aggregate(total_payment=Sum('payment'))['total_payment']
+            total_sum_time_sec = works.aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+            total_sum_over_time_sec = works.aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
 
             if total_sum_time_sec:
                 ### total_sum_time_sec => hours:minutes ###
@@ -1276,21 +1316,27 @@ def raports(request):
         #################################  WORK OBJECT & USER  ##############################
         #####################################################################################
         if work_object and user:
-            user = CustomUser.objects.get(username=user)
             wo = WorkObject.objects.get(id=work_object)
             works = Work.objects.filter(
                 work_object=wo.name,
-                user=user
+                username=user
                 ).order_by('-date')
+            if sorted_from == '':
+                ### Making the excel file of raports ###
+                filterRaport = request.POST.get('filterRaport')
+                if filterRaport == 'download':
+                    print('WORK OBJECT & USER', works)
+                    request.session['works'] = list(works.values())
+                    return redirect('raportsToExcel')
             ##############################
             ### Totals for sorted_from ###
-            total_coffee_food = Work.objects.filter(user__id=user.id, work_object=wo.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = Work.objects.filter(user__id=user.id, work_object=wo.name,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = Work.objects.filter(user__id=user.id, work_object=wo.name,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = Work.objects.filter(user__id=user.id, work_object=wo.name,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = Work.objects.filter(user__id=user.id, work_object=wo.name,).aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = Work.objects.filter(user__id=user.id, work_object=wo.name,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = Work.objects.filter(user__id=user.id, work_object=wo.name,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+            total_coffee_food = works.aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
+            total_fuel = works.aggregate(total_fuel=Sum('fuel'))['total_fuel']
+            total_prepayment = works.aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+            total_phone_costs = works.aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+            total_payment = works.aggregate(total_payment=Sum('payment'))['total_payment']
+            total_sum_time_sec = works.aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+            total_sum_over_time_sec = works.aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
 
             if total_sum_time_sec:
                 ### total_sum_time_sec => hours:minutes ###
@@ -1319,22 +1365,28 @@ def raports(request):
         ##########################  SORTED FROM & WORK OBJECT & USER  #######################
         #####################################################################################  
         if sorted_from and user and work_object:
-            user = CustomUser.objects.get(username=user)
             wo = WorkObject.objects.get(id=work_object)
             works = Work.objects.filter(
                 date__range=(start, end),
                 work_object=wo.name,
-                user=user,
+                username=user,
             ).order_by('-date')
+            ### Making the excel file of raports ###
+            filterRaport = request.POST.get('filterRaport')
+            print('filterRaport', filterRaport)
+            if filterRaport == 'download':
+                print('SORTED FROM & WORK OBJECT & USER', works)
+                request.session['works'] = list(works.values())
+                return redirect('raportsToExcel')
             ##############################
             ### Totals for sorted_from ###
-            total_coffee_food = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=wo.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=wo.name,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=wo.name,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=wo.name,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=wo.name,).aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=wo.name,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = Work.objects.filter(date__range=(start, end), user__id=user.id, work_object=wo.name,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+            total_coffee_food = works.aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
+            total_fuel = works.aggregate(total_fuel=Sum('fuel'))['total_fuel']
+            total_prepayment = works.aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+            total_phone_costs = works.aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+            total_payment = works.aggregate(total_payment=Sum('payment'))['total_payment']
+            total_sum_time_sec = works.aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+            total_sum_over_time_sec = works.aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
 
             if total_sum_time_sec:
                 ### total_sum_time_sec => hours:minutes ###
@@ -1391,7 +1443,6 @@ def raports(request):
 #**********************************************************************************************************************#
 
 def vacations(request, pk):
-    # user = request.user
     user = get_object_or_404(CustomUser, id=pk)
     users = CustomUser.objects.all().values('username')
     username_list = [user['username'] for user in users]
@@ -1400,6 +1451,11 @@ def vacations(request, pk):
     paginator = Paginator(vacations, 2)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+
+    request.session['users'] = username_list
+    all_years = Vacations.objects.all()
+    all_years_list = [year.v_from[:4] for year in all_years]
+    request.session['years'] = sorted(list(set(all_years_list)))
 
     ## Days quantity from the first day of the year
     today = date.today()
@@ -1473,12 +1529,44 @@ def delete_vacations_requests(request):
     return render(request, 'delete_vacations_requests_question.html', context)
 
 
+def vacationsExcelPage(request):
+    users = request.session.get('users')
+    years = request.session.get('years')
+
+    if request.method == 'POST':
+        user = request.POST.get('user')
+        year = request.POST.get('year')
+        request.session['user'] = user
+        request.session['year'] = year
+        print('user', user)
+        print('year', year)
+        return redirect('vacationsToExcel')
+    context = {
+        'users': users,
+        'years': years,
+    }
+    return render(request, 'vacationsExcelPage.html', context)
+
+
 ####################################################################################
 #                                       EXCEL                                      #
 ####################################################################################
 
-def toExcel(request):
-    vacations = Vacations.objects.all().order_by('-id')
+def vacationsToExcel(request):
+    user = request.session.get('user')
+    year = request.session.get('year') 
+    if user == '' and year is not None:
+        vacations = Vacations.objects.filter(
+        v_from__startswith=year,
+    ).order_by('-id')
+    elif user == '' and year == '':
+        vacations = Vacations.objects.all().order_by('-id')
+    elif user is not None and year is not None:
+        vacations = Vacations.objects.filter(
+            v_from__startswith=year,
+            user__username=user
+        ).order_by('-id')
+
     wb = openpyxl.Workbook()
 
     # Get the default active sheet
@@ -1516,18 +1604,9 @@ def toExcel(request):
         column_letter = get_column_letter(col_num)
         sheet.column_dimensions[column_letter].width = width
 
-    # Specify the file name for the Excel file
-    file_name = 'urlopy.xlsx'
-
-    # Construct the full file path
-    file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-
-    # Save the workbook to the file path
-    wb.save(file_path)
-
     # Create a response to serve the Excel file for download
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename=table_data.xlsx'
+    response['Content-Disposition'] = 'attachment; filename=urlopy.xlsx'
     wb.save(response)
 
     return response
@@ -1535,19 +1614,25 @@ def toExcel(request):
 
 def raportsToExcel(request):
 
-    if request.method == 'POST':
+    works = request.session.get('works')
+    ids = [w['id'] for w in works]
+
+    if request.method == 'POST' or works:
         visible_values = request.POST.getlist('visible_values[]')
         raports = Work.objects.filter(id__in=visible_values)
+        if works:
+            raports = Work.objects.filter(id__in=ids)
 
         ##############################
         ### Totals for sorted_from ###
+        # Work.objects.filter(id__in=visible_values)
         total_coffee_food = raports.aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-        total_fuel = Work.objects.filter(id__in=visible_values).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-        total_prepayment = Work.objects.filter(id__in=visible_values).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-        total_phone_costs = Work.objects.filter(id__in=visible_values).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-        total_payment = Work.objects.filter(id__in=visible_values).aggregate(total_payment=Sum('payment'))['total_payment']
-        total_sum_time_sec = Work.objects.filter(id__in=visible_values).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-        total_sum_over_time_sec = Work.objects.filter(id__in=visible_values).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+        total_fuel = raports.aggregate(total_fuel=Sum('fuel'))['total_fuel']
+        total_prepayment = raports.aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
+        total_phone_costs = raports.aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
+        total_payment = raports.aggregate(total_payment=Sum('payment'))['total_payment']
+        total_sum_time_sec = raports.aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
+        total_sum_over_time_sec = raports.aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
 
         if total_sum_time_sec:
             ### total_sum_time_sec => hours:minutes ###
@@ -1598,7 +1683,6 @@ def raportsToExcel(request):
         for col_num, header in enumerate(headers, 1):
             sheet.cell(row=1, column=col_num).value = header
 
-        print('raports', raports)
         # Add the table data
         for row_num, raport in enumerate(raports, 3):
             sheet.cell(row=row_num, column=1).value = raport.date
@@ -1622,27 +1706,6 @@ def raportsToExcel(request):
         for column, value in enumerate(column_values, 1):
             sheet.cell(row=len(raports)+4, column=column).value = value
 
-
-        # for raport in range(0, 16):
-        #     sheet.cell(row=row_num, column=1).value = 'RAZEM'
-        #     sheet.cell(row=row_num, column=2).value = ''
-        #     sheet.cell(row=row_num, column=3).value = ""
-        #     sheet.cell(row=row_num, column=4).value = ''
-        #     sheet.cell(row=row_num, column=5).value = ''
-        #     sheet.cell(row=row_num, column=6).value = ''
-        #     sheet.cell(row=row_num, column=7).value = total_work_time
-        #     sheet.cell(row=row_num, column=8).value = total_work_over_time
-        #     sheet.cell(row=row_num, column=9).value = ''
-        #     sheet.cell(row=row_num, column=10).value = total_coffee_food
-        #     sheet.cell(row=row_num, column=11).value = total_prepayment
-        #     sheet.cell(row=row_num, column=12).value = total_fuel
-        #     sheet.cell(row=row_num, column=13).value = total_phone_costs
-        #     sheet.cell(row=row_num, column=14).value = total_payment
-        #     sheet.cell(row=row_num, column=15).value = ''
-        #     sheet.cell(row=row_num, column=16).value = total
-
-
-
         # Set the width of columns
         column_widths = [15, 15, 40, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15]  # Specify the desired width for each column
         for col_num, width in enumerate(column_widths, 1):
@@ -1660,11 +1723,11 @@ def raportsToExcel(request):
 
         # Create a response to serve the Excel file for download
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename=table_data.xlsx'
+        response['Content-Disposition'] = 'attachment; filename=raporty.xlsx'
         wb.save(response)
 
         return response
-
+    
 
 ####################################################################################
 #                                  END EXCEL                                       #

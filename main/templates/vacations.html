@@ -28,7 +28,7 @@
                 <p>Zarządzanie urlopami</p>
                 <p>{{ user.username }}</p>
                 <div>
-                    <button class="btn download"><a href="{% url 'toExcel' %}">Pobierz</a></button>
+                    <button class="btn download"><a href="{% url 'vacationsExcelPage' %}">Excel</a></button>
                     <button class="btn"><a class="btn-title" href="{% url 'addVacation' %}">+ Dodaj urlop</a></button>
                     {% if request.user.is_superuser %}
                         <button class="btn download tags_cont_mini"><a href="{% url 'allVacationRequests' %}">
@@ -92,18 +92,17 @@
             <table id="table">
                 <form method="POST">
                     {% csrf_token %}
-                    <div class="delete">
-                        <input type="checkbox" onclick="checkAll()">
-                        <p>Usuń zaznaczone</p>
-                        <input type="image" src="{% static 'images/delete.png' %}" width="30" height="30">
-                    </div>
+                    {% if request.user.is_superuser %}
+                        <div class="delete">
+                            <input type="checkbox" onclick="checkAll()">
+                            <p>Usuń zaznaczone</p>
+                            <input type="image" src="{% static 'images/delete.png' %}" width="30" height="30">
+                        </div>
+                    {% endif %}
                 <thead>
                     <tr>
                         <th>
                             <input type="checkbox" onclick="checkAll()">
-                        </th>
-                        <th>
-                            <input type="image" src="{% static 'images/delete.png' %}" width="30" height="30">
                         </th>
                         <th>Data</th>
                         <th>Typ urlopu</th>
@@ -112,7 +111,13 @@
                         <th>Ilość dni</th>
                         <th>Akceptacja</th>
                         <th></th>
-                        <th></th>
+                        <th>
+                            {% if request.user.is_superuser %}
+                                <div class="label_img">
+                                    <input type="image" src="{% static 'images/delete.png' %}" width="30" height="30">
+                                </div>
+                            {% endif %}
+                        </th>
                     </tr>
                 </thead>
                 {% for v in page_obj %}
@@ -120,7 +125,6 @@
                         <td>
                             <input id="check" type="checkbox" name="marked" value="{{ v.id }}" >
                         </td>
-                        <td></td>
                         <td data-label="Data">{{ v.date }}</td>
                         <td data-label="Typ urlopu">{{ v.type }}</td>
                         <td data-label="Od">{{ v.v_from }}</td>

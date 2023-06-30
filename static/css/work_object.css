@@ -55,14 +55,15 @@
     margin-left: 5px;
 }
     
-.chat_container {
+#chato {
     display: flex;
     flex-direction: column;
     padding: 8px;
-    overflow-x: auto;
-    height: auto;
-    min-height: 100px;
-    max-height: 500px;
+    /* overflow-x: auto; */
+    overflow-y: scroll;
+    height: 400px;
+    /* min-height: 100px; */
+    /* max-height: 500px; */
     width: 64vw;
     background-color: var(--input-bg-color);
     border: transparent;

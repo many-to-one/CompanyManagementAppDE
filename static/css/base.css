@@ -290,7 +290,6 @@ tr:nth-child(even) td {
   width: 35px;
   height: 35px;
   border-radius: 5px;
-  /* background-color: #d3e1ff; */
   background-color: var(--main-bg-color);
   box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
   cursor: pointer;

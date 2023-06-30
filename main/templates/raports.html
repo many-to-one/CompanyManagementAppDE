@@ -16,8 +16,12 @@
         
     <div class="page-container">
         <div class="filter-container">
-            <form method="POST">
+            <form method="POST" id="formRaport">
                 {% csrf_token %}
+
+                <a class="label_img" id="backRaport" href="{% url 'raports' %}">
+                    <img src="{% static 'images/back.png' %}" width="30" height="30">
+                </a>
 
                 <input class="input_" name="sorted_from" id="datetimepicker" type="date" value="date">
 
@@ -43,19 +47,25 @@
                     {% endfor %}
                 </select> 
             
-                <button class="btn" type="submit"><p class="btn-title">Szukaj</p></button>
+                <button class="btn" type="submit" id="searchRaport"><p class="btn-title">Szukaj</p></button>
 
-                <button class="btn" type="submit"><p class="btn-title">Pobierz</p></button>
+                <button class="btn" id="excelRaport" onclick="excel(event)">
+                    <p class="btn-title">Excel</p>
+                </button>
+
+                <button class="btn" type="submit" id="filterRaport" name="filterRaport" value="download">
+                    <p class="btn-title">Pobierz</p>
+                </button>
 
             </form>
         </div>
 
         <div class="container"> 
 
-            <table>
+            <table id="raportsTable">
                 <form method="POST">
                     {% csrf_token %}
-                    <div class="delete">
+                    <div class="delete" id="deleteMarked">
                         <input type="checkbox" onclick="checkAll()">
                         <p>Usuń zaznaczone</p>
                         <input type="image" src="{% static 'images/delete.png' %}" width="30" height="30">
@@ -64,7 +74,6 @@
                     <tr>
                         <th>
                             <input type="checkbox" onclick="checkAll()">
-                            <input type="image" src="{% static 'images/delete.png' %}" width="30" height="30">
                         </th>
                         <th>Data</th>
                         <th>Pracownik</th>
@@ -79,10 +88,11 @@
                         <th>Paliwo</th>
                         <th>Telefon</th>
                         <th>Opłata</th>
+                        <th></th>
                         <th>
-                            <button class="btn" id="raportsToEcxel" type="submit" onclick="sendVisibleValues()">
-                                <p class="btn-title">Pobierz</p>
-                            </button>
+                            <div class="label_img">
+                                <input type="image" src="{% static 'images/delete.png' %}" width="30" height="30">
+                            </div>
                         </th>
                     </tr>
                 </thead>
@@ -193,27 +203,22 @@
             }
         }
 
-        function sendVisibleValues() {
-        // Collect visible values
-        var visibleValues = [];
-        var elements = document.getElementsByName('marked');
-        for (var i = 0; i < elements.length; i++) {
-            visibleValues.push(elements[i].value);
-        }
-        var url = "{% url 'raportsToExcel' %}"
-        // Send the values to the view using AJAX or any other method
-        // jQuery AJAX:
-        $.ajax({
-            type: 'POST',
-            url: url,
-            data: {  
-                'visible_values': visibleValues,
-                'csrfmiddlewaretoken': '{{ csrf_token }}'
-            },
-            success: function(response) {
-                // Handle the response from the view
-            }
-        });
+    function excel(event){
+        event.preventDefault();
+        var raportsTable = document.getElementById('raportsTable');
+        var filterRaport = document.getElementById('filterRaport');
+        var searchRaport = document.getElementById('searchRaport');
+        var backRaport = document.getElementById('backRaport');
+        var excelRaport = document.getElementById('excelRaport');
+        var deleteMarked = document.getElementById('deleteMarked');
+
+        // Making buttons visible or invisible
+        raportsTable.style.display = 'none';
+        filterRaport.style.display = 'block';
+        searchRaport.style.display = 'none';
+        backRaport.style.display = 'flex';
+        excelRaport.style.display = 'none';
+        deleteMarked.style.display = 'none';
     }
 
     </script>

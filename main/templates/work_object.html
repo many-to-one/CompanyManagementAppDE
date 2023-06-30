@@ -80,7 +80,7 @@
                     <a
                         id="chat_push" 
                         class="label_img" 
-                        onclick="sendChatMessage()"
+                        onclick="sendChatMessage(event)"
                         name="chat"
                         type="button"
                     >
@@ -131,35 +131,42 @@
 
     <script> 
 
+    window.addEventListener('DOMContentLoaded', function() {
+      var chatContainer = document.getElementById('chato');
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    });
+
     // POST
     function sendChatMessage(event){
         event.preventDefault();
           var txt = document.getElementById("content").value;
+          var user = "{{ user }}"
+          textarea = document.getElementById("content")
 
           $.ajax({
               type: 'POST',
               url: "{% url 'chat' work_object.pk %}",
               data: {
                   'txt': txt,
+                  'user': user,
                   'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
               },
               success: (data) => {
                 console.log(data);
                 $('#content').empty();
+                textarea.value = '';
               },
               error: (data) => {
                   console.log('error')
                   $('#content').empty();
               }                
-          }),
-         console.log('ok')             
-      }
+          })             
+        }
     
     
     // GET
     $(document).ready(function(){
         var Ty = 'Ty:'
-        // var user = 
 
         setInterval(function(){
             $.ajax({
@@ -167,8 +174,8 @@
                 url: "{% url 'chat' work_object.pk %}",
                 success: function(response){
                     $('#chato').empty();
-                    for (var key in response.messages)
-                    {   if(response.user === response.messages[key].name){
+                    for (var key in response.messages){
+                       if(response.user === response.messages[key].name){
                             var data= '<p class="r">'+Ty+'</p>'+
                                     '<div class="chat_label_r">'+
                                         '<p class="chat_content">'+response.messages[key].content+'</p>'+

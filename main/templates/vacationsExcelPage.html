@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    {% block content %}
+        
+    <div class="page-container">
+        <div class="filter-container">
+            <form method="POST" id="formRaport">
+                {% csrf_token %}
+
+                <a class="label_img" href="{% url 'vacations' request.user.pk %}">
+                    <img src="{% static 'images/back.png' %}" width="30" height="30">
+                </a>
+
+                <select name="user" class="vacations_input">
+                    <option value="">Wszyscy użytkownicy</option>
+                    {% for user in users %}
+                        <option value="{{ user }}">{{ user }}</option>
+                    {% endfor %}
+                </select>
+
+                <select name="year" class="vacations_input">
+                    <option value="">Za cały czas</option>
+                    {% for year in years %}
+                        <option value="{{ year }}">{{ year }}</option>
+                    {% endfor %}
+                </select>
+
+                <button class="btn" type="submit">
+                    <a>Pobierz</a>
+                </button>
+
+
+            </form>
+        </div>
+    </div>
+
+    {% endblock %}
+    
+</body>
+</html>
