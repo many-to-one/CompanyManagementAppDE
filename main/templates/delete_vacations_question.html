@@ -11,12 +11,12 @@
 <body>
     {% block content  %}
         <div class="cwo_cont">
-            <p>Chcesz usunąć ten wniosek?</p>
+            <p>Chcesz usunąć ten urlop z historii?</p>
             <form method="POST">
                 {% csrf_token %}
                 <div class="vacations_mini">
                     <button class="btn" name="yes" type="submit">
-                        <a href="{% url 'delete_vacations_requests' %}">Tak</a>
+                        <a href="{% url 'delete_vacations' %}">Tak</a>
                     </button>
                     <button class="btn" name="no">
                         <a href="{% url 'vacations' request.user.pk %}">Nie</a>

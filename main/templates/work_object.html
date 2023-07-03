@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load messages %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -71,7 +72,16 @@
             <h1>Czat</h1>
             <h1 id="currentDate"></h1>
 
-            <div id="chato" class="chat_container"></div>
+            <div class="chat_container">
+                <div id="chato"></div>
+                    <img 
+                    src="{% static 'images/enter.png' %}" 
+                    width="20" height="20" 
+                    id="chat_down"
+                    onclick="lastMessage()"
+                    >
+                    <span id="chat_down_quantity">{% all_messages_quantity request.user.username %}</span>
+            </div>
             
             <form id="chat-form" method="POST">
                 {% csrf_token %}
@@ -131,10 +141,54 @@
 
     <script> 
 
-    window.addEventListener('DOMContentLoaded', function() {
-      var chatContainer = document.getElementById('chato');
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    });
+    var chatWindow = document.getElementById('chato')
+    var shouldToBottom = true 
+
+    // Button to up down of the chat window
+    var chatDown = document.getElementById('chat_down')
+    var chatDownQuantity = document.getElementById('chat_down_quantity')
+
+    // Check if the user is scrolling
+    chatWindow.addEventListener('scroll', handleScroll);
+    setInterval(checkScrollActivity, 500);
+    var scrollActive = false;
+
+    function handleScroll() {
+      scrollActive = true;
+      clearTimeout(scrollTimeout);
+    
+      var scrollTimeout = setTimeout(function() {
+        scrollActive = false;
+      }, 200); 
+    }
+
+    function checkScrollActivity() {
+      if (scrollActive) {
+        shouldToBottom = false; // if the User is scrolling the scrollTop will be not in bottom on the window
+        chatDown.style.display = 'block'
+        chatDownQuantity.style.display = 'block'
+        chatDownQuantity.textContent = '0'
+      }else if (chatWindow.scrollTop > 840){
+        chatDown.style.display = 'none' // Make the chat_down button invisible
+        chatDownQuantity.style.display = 'none'
+      }else if (chatWindow.scrollTop < 840){
+        chatDown.style.display = 'block' // Make the chat_down button active
+        chatDownQuantity.style.display = 'block'
+        chatDownQuantity.textContent = '0'
+      }
+    }
+
+    // The chat window will shows the last message on the bottom 
+    function scrollBottom() {
+        if (shouldToBottom === true){
+            chatWindow.scrollTop = chatWindow.scrollHeight
+        }
+    }
+
+    // Go up down the chat and 
+    function lastMessage() {
+        chatWindow.scrollTop = chatWindow.scrollHeight
+    }
 
     // POST
     function sendChatMessage(event){
@@ -155,6 +209,7 @@
                 console.log(data);
                 $('#content').empty();
                 textarea.value = '';
+                shouldToBottom = true
               },
               error: (data) => {
                   console.log('error')
@@ -191,6 +246,7 @@
                                 
                     $('#chato').append(data)
                     }
+                    scrollBottom()
                 },
                 error: function(response){
                     // alert('Error')

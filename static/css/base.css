@@ -347,6 +347,10 @@ a {
     text-decoration: none;
 }
 
+.black_text {
+  color: black;
+}
+
 li {
     list-style: none;
 }

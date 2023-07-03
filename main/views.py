@@ -10,7 +10,7 @@ from django.http import JsonResponse
 from django.db.models import Sum
 from datetime import datetime, timedelta
 from django.db.models import F
-from django.contrib.auth.decorators import login_required
+# from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from datetime import date
 from users.models import CustomUser
@@ -22,14 +22,19 @@ import matplotlib.pyplot as plt
 
 
 def index(request):
+    condition = True
     return render(request, "home.html")
+
+
+def notFound(request):
+    return redirect('glrm:error')
 
 
 #**********************************************************************************************************************#
 #*************************************************** ALL WORK OBJECTS *************************************************#
 #**********************************************************************************************************************#
 
-@login_required
+# @login_required
 def WorkObjects(request, pk):
     user = CustomUser.objects.get(id=pk)
     if user.is_superuser:
@@ -109,6 +114,9 @@ def workObjectView(request, **kwargs):
         ## Add new user in work object
         if 'add_user' in request.POST:
             user = request.POST.get('user')
+            if user == '':
+                error = 'Nie wybrano żadnego użytkownika'
+                return render(request, 'error.html', {'error': error})
             add_user = CustomUser.objects.get(username=user)
             work_object.user.add(add_user)
             work_object.save()
@@ -1464,8 +1472,12 @@ def vacations(request, pk):
 
     ## Days of vacations DE actually to use in current year
     current_month = datetime.now().month
-    days_to_use = user.vacations_days_quantity_de / 12 * current_month
-    vacations.actually_days_to_use = round(days_to_use)
+    try:
+        days_to_use = user.vacations_days_quantity_de / 12 * current_month
+        vacations.actually_days_to_use = round(days_to_use)
+    except:
+        error = 'Twoje dane nie zostały uzupełnione, zwróć się do Administartora.'
+        return render(request, 'error.html', {'error': error})
 
     today = date.today()
     first_day_of_the_year = date(today.year, 1, 1)
@@ -1494,7 +1506,7 @@ def vacations(request, pk):
             marked = request.POST.getlist('marked')
             if marked is not None:
                 request.session['marked'] = marked # Here we need to send this list to the delete_vacations_requests function
-                return redirect('delete_vacations_requests_question')
+                return redirect('delete_vacations_question')
 
     context = {
         'vacations': vacations,
@@ -1508,12 +1520,11 @@ def vacations(request, pk):
     }
     return render(request, 'vacations.html', context)
 
-def delete_vacations_requests_question(request):
+def delete_vacations_question(request):
+    return render(request, 'delete_vacations_question.html')
 
-    return render(request, 'delete_vacations_requests_question.html')
 
-
-def delete_vacations_requests(request):
+def delete_vacations(request):
     marked = request.session.get('marked') # Here we get this list from vacations marked form
     pk = request.user.pk
     markeds = Vacations.objects.filter(
@@ -1526,7 +1537,7 @@ def delete_vacations_requests(request):
     context = {
         'pk': pk
     }
-    return render(request, 'delete_vacations_requests_question.html', context)
+    return render(request, 'delete_vacations_question.html', context)
 
 
 def vacationsExcelPage(request):

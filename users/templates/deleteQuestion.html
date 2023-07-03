@@ -14,17 +14,17 @@
         <div class="cwo_cont">
 
             <p>Czy napewno chcesz usunąć użytkownika {{ user }}?</p>
-            <p>Jeśli tak, to razem z użytkowniliem będą usunięte wszystkie informacje
-                z nim związane. Między innymi: raporty, udział w projektach i wiadomości.
-            </p>
-                <div class="vacations_mini">
-                    <button class="btn" name="yes" type="submit">
-                        <a href="{% url 'deleteUser' pk user %}">Tak</a>
-                    </button>
-                    <button class="btn" name="no">
-                        <a href="{% url 'all_users' %}">Nie</a>
-                    </button>
-                </div>
+            <p>Musisz najpierw pobrać jego historię urlopów.</p>
+            <p>W przeciwnym razie historia urlopów tego użytkownika będzie usunięta na zawsze</p>
+
+            <div class="vacations_mini">
+                <button class="btn" name="yes" type="submit">
+                    <a href="{% url 'deleteUser' pk user %}">Tak</a>
+                </button>
+                <button class="btn" name="no">
+                    <a href="{% url 'all_users' %}">Nie</a>
+                </button>
+            </div>
         </div>
     {% endblock  %}  
     

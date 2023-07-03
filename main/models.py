@@ -187,7 +187,8 @@ class Message(models.Model):
     sender = models.ForeignKey(
         CustomUser, 
         related_name='nadawca',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL, ## It helps to protect the message after the User was deleted
+        null=True,
         )
     name = models.CharField(
         null=True,
@@ -223,13 +224,14 @@ class Message(models.Model):
     #     return json.loads(self.recipient)
 
     def __str__(self) -> str:
-        return self.sender.username
+        return self.name
     
 
 class IsRead(models.Model):
     message = models.ForeignKey(
         Message,
         on_delete=models.CASCADE, 
+        null=True,
     )
     username = models.CharField(
         null=True,
@@ -238,7 +240,7 @@ class IsRead(models.Model):
     work_object = models.ForeignKey(
         WorkObject,
         null=True, 
-        on_delete=models.PROTECT, 
+        on_delete=models.CASCADE, 
         )
     is_read = models.BooleanField(
         default=False,
@@ -252,7 +254,8 @@ class Vacations(models.Model):
     user = models.ForeignKey(
         CustomUser, 
         related_name='user',
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
+        null=True,
         )
     year = models.CharField(
         default='0000',
@@ -309,9 +312,7 @@ class Vacations(models.Model):
     )
 
     def __str__(self) -> str:
-        return str(self.id)
-
-        # return self.user.username
+        return self.user.username
     
 
 class VacationRequest(models.Model):
