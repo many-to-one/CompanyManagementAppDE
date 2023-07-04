@@ -22,7 +22,6 @@ import matplotlib.pyplot as plt
 
 
 def index(request):
-    condition = True
     return render(request, "home.html")
 
 
@@ -188,64 +187,137 @@ def deleteWorkObject(request, work_object_pk):
         return render(request, 'error.html', {'error': error})
 
 
+from django.template import Context, Template
+def showCount(request, username, work_object_pk):
+    if request.method == 'GET':
+        work_object = get_object_or_404(WorkObject, id=work_object_pk)
+        template = Template("{% load messages %} {% messages_quantity username work_object %}")
+        context = Context({'username': username, 'work_object': work_object})
+        count = template.render(context)
+        response = {'count': count,}
+        print('count', count)
+    return JsonResponse(response)
+
+
+from django.db.models import Q
+
 def chat(request, pk):
     if request.method == 'GET':
-        # path = pk
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         work_object = get_object_or_404(WorkObject, id=pk)
-        messages = Message.objects.filter(
-                    work_object=work_object,
-                )
-        for mess in messages:
-            read = IsRead.objects.filter(
-                message=mess
-            )
-            for r in read:
-                if r.username == request.user.username:
-                    r.is_read=True
-                    r.save()
+
+        # Update is_read flag for messages
+        read_messages = Message.objects.filter(work_object=work_object)
+        read_filter = Q(message__in=read_messages) & Q(username=request.user.username)
+        IsRead.objects.filter(read_filter).update(is_read=True)
+
+        messages = read_messages.values()
+
         response = {
             'user': request.user.username,
-            'messages': list(messages.values()),
+            'messages': list(messages),
             'current_time': current_time,
         }
         return JsonResponse(response)
+    
     if request.method == 'POST':
         work_object = get_object_or_404(WorkObject, id=pk)
-        # all_users = CustomUser.objects.filter(workobject__id=pk).values('username')
-        # users = [u['username'] for u in all_users]
-        # print('users', users)
         users = CustomUser.objects.filter(workobject__id=pk)
         r_user = request.user
         content = request.POST.get('txt')
         user = request.POST.get('user')
-        print('user', user)
-        messages = Message.objects.filter(
+
+        # Create the new message
+        new_message = Message.objects.create(
+            name=user,
+            sender=r_user,
+            content=content,
+            day=f"{datetime.now().strftime('%d %B %Y')}  ",
+            time=f'{datetime.now().hour}:{datetime.now().minute}',
             work_object=work_object,
+            for_sender_is_read=True,
         )
-        new_message = Message(
-                name = user,
-                sender=r_user,
-                content=content,
-                day = f"{datetime.now().strftime('%d %B %Y')}  ",
-                time = f'{datetime.now().hour}:{datetime.now().minute}',
-                work_object=work_object,
-                for_sender_is_read=True,
-            )
-        new_message.save()
-        for u in users:
-            read = IsRead(
+
+        # Create IsRead instances for all users
+        is_read_list = [
+            IsRead(
                 message=new_message,
-                username=u.username,
+                username=user.username,
                 work_object=work_object,
             )
-            read.save()
-    
+            for user in users
+        ]
+        IsRead.objects.bulk_create(is_read_list)
+
         response = {
             'new_message_id': new_message.id
         }
-        print('--')
         return JsonResponse(response)
+
+
+
+# def chat(request, pk):
+#     if request.method == 'GET':
+#         # path = pk
+#         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+#         work_object = get_object_or_404(WorkObject, id=pk)
+#         messages = Message.objects.filter(
+#                     work_object=work_object,
+#                 )
+#         for mess in messages:
+#             read = IsRead.objects.filter(
+#                 message=mess
+#             )
+#             for r in read:
+#                 if r.username == request.user.username:
+#                     r.is_read=True
+#                     r.save()
+#         # template = Template("{% load messages %} {% messages_quantity username work_object %}")
+#         # context = Context({'username': request.user.username, 'work_object': work_object})
+#         # count = template.render(context)
+#         response = {
+#             'user': request.user.username,
+#             'messages': list(messages.values()),
+#             'current_time': current_time,
+#             # 'count': count,
+#         }
+#         return JsonResponse(response)
+#     if request.method == 'POST':
+#         work_object = get_object_or_404(WorkObject, id=pk)
+#         # all_users = CustomUser.objects.filter(workobject__id=pk).values('username')
+#         # users = [u['username'] for u in all_users]
+#         # print('users', users)
+#         users = CustomUser.objects.filter(workobject__id=pk)
+#         r_user = request.user
+#         content = request.POST.get('txt')
+#         user = request.POST.get('user')
+#         print('user', user)
+#         messages = Message.objects.filter(
+#             work_object=work_object,
+#         )
+#         new_message = Message(
+#                 name = user,
+#                 sender=r_user,
+#                 content=content,
+#                 day = f"{datetime.now().strftime('%d %B %Y')}  ",
+#                 time = f'{datetime.now().hour}:{datetime.now().minute}',
+#                 work_object=work_object,
+#                 for_sender_is_read=True,
+#             )
+#         new_message.save()
+#         for u in users:
+#             read = IsRead(
+#                 message=new_message,
+#                 username=u.username,
+#                 work_object=work_object,
+#             )
+#             read.save()
+    
+#         response = {
+#             'new_message_id': new_message.id
+#         }
+#         print('--')
+#         return JsonResponse(response)
 
 
 

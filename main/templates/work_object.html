@@ -74,18 +74,20 @@
 
             <div class="chat_container">
                 <div id="chato"></div>
-                    <img 
-                    src="{% static 'images/enter.png' %}" 
-                    width="20" height="20" 
-                    id="chat_down"
-                    onclick="lastMessage()"
-                    >
-                    <span id="chat_down_quantity">{% all_messages_quantity request.user.username %}</span>
+                    <div id="chat_down">
+                        <img 
+                        src="{% static 'images/down_100.png' %}" 
+                        width="20" height="20" 
+                        id="chat_down"
+                        onclick="lastMessage()"
+                        >
+                        <span id="chat_down_quantity"></span>
+                    </div>
             </div>
             
             <form id="chat-form" method="POST">
                 {% csrf_token %}
-                <div class="chat_input_cont">
+                <div id="chat_input_cont">
                     <textarea name="content" class="chat_input" placeholder="Napisz coś..." wrap="soft" id="content"></textarea>
                     <a
                         id="chat_push" 
@@ -165,18 +167,37 @@
     function checkScrollActivity() {
       if (scrollActive) {
         shouldToBottom = false; // if the User is scrolling the scrollTop will be not in bottom on the window
-        chatDown.style.display = 'block'
-        chatDownQuantity.style.display = 'block'
-        chatDownQuantity.textContent = '0'
-      }else if (chatWindow.scrollTop > 840){
-        chatDown.style.display = 'none' // Make the chat_down button invisible
-        chatDownQuantity.style.display = 'none'
-      }else if (chatWindow.scrollTop < 840){
+      }else if (chatWindow.scrollHeight - chatWindow.scrollTop > 600){
         chatDown.style.display = 'block' // Make the chat_down button active
-        chatDownQuantity.style.display = 'block'
-        chatDownQuantity.textContent = '0'
+        if(chatDownQuantity) {
+            chatDownQuantity.style.display = 'block'; //Show the quantity of unread messages
+        }
+      }else if (chatWindow.scrollHeight - chatWindow.scrollTop < 600){
+        chatDown.style.display = 'none' // Make the chat_down button inactive
+        if(chatDownQuantity) {
+            chatDownQuantity.style.display = 'none' //Hide the quantity of unread messages
+        }
       }
     }
+
+
+    // The online unread messages count
+    setInterval(function(){
+        $.ajax({
+        type: 'GET',
+        url: "{% url 'showCount' request.user.username work_object.pk %}",
+        success: (response) => {
+            console.log('count', response.count)
+            var data = response.count
+            if (data > 0){
+                chat_down_quantity.textContent = data
+            }else{
+                chat_down_quantity.textContent = 0
+            }
+        }
+        })
+    },1000)
+
 
     // The chat window will shows the last message on the bottom 
     function scrollBottom() {
@@ -189,6 +210,26 @@
     function lastMessage() {
         chatWindow.scrollTop = chatWindow.scrollHeight
     }
+
+    // Send the message by pressing Enter
+    // Add an event listener to the chat input field
+    const chatInput = document.getElementById('content');
+    chatInput.addEventListener('keypress', handleEnterKey);
+
+    // Function to handle the "Enter" key press event
+    function handleEnterKey(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault(); // Prevent the default "Enter" key behavior (e.g., new line)
+        const message = chatInput.value.trim(); // Get the message content
+
+        // Check if the message is not empty
+        if (message !== '') {
+            sendChatMessage(event); // Call a function to send the message
+            chatInput.value = ''; // Clear the chat input field after sending
+        }
+      }
+    }
+
 
     // POST
     function sendChatMessage(event){
@@ -206,7 +247,6 @@
                   'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
               },
               success: (data) => {
-                console.log(data);
                 $('#content').empty();
                 textarea.value = '';
                 shouldToBottom = true
@@ -245,6 +285,7 @@
                         }
                                 
                     $('#chato').append(data)
+                    // chat_down_quantity.textContent = response.count
                     }
                     scrollBottom()
                 },
