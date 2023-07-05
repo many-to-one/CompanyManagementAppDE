@@ -8,8 +8,8 @@ class AuthRequiredMiddleware:
     def __call__(self, request):
         
         if not request.user.is_authenticated:
-            return render(request, 'login.html')
-    
+            return redirect('login')
+
         response = self.get_response(request)
         
         return response

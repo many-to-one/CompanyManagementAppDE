@@ -195,7 +195,20 @@ def showCount(request, username, work_object_pk):
         context = Context({'username': username, 'work_object': work_object})
         count = template.render(context)
         response = {'count': count,}
-        print('count', count)
+    return JsonResponse(response)
+
+
+def showCountAll(request):
+    if request.method == 'GET':
+        username = request.user.username
+        if request.user.is_authenticated:
+            template = Template("{% load messages %} {% all_messages_quantity username %}")
+            context = Context({'username': username,})
+            count = template.render(context)
+            print('count', count)
+        else:
+            count = 0
+        response = {'count': count,}
     return JsonResponse(response)
 
 

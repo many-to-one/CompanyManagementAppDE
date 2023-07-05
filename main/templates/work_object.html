@@ -187,7 +187,6 @@
         type: 'GET',
         url: "{% url 'showCount' request.user.username work_object.pk %}",
         success: (response) => {
-            console.log('count', response.count)
             var data = response.count
             if (data > 0){
                 chat_down_quantity.textContent = data

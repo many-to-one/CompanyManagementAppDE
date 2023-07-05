@@ -60,17 +60,17 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    # 'global_login_required.GlobalLoginRequiredMiddleware', ## pip install django-glrm
+    'global_login_required.GlobalLoginRequiredMiddleware', ## pip install django-glrm
     # 'main.middleware.AuthRequiredMiddleware',
 ]
 
-# GLRM_TEMPLATE_NAME = '404.html'
+GLRM_TEMPLATE_NAME = '404.html'
 
-# PUBLIC_VIEWS = [
-#     'users.views.Register',
-#     'users.views.Login',
-#     'users.views.forgotPassword',
-# ]
+PUBLIC_VIEWS = [
+    'users.views.Register',
+    'users.views.Login',
+    'users.views.forgotPassword',
+]
 
 DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': lambda request: DEBUG and request.META['REMOTE_ADDR'] == '127.0.0.1',

@@ -22,6 +22,7 @@ urlpatterns = [
     path('workobject_raport/<user_pk>/<object_pk>/', workObjectRaport, name='workobject_raport'),
     path('raports/', raports, name='raports'),
     path('showCount/<username>/<work_object_pk>/', showCount, name='showCount'),
+    path('showCountAll/', showCountAll, name='showCountAll'),
     path('chat/<pk>/', chat, name='chat'),
     path('vacations/<pk>/', vacations, name='vacations'),
     path('delete_vacations_question/', delete_vacations_question, name='delete_vacations_question'),

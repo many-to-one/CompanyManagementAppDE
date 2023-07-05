@@ -13,19 +13,21 @@
 <body>
 
     <div id="header-container">
-        <img 
-            src="{% static 'images/menu.png' %}" 
-            id="toggle_menu"
-            width="30" height="30"
-            onclick="toggleMenu()"
-        >
-        <img 
-            src="{% static 'images/close_white.png' %}" 
-            id="close_menu"
-            style="display: none;"
-            width="30" height="30"
-            onclick="toggleMenu()"
-        >
+        {% if request.user.is_authenticated %}
+            <img 
+                src="{% static 'images/menu.png' %}" 
+                id="toggle_menu"
+                width="30" height="30"
+                onclick="toggleMenu(); showMessages();"
+            >
+            <img 
+                src="{% static 'images/close_white.png' %}" 
+                id="close_menu"
+                style="display: none;"
+                width="30" height="30"
+                onclick="toggleMenu()"
+            >
+        {% endif %}
         <div class="block"><a href="">Logo</a></div>
         {% if request.user.is_authenticated %}
             <div class="block"><a>Witaj, {{ request.user.username }}</a></div>
@@ -36,14 +38,17 @@
                 <li class="nav-el"><a href="{% url 'home' %}">HOME</a></li>
                 <li class="nav-el">
                     <a href="{% url 'work_objects' request.user.pk %}" class="tags_cont_mini">
-                        MIEJSCA PRACY <span class="header_quantity">{% all_messages_quantity request.user.username %}</span>
+                        MIEJSCA PRACY 
+                        {% if request.user.is_authenticated %}
+                            <span class="header_quantity" id="chat_down_all_quantity"></span>
+                        {% endif %}
                     </a>
                 </li>
                 {% if request.user.is_superuser %}
                     <li class="nav-el"><a href="{% url 'all_users' %}">PRACOWNICY</a></li>
                     <li class="dropdown nav-el">
                         <a class="tags_cont_mini" onclick="toggleDropdown(event)">
-                            URLOPY <span class="header_quantity">{% request_quantity %}</span>
+                            URLOPY <span class="header_quantity">{% request_quantity %}</span>   
                         </a>
                         <ul class="dropdown-menu">
                             <li class="nav-el"><a href="{% url 'vacations' request.user.pk %}"> - Moje urlopy</a></li>
@@ -70,14 +75,28 @@
             {% endif %}
         </div>
     </div>
-
+      
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
+
+        var chatDownQuantity = document.getElementById('chat_down_all_quantity')
+        var sideMenu = document.getElementById('header-container')
+        var buttonMenu = document.getElementById('toggle_menu')
+        var closeMenu = document.getElementById('close_menu')
+        var vacations = document.getElementById('vacations_filter_cont')
+
         // Close or Open menu
         function toggleMenu(){
-            var sideMenu = document.getElementById('header-container')
-            var buttonMenu = document.getElementById('toggle_menu')
-            var closeMenu = document.getElementById('close_menu')
-            var vacations = document.getElementById('vacations_filter_cont')
+
+            // The online unread messages count
+            $.ajax({
+                 type: 'GET',
+                 url: "{% url 'showCountAll' %}",
+                 success: (response) => {
+                     chatDownQuantity.textContent = response.count
+                 }
+             })
+
             if (sideMenu.style.left === "0px") {
               sideMenu.style.left = "-170px"; // Close the menu
               toggle_menu.style.left = "3px"
@@ -91,6 +110,7 @@
               buttonMenu.style.display = 'none'; 
               vacations.style.position = 'static'; // make the header in the vacations.html static
             }
+
         }
 
         // Dropdown menu
