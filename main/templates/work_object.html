@@ -54,10 +54,27 @@
                             {{user.username}} 
                         </div>
 
-                        <a class="label_img" href="{% url 'deleteUserFromObjectQuestion' user.pk work_object.pk %}">
-                            <img src="{% static 'images/delete.png' %}" width="30" height="30">
-                          </a>
-                        </div> 
+                        <div class="row_cont_in_label">
+                            <img 
+                                class="label_img" 
+                                src="{% static 'images/addwork.png' %}" 
+                                width="30" height="30"
+                                onclick="showTasks('{{ user.pk }}', '{{work_object.pk}}' )"
+                            >
+                            <a class="label_img" href="{% url 'deleteUserFromObjectQuestion' user.pk work_object.pk %}">
+                                <img src="{% static 'images/delete.png' %}" width="30" height="30">
+                            </a>
+                        </div>
+
+                    </div>
+                    
+                    <div id="tasks_container"></div>
+                    <!-- <form method="POST">
+                        {% csrf_token %}'+
+                         <textarea id="taskContent"></textarea>'+
+                         <img class="label_img" src="{% static 'images/close.png' %}" width="30" height="30" onclick="closeTasks()">
+                         <img class="label_img" src="{% static 'images/addwork.png' %}" width="30" height="30" onclick="newTask('{{ user.pk }}', '{{work_object.pk}}')">
+                      </form> -->
   
                     <br>
                 {% else %}
@@ -316,7 +333,6 @@
             'Kawa/Posiłki',
             'Telefon',
         ]
-        console.log(values, labels)
         // Create the pie chart using Chart.js
         var ctx = document.getElementById('myChart').getContext('2d');
         var chart = new Chart(ctx, {
@@ -335,6 +351,75 @@
             },
         });
     });
+
+    var element = document.getElementById('tasks_container');
+    function showTasks(user, work_object){
+        console.log('user', user)
+        console.log('work_object', work_object)
+        //GET
+        $.ajax({
+            type: 'GET',
+            url: "{% url 'task' user.pk work_object.pk %}",
+            success: function(response){
+                for(var key in response.tasks_list){
+                    console.log('tasks', response.tasks_list[key])
+                    data = response.tasks_list[key].content
+                    $('#taskContent').append(data)
+                }
+            }
+        })
+
+        element.style.display = 'flex'
+            if(element.style.display === 'flex'){
+                var data = '<div class="tasks_container">'+
+                       '<div class="alltasks">'+
+                          '<div id="taskContent">'+ 
+                          '</div>'+
+                       '</div>'+
+                       '<div class="new_task">'+
+                          '<form method="POST">'+
+                            '{% csrf_token %}'+
+                             '<textarea wrap="soft" type=text id="taskContent"></textarea>'+
+                             '<img class="label_img" src="{% static "images/close.png" %}" width="30" height="30" onclick="closeTasks()">' +
+                             '<img class="label_img" src="{% static "images/addwork.png" %}" width="30" height="30" onclick="newTask(' + user + ', ' + work_object + ')">' +
+                          '</form>'+
+                       '</div>'+
+                    '</div>';
+            }else if(element.style.display === 'flex'){
+                element.style.display = 'none';
+                data = ''
+            }
+        element.innerHTML = data
+    }
+
+    function newTask(user, work_object){
+        console.log('newuser', user)
+        console.log('new_work_object', work_object)
+        //POST
+        var taskContent = document.getElementById("taskContent").value;
+        console.log('taskContent', taskContent)
+        $.ajax({
+            type: 'GET',
+            url: "{% url 'new_task'  %}",
+            data: {
+                  'taskContent': taskContent,
+                  'user': user.pk,
+                  'work_object': work_object.pk,
+                  'csrfmiddlewaretoken': '{{csrf_token}}'
+              },
+              success: (data) => {
+                console.log('TASKS', data)
+                // taskContent.value = '';
+              },
+              error: (data) => {
+                  console.log('error', data)
+              }     
+        })
+    }
+
+    function closeTasks(){
+        element.style.display = 'none'
+    }
         
     </script>  
 

@@ -136,6 +136,31 @@ class WorkObject(models.Model):
         return str(self.id)
     
 
+class Task(models.Model):
+    user = models.ForeignKey(
+        CustomUser, 
+        related_name='wyconawca',
+        on_delete=models.SET_NULL, ## It helps to protect the task after the User will be deleted
+        null=True,
+    )
+    username = models.CharField(
+        null=True,
+        max_length=150,
+    )
+    work_object = models.ForeignKey(
+        WorkObject, 
+        related_name='object',
+        on_delete=models.CASCADE
+    )
+    content = models.CharField(
+        null=True,
+        max_length=250,
+    )
+
+    def __str__(self) -> str:
+        return self.username
+    
+
 class TotalWorkObject(models.Model):
     name = models.CharField(
         null=True,
@@ -187,7 +212,7 @@ class Message(models.Model):
     sender = models.ForeignKey(
         CustomUser, 
         related_name='nadawca',
-        on_delete=models.SET_NULL, ## It helps to protect the message after the User was deleted
+        on_delete=models.SET_NULL, ## It helps to protect the message after the User will be deleted
         null=True,
         )
     name = models.CharField(

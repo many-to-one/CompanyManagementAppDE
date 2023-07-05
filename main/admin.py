@@ -8,6 +8,7 @@ from .models import (
     Message,
     Vacations,
     IsRead,
+    Task,
 )
 
 admin.site.register(Work)
@@ -18,3 +19,4 @@ admin.site.register(Message)
 admin.site.register(Vacations)
 admin.site.register(VacationRequest)
 admin.site.register(IsRead)
+admin.site.register(Task)

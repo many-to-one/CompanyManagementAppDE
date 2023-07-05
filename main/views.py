@@ -5,7 +5,16 @@ from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views.generic import ListView
-from .models import VacationRequest, Vacations, Work, WorkObject, WorkType, TotalWorkObject, Message, IsRead
+from .models import (
+    VacationRequest, 
+    Vacations, 
+    Work, 
+    WorkObject, 
+    WorkType, 
+    Message, 
+    IsRead, 
+    Task
+    )
 from django.http import JsonResponse
 from django.db.models import Sum
 from datetime import datetime, timedelta
@@ -138,6 +147,51 @@ def workObjectView(request, **kwargs):
         'total': total,
     }
     return render(request, 'work_object.html', context)
+
+
+def task(request, user, work_object):
+    print('TASK', user, work_object)
+    if request.method == 'GET':
+        user = get_object_or_404(CustomUser, id=user)
+        work_object = get_object_or_404(WorkObject, id=work_object)
+        tasks = Task.objects.filter(
+            user=user,
+            work_object=work_object,
+            )
+
+        tasks_list = tasks.values()
+
+        tasks = {
+        'newTask': 'ok1',
+        'newTask': 'ok2',
+        }
+    response = {
+        'tasks': tasks,
+        'tasks_list': list(tasks_list),
+        }
+    return JsonResponse(response)
+
+
+def newTask(request):
+    if request.method == 'POST':
+        user = request.POST.get('user')
+        work_object = request.POST.get('work_object')
+        taskContent = request.POST.get('taskContent')
+        user = get_object_or_404(CustomUser, id=user)
+        work_object = get_object_or_404(WorkObject, id=work_object)
+        print('NEW_TASK', user, work_object, taskContent)
+        # newTask = Task(
+        #     user=user,
+        #     username=user.username,
+        #     work_object=work_object,
+        #     content='Test'
+        # )
+    response = {
+        'tasks': 'tasks',
+        }
+    return JsonResponse(response)
+    
+
 
 def deleteUserFromObjectQuestion(request, user_pk, work_object_pk):
     user_query = CustomUser.objects.filter(id=user_pk).values_list('username')
