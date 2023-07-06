@@ -131,7 +131,17 @@ def workObjectView(request, **kwargs):
             work_object, created = WorkObject.objects.get_or_create(id=kwargs['pk'])
             users = work_object.user.all()
 
-    total = total_payment +total_phone_costs + total_fuel + total_coffee_food
+    if any(element is not None for element in [total_payment, total_phone_costs, total_fuel, total_coffee_food]):
+        total = total_payment + total_phone_costs + total_fuel + total_coffee_food
+        # Rest of your code
+    else:
+        total = '0:00'
+        total_payment = '0:00'
+        total_phone_costs = '0:00'
+        total_fuel = '0:00'
+        total_coffee_food = '0:00'
+
+
     context = {
         'current_time': datetime.now().strftime('%Y-%m-%d'),
         'messages': messages,
@@ -149,48 +159,128 @@ def workObjectView(request, **kwargs):
     return render(request, 'work_object.html', context)
 
 
-def task(request, user, work_object):
-    print('TASK', user, work_object)
+def task(request):
     if request.method == 'GET':
-        user = get_object_or_404(CustomUser, id=user)
-        work_object = get_object_or_404(WorkObject, id=work_object)
+        user_pk = request.GET.get('user')
+        work_object_pk = request.GET.get('work_object')
+        user = get_object_or_404(CustomUser, id=int(user_pk))
+        work_object = get_object_or_404(WorkObject, id=int(work_object_pk))
         tasks = Task.objects.filter(
             user=user,
             work_object=work_object,
-            )
+            ).order_by('-id')
 
         tasks_list = tasks.values()
-
-        tasks = {
-        'newTask': 'ok1',
-        'newTask': 'ok2',
-        }
-    response = {
-        'tasks': tasks,
-        'tasks_list': list(tasks_list),
-        }
-    return JsonResponse(response)
-
-
-def newTask(request):
-    if request.method == 'POST':
-        user = request.POST.get('user')
-        work_object = request.POST.get('work_object')
-        taskContent = request.POST.get('taskContent')
-        user = get_object_or_404(CustomUser, id=user)
-        work_object = get_object_or_404(WorkObject, id=work_object)
-        print('NEW_TASK', user, work_object, taskContent)
-        # newTask = Task(
-        #     user=user,
-        #     username=user.username,
-        #     work_object=work_object,
-        #     content='Test'
-        # )
-    response = {
-        'tasks': 'tasks',
-        }
+        response = {
+            'tasks_list': list(tasks_list),
+            }
     return JsonResponse(response)
     
+
+def new_task(request):
+    if request.method == 'POST':
+        user_pk = request.POST.get('user')
+        work_object_pk = request.POST.get('work_object')
+        content = request.POST.get('content')
+        user = CustomUser.objects.get(id=int(user_pk))
+        work_object = WorkObject.objects.get(id=int(work_object_pk))
+        newTask = Task(
+            user=user,
+            username=user.username,
+            work_object=work_object,
+            content=content,
+        )
+        newTask.save()
+        response_data = {
+            'user': user.username,
+            'work_object': work_object.id,
+            'content': content,
+            'newTask': newTask.id,
+        }
+    return JsonResponse(response_data)
+
+
+def getTask(request):
+    if request.method == 'GET':
+        pk = request.GET.get('pk')
+        try:
+            task = Task.objects.filter(
+                id=int(pk)
+                )
+            task.update(done=True)
+            response = {
+                'message': 'ok'
+            }
+        except Exception as e:
+            response = {
+                'message': str(e)
+            }
+    return JsonResponse(response)
+
+
+def doneTask(request):
+    response = {}
+    if request.method == 'POST':
+        pk = request.POST.get('pk')
+        try:
+            task = Task.objects.get(id=int(pk))
+            if task.done == False:
+                task.done = True
+            else:
+                task.done = False
+            task.save()
+            response = {
+                'message': task.done
+            }
+        except Task.DoesNotExist:
+            response = {
+                'message': 'error: Task does not exist'
+            }
+        except Exception as e:
+            response = {
+                'message': 'error: ' + str(e)
+            }
+    else:
+        response = {
+            'message': 'error: Invalid request method'
+        }
+    return JsonResponse(response)
+
+
+def deleteTaskQuestion(request):
+    if request.method == 'POST':
+        pk = request.POST.get('pk')
+        try:
+            task = Task.objects.get(id=int(pk))
+            if task is not None:
+                response = {
+                    'message': 'ok'
+                }
+            else:
+                response = {
+                    'message': 'Zadania nie istnieje'
+                }
+        except Exception as e:
+            response = {
+                'message': e
+            }
+    return JsonResponse(response)
+
+
+def deleteTask(request):
+    if request.method == 'POST':
+        pk = request.POST.get('pk')
+        try:
+            task = Task.objects.get(id=int(pk))
+            task.delete()
+            response = {
+                'message': pk
+            }
+        except Exception as e:
+            response = {
+                'message': e
+            }
+    return JsonResponse(response)
 
 
 def deleteUserFromObjectQuestion(request, user_pk, work_object_pk):

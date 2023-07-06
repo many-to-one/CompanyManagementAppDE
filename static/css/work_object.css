@@ -69,19 +69,6 @@
     margin-bottom: 10px;
 }
 
-/* #chato #chat_down_quantity {
-    position: absolute;
-    top: -25px;
-    left: 48.5%;
-    display: inline-block;
-    padding: 2px 5px;
-    border-radius: 50%;
-    background-color: blueviolet;
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-} */
-
 #chat_down {
     position: relative;
     top: -30px;
@@ -186,7 +173,7 @@
     border-radius: 10px;
     background-color: var(--input-bg-color);
     padding: 10px;
-    width: 64 vw;
+    width: 64vw;
 }
 
 .simple_row_cont {
@@ -225,15 +212,165 @@
 }
 
 #tasks_container {
+    position: fixed;
+    z-index: 9999;
+    left: 30vw;
+    top: 30vh;
     display: none;
     flex-direction: column;
-    width: 66vw;
+    align-items: center;
+    width: 40vw;
     height: auto;
     min-height: 300px;
-    background-color: var(--input-bg-color);
+    background-color: var(--main-bg-color);
+    padding: 20px;
     margin: 20px;
     border-radius: 5px;
     border: transparent;
     box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+
+#taskContent {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 42vw;
+    height: auto;
+    min-height: 200px;
+    max-height: 250px;
     overflow-y: auto;
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: transparent transparent; /* For Firefox */
+}
+
+#taskContent::-webkit-scrollbar {
+    background-color: transparent; 
+  }
+
+#taskFormCont {
+    display: flex;
+    justify-content: center;
+}
+
+#labelTaskCont {
+    padding: 10px;
+}
+
+#task {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--input-bg-color);
+    color: #2a2a2a;
+    border-radius: 5px;
+    border: transparent;
+    height: auto;
+    width: 38vw;
+    min-height: 40px;
+    font-size: 16px;
+    padding: 10px;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+    overflow-y: auto;
+}
+
+#taskForm {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding: 10px;
+    width: 38vw;
+    height: 90px;
+    background-color: white;
+    border: transparent;
+    border-radius: 5px;
+}
+
+.contentTask {
+    order: transparent;
+    border-radius: 5px;
+    padding: 10px;
+    width: 30vw;
+    height: 70px;
+}
+
+#done {
+    text-decoration: line-through;
+}
+
+#addTask {
+    align-self: flex-end;
+}
+
+#closeTaskBtn {
+    position: fixed;
+    top: 30%;
+    left: 75%;
+}
+
+textarea {
+    border: none;
+    outline: none;
+  }
+
+#deleteTaskBtn {
+    display: block;
+}
+
+#deleteQuestion {
+    position: fixed;
+    z-index: 9999;
+    left: 30%;
+    top: 30%;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 30vw;
+    height: auto;
+    min-height: 30vh;
+    background-color: var(--main-bg-color);
+    padding: 20px;
+    margin: 20px;
+    border-radius: 5px;
+    border: transparent;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+
+#questCont {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+@media screen and (max-width: 1180px) {
+    #tasks_container{
+        left: 27vw;
+    }
+    #taskContent{
+        width: 44vw;
+    }
+
+    #task {
+        font-size: 14px;
+    }
+}
+
+@media screen and (max-width: 450px) {
+    #tasks_container{
+        left: 24vw;
+    }
+    #taskContent{
+        width: 50vw;
+    }
+    #task {
+        font-size: 12px;
+        width: 40vw;
+    }
+    #deleteQuestion {
+        left: 16vw;
+        width: 57vw;
+    }
 }

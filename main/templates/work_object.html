@@ -14,7 +14,15 @@
 <body>
 
     {% block content %}
-    <div class="page-container">
+    <!-- ##################### TASKs ##################### -->
+    <div id="tasks_container"></div>
+    <!-- ##################### END OF TASKS ##################### -->
+
+    <!-- ##################### QUESTION ##################### -->
+    <div id="deleteQuestion"></div>
+    <!-- ##################### END OF QUESTION ##################### -->
+
+    <div class="page-container" id="pageCont">
 
         <div class="title">
                 <div class="back">
@@ -45,38 +53,33 @@
         <div class="wo_container">
             {% for user in users %} 
                 {% if request.user.is_superuser %}
-                    <div class="label" >
 
-                        <div class="row_cont_in_label">
-                            <a class="label_img" href="{% url 'workobject_raport' user.pk work_object.pk %}">
-                                <img src="{% static 'images/enter.png' %}" width="30" height="30">
-                            </a>
-                            {{user.username}} 
+                    <!-- ##################### LABEL FOR EACH USER ##################### -->
+                        <div class="label" >
+
+                            <div class="row_cont_in_label">
+                                <a class="label_img" href="{% url 'workobject_raport' user.pk work_object.pk %}">
+                                    <img src="{% static 'images/enter.png' %}" width="30" height="30">
+                                </a>
+                                {{user.username}} 
+                            </div>
+    
+                            <div class="row_cont_in_label">
+                                <img 
+                                    class="label_img" 
+                                    src="{% static 'images/addwork.png' %}" 
+                                    width="30" height="30"
+                                    onclick="showTasks('{{ user.pk }}', '{{work_object.pk}}' )"
+                                >
+                                <a class="label_img" href="{% url 'deleteUserFromObjectQuestion' user.pk work_object.pk %}">
+                                    <img src="{% static 'images/delete.png' %}" width="30" height="30">
+                                </a>
+                            </div>
+    
                         </div>
-
-                        <div class="row_cont_in_label">
-                            <img 
-                                class="label_img" 
-                                src="{% static 'images/addwork.png' %}" 
-                                width="30" height="30"
-                                onclick="showTasks('{{ user.pk }}', '{{work_object.pk}}' )"
-                            >
-                            <a class="label_img" href="{% url 'deleteUserFromObjectQuestion' user.pk work_object.pk %}">
-                                <img src="{% static 'images/delete.png' %}" width="30" height="30">
-                            </a>
-                        </div>
-
-                    </div>
-                    
-                    <div id="tasks_container"></div>
-                    <!-- <form method="POST">
-                        {% csrf_token %}'+
-                         <textarea id="taskContent"></textarea>'+
-                         <img class="label_img" src="{% static 'images/close.png' %}" width="30" height="30" onclick="closeTasks()">
-                         <img class="label_img" src="{% static 'images/addwork.png' %}" width="30" height="30" onclick="newTask('{{ user.pk }}', '{{work_object.pk}}')">
-                      </form> -->
-  
+    
                     <br>
+            
                 {% else %}
                     <div class="label">
                         <p>{{user.username}}</p> 
@@ -84,8 +87,11 @@
                     <br>
                 {% endif %}
             {% endfor %}
+        
             <br>
+            <!-- ##################### END OF LABEL FOR EACH USER ##################### -->
 
+            <!-- ##################### CHAT ##################### -->
             <h1>Czat</h1>
             <h1 id="currentDate"></h1>
 
@@ -119,6 +125,8 @@
         
             </form>
             <br>
+
+            <!-- ##################### END CHAT ##################### -->
 
             {% if request.user.is_superuser %}
             <div class="label">
@@ -352,64 +360,90 @@
         });
     });
 
-    var element = document.getElementById('tasks_container');
+    var tasks_container = document.getElementById('tasks_container');
+    var pageCont = document.getElementById('pageCont')
+    var deleteTaskBtn = document.getElementById('deleteTaskBtn')
     function showTasks(user, work_object){
         console.log('user', user)
         console.log('work_object', work_object)
         //GET
         $.ajax({
             type: 'GET',
-            url: "{% url 'task' user.pk work_object.pk %}",
+            url: "{% url 'task' %}",
+            data: {
+              'user': user,
+              'work_object': work_object
+            },
             success: function(response){
                 for(var key in response.tasks_list){
                     console.log('tasks', response.tasks_list[key])
-                    data = response.tasks_list[key].content
-                    $('#taskContent').append(data)
+                    if(response.tasks_list[key]){
+                        var taskElement = response.tasks_list[key].done === true ? 
+                        '<p id="done">' + response.tasks_list[key].content + '</p>' : 
+                        '<p>' + response.tasks_list[key].content + '</p>';
+                        var deleteTaskBtn = response.tasks_list[key].done === true?
+                        '<img class="label_img" id="deleteTaskBtn" src="{% static "images/delete.png" %}" width="30" height="30" onclick="deleteQuestionTask('+response.tasks_list[key].id+', '+user+', '+work_object+')">' :
+                        '';
+                        var data = '<div id="labelTaskCont">' +
+                                        '<div id="task">' +
+                                            taskElement +
+                                          '<div class="row_cont_in_label">'+
+                                            '<img class="label_img" src="{% static "images/enter.png" %}" width="30" height="30" onclick="doneTask('+response.tasks_list[key].id+', '+user+', '+work_object+')">' +
+                                            deleteTaskBtn +
+                                          '</div>'+
+                                        '</div>' +
+                                    '</div>';
+                        $('#taskContent').append(data);
+                    }
                 }
             }
         })
 
-        element.style.display = 'flex'
-            if(element.style.display === 'flex'){
-                var data = '<div class="tasks_container">'+
-                       '<div class="alltasks">'+
+        tasks_container.style.display = 'flex'
+        pageCont.style.filter = 'blur(4px)'
+            if(tasks_container.style.display === 'flex'){
+                var data = '<div id="frame">'+
+                '<div class="tasks_container">'+
+                    '<img class="label_img" id="closeTaskBtn" src="{% static "images/close.png" %}" width="30" height="30" onclick="closeTasks()">' +
                           '<div id="taskContent">'+ 
                           '</div>'+
-                       '</div>'+
-                       '<div class="new_task">'+
-                          '<form method="POST">'+
+                        '<div id="taskFormCont">'+
+                          '<form method="POST" id="taskForm">'+
                             '{% csrf_token %}'+
-                             '<textarea wrap="soft" type=text id="taskContent"></textarea>'+
-                             '<img class="label_img" src="{% static "images/close.png" %}" width="30" height="30" onclick="closeTasks()">' +
-                             '<img class="label_img" src="{% static "images/addwork.png" %}" width="30" height="30" onclick="newTask(' + user + ', ' + work_object + ')">' +
+                             '<textarea wrap="soft" class="contentTask" id="content"></textarea>'+
+                             '<img id="addTask" class="label_img" src="{% static "images/addwork.png" %}" width="30" height="30" onclick="newTask(' + user + ', ' + work_object + ', event)">' +
                           '</form>'+
                        '</div>'+
-                    '</div>';
-            }else if(element.style.display === 'flex'){
-                element.style.display = 'none';
+                    '</div>'+
+                '</div>';
+            }else if(tasks_container.style.display === 'flex'){
+                tasks_container.style.display = 'none';
                 data = ''
             }
-        element.innerHTML = data
+            tasks_container.innerHTML = data
     }
 
-    function newTask(user, work_object){
+    // Create a new Task
+    function newTask(user, work_object, event){
+        event.preventDefault();
+        var content = document.getElementById("content").value;
         console.log('newuser', user)
         console.log('new_work_object', work_object)
         //POST
-        var taskContent = document.getElementById("taskContent").value;
-        console.log('taskContent', taskContent)
+        console.log('content', content)
         $.ajax({
-            type: 'GET',
+            type: 'POST',
             url: "{% url 'new_task'  %}",
             data: {
-                  'taskContent': taskContent,
-                  'user': user.pk,
-                  'work_object': work_object.pk,
-                  'csrfmiddlewaretoken': '{{csrf_token}}'
+                  'content': content,
+                  'user': user,
+                  'work_object': work_object,
+                  'csrfmiddlewaretoken': '{{ csrf_token }}'
               },
               success: (data) => {
                 console.log('TASKS', data)
-                // taskContent.value = '';
+                content.value = '';
+                showTasks(user, work_object)
               },
               error: (data) => {
                   console.log('error', data)
@@ -417,8 +451,95 @@
         })
     }
 
+    // Close the Task window
     function closeTasks(){
-        element.style.display = 'none'
+        tasks_container.style.display = 'none';
+        pageCont.style.filter = 'none'
+    }
+
+    // Finish the task
+    function doneTask(pk, user, work_object){
+        console.log('pk', pk)
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'doneTask' %}",
+            data: {
+                'pk': pk,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response){
+                if(response.message === true){
+                    showTasks(user, work_object)
+                }else{
+                    showTasks(user, work_object)
+                }
+            },
+            error: function(response) {
+                  alert('Błąd:', response.message)
+            }  
+        })
+    }
+
+    // Question for deleting the task
+    var deleteQuestion = document.getElementById('deleteQuestion')
+    function deleteQuestionTask(pk, user, work_object){
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'deleteTaskQuestion' %}",
+            data: {
+                'pk': pk,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response){
+                if(response.message === 'ok'){
+                    tasks_container.style.display = 'none';
+                    deleteQuestion.style.display = 'flex';
+                    var data = '<div id="questCont">'+
+                                    '<p>'+"Usunąć te zadanie?"+'</p>'+
+                                    '<div class="row_cont_in_label">'+
+                                        '<button class="btn" onclick="closeQuestionDelete()">'+
+                                            '<a>'+"Nie"+'</a>'+
+                                        '</button>'+
+                                        '<button class="btn" onclick="deleteTask('+pk+', '+user+', '+work_object+')">'+
+                                            '<a>'+"Tak"+'</a>'+
+                                        '</button>'+
+                                    '</div>'+
+                                '</div>';
+                        $('#deleteQuestion').html(data)
+                }else{
+                    alert(response.message)
+                }
+            },
+            error: function(response){
+                  alert('Błąd:', + response.responseJSON.message)
+            } 
+        })
+    }
+
+    // Delete the task
+    function deleteTask(pk, user, work_object){
+        console.log('pk', pk)
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'deleteTask' %}",
+            data: {
+                'pk': pk,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response){
+                alert('Zadanie  '+ response.message +' zostało usuniętę');
+                deleteQuestion.style.display = 'none';
+                showTasks(user, work_object);
+            },
+            error: function(response){
+                  alert('Błąd:', + response.responseJSON.message)
+            } 
+        })
+    }
+
+    function closeQuestionDelete(){
+        deleteQuestion.style.display = 'none';
+        tasks_container.style.display = 'flex';
     }
         
     </script>  
