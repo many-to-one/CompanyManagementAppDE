@@ -53,6 +53,11 @@
                 <p>RAPORTY</p>
             </a>
 
+            <a class="home_part" href="{% url 'schedule' %}">
+                <img src="{% static 'images/raports.png' %}" width="150" height="150">
+                <p>GRAFIK</p>
+            </a>
+
             {% if request.user.is_superuser %}
                 <a class="home_part" href="{% url 'all_users' %}">
                     <img src="{% static 'images/workers.png' %}" width="150" height="150">

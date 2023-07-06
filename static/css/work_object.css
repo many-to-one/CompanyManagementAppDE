@@ -214,15 +214,15 @@
 #tasks_container {
     position: fixed;
     z-index: 9999;
-    left: 30vw;
-    top: 30vh;
+    left: 13vw;
+    top: 15vh;
     display: none;
     flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    width: 40vw;
-    height: auto;
-    min-height: 300px;
-    background-color: var(--main-bg-color);
+    width: 68vw;
+    height: 70vh;
+    background-color: rgba(241, 246, 249, 0.5);
     padding: 20px;
     margin: 20px;
     border-radius: 5px;
@@ -233,11 +233,11 @@
 #taskContent {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 10px;
-    width: 42vw;
-    height: auto;
-    min-height: 200px;
-    max-height: 250px;
+    width: 66vw;
+    margin-left: 3.5%;
+    min-height: 50vh;
     overflow-y: auto;
     scrollbar-width: thin; /* For Firefox */
     scrollbar-color: transparent transparent; /* For Firefox */
@@ -253,7 +253,34 @@
 }
 
 #labelTaskCont {
-    padding: 10px;
+    /* padding: 10px; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 60vh;
+}
+
+.label_img_task {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 25px;
+    height: 25px;
+    border-radius: 5px;
+    padding: 3px;
+    background-color: var(--main-bg-color);
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+    cursor: pointer;
+  }
+
+  .label_img_task:hover {
+    background-color: #a2b3d1;
+    transition: background-color 0.3s ease;
+  }
+
+.row_task_cont{
+    display: flex;
+    gap: 10px;
 }
 
 #task {
@@ -265,7 +292,7 @@
     border-radius: 5px;
     border: transparent;
     height: auto;
-    width: 38vw;
+    width: 58vw;
     min-height: 40px;
     font-size: 16px;
     padding: 10px;
@@ -279,7 +306,7 @@
     justify-content: space-between;
     margin-top: 10px;
     padding: 10px;
-    width: 38vw;
+    width: 62vw;
     height: 90px;
     background-color: white;
     border: transparent;
@@ -290,7 +317,7 @@
     order: transparent;
     border-radius: 5px;
     padding: 10px;
-    width: 30vw;
+    width: 50vw;
     height: 70px;
 }
 
@@ -304,8 +331,8 @@
 
 #closeTaskBtn {
     position: fixed;
-    top: 30%;
-    left: 75%;
+    top: 15vh;
+    left: 85vw;
 }
 
 textarea {
@@ -347,27 +374,97 @@ textarea {
 
 @media screen and (max-width: 1180px) {
     #tasks_container{
-        left: 27vw;
+        position: fixed;
+        z-index: 9999;
+        left: 11vw;
+        top: 15vh;
+        display: none;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        width: 68vw;
+        height: 70vh;
+        background-color: var(--main-bg-color);
+        padding: 20px;
+        margin: 20px;
+        border-radius: 5px;
+        border: transparent;
+        box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
     }
     #taskContent{
-        width: 44vw;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        width: 70vw;
+        margin-left: 3.5%;
+        max-height: 70vh;
+        overflow-y: auto;
+        scrollbar-width: thin; /* For Firefox */
+        scrollbar-color: transparent transparent; /* For Firefox */
     }
 
     #task {
         font-size: 14px;
+        width: 56vw;
+        padding: 5px;
+        margin-left: 5px;
+    }
+
+    #taskForm {
+        width: 62vw;
+    }
+    #closeTaskBtn {
+        position: fixed;
+        top: 14%;
+        left: 85%;
     }
 }
 
 @media screen and (max-width: 450px) {
     #tasks_container{
-        left: 24vw;
+        position: fixed;
+        z-index: 9999;
+        left: 9vw;
+        top: 15vh;
+        display: none;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        width: 68vw;
+        height: 70vh;
+        background-color: var(--main-bg-color);
+        padding: 20px;
+        margin: 20px;
+        border-radius: 5px;
+        border: transparent;
+        box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
     }
     #taskContent{
-        width: 50vw;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        width: 70vw;
+        margin-left: 3.5%;
+        max-height: 70vh;
+        overflow-y: auto;
+        scrollbar-width: thin; /* For Firefox */
+        scrollbar-color: transparent transparent; /* For Firefox */
     }
     #task {
         font-size: 12px;
-        width: 40vw;
+        width: 56vw;
+        padding: 5px;
+        margin-left: 5px;
+    }
+    #taskForm {
+        width: 62vw;
+    }
+    #closeTaskBtn {
+        position: fixed;
+        top: 14%;
+        left: 85%;
     }
     #deleteQuestion {
         left: 16vw;

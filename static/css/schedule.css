@@ -1,0 +1,54 @@
+#scheduleCont{
+    position: fixed;
+    top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-left: 112px;
+    margin-top: 130px;
+    border: transparent;
+    border-radius: 10px;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+    height: 78vh;
+    width: 83vw;
+    overflow-y: auto;
+}
+
+@media screen and (max-width: 1180px) {
+    #scheduleCont{
+        margin-left: 68px;
+        width: 87vw;
+        height: 85vh;
+    }
+}
+
+@media screen and (max-width: 450px) {
+    #scheduleCont{
+        margin-left: 50px;
+        width: 85vw;
+        height: 83vh;
+    }
+}
+
+#schedules {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+    gap: 10px;
+    width: 66vw;
+    margin-left: 3.5%;
+    height: auto;
+    /* min-height: 50vh; */
+    overflow-y: auto;
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: transparent transparent; /* For Firefox */
+}
+
+#schedules::-webkit-scrollbar {
+    background-color: transparent; 
+  }
+
+.topic {
+    font-size: 16px;
+}

@@ -283,6 +283,17 @@ def deleteTask(request):
     return JsonResponse(response)
 
 
+def schedule(request):
+    user = request.user
+    tasks = Task.objects.filter(
+        user=user
+    ).order_by('-id')
+    context = {
+        'tasks': tasks,
+    }
+    return render(request, 'shedule.html', context)
+
+
 def deleteUserFromObjectQuestion(request, user_pk, work_object_pk):
     user_query = CustomUser.objects.filter(id=user_pk).values_list('username')
     user = [user[0] for user in user_query]

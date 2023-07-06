@@ -29,6 +29,9 @@
                     <a class="label_img" href="{% url 'work_objects' request.user.pk %}">
                         <img src="{% static 'images/back.png' %}" width="30" height="30">
                     </a>
+                    <a class="label_img" href="{% url 'schedule' %}">
+                        <img src="{% static 'images/enter.png' %}" width="30" height="30">
+                    </a>
                     <h3>{{ work_object.name }}</h3>
                 </div>
         {% if request.user.is_superuser %}
@@ -82,7 +85,17 @@
             
                 {% else %}
                     <div class="label">
-                        <p>{{user.username}}</p> 
+                        <p>{{user.username}}</p>
+                        <div class="row_cont_in_label">
+                            {% if user == request.user %}
+                            <img 
+                                class="label_img" 
+                                src="{% static 'images/addwork.png' %}" 
+                                width="30" height="30"
+                                onclick="showTasks('{{ user.pk }}', '{{work_object.pk}}' )"
+                            >
+                            {% endif %}
+                        </div> 
                     </div>   
                     <br>
                 {% endif %}
@@ -165,6 +178,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <script> 
 
@@ -382,14 +397,16 @@
                         '<p id="done">' + response.tasks_list[key].content + '</p>' : 
                         '<p>' + response.tasks_list[key].content + '</p>';
                         var deleteTaskBtn = response.tasks_list[key].done === true?
-                        '<img class="label_img" id="deleteTaskBtn" src="{% static "images/delete.png" %}" width="30" height="30" onclick="deleteQuestionTask('+response.tasks_list[key].id+', '+user+', '+work_object+')">' :
+                        '<img class="label_img_task" id="deleteTaskBtn" src="{% static "images/delete.png" %}" width="30" height="30" onclick="deleteQuestionTask('+response.tasks_list[key].id+', '+user+', '+work_object+')">' :
                         '';
                         var data = '<div id="labelTaskCont">' +
                                         '<div id="task">' +
-                                            taskElement +
-                                          '<div class="row_cont_in_label">'+
-                                            '<img class="label_img" src="{% static "images/enter.png" %}" width="30" height="30" onclick="doneTask('+response.tasks_list[key].id+', '+user+', '+work_object+')">' +
-                                            deleteTaskBtn +
+                                             taskElement +
+                                          '<div class="row_task_cont">'+
+                                            '<img class="label_img_task" src="{% static "images/enter.png" %}" width="30" height="30" onclick="doneTask('+response.tasks_list[key].id+', '+user+', '+work_object+')">' +
+                                              '{% if request.user.is_superuser %}'+
+                                                 deleteTaskBtn +
+                                              '{% endif %}'+
                                           '</div>'+
                                         '</div>' +
                                     '</div>';
@@ -402,26 +419,45 @@
         tasks_container.style.display = 'flex'
         pageCont.style.filter = 'blur(4px)'
             if(tasks_container.style.display === 'flex'){
-                var data = '<div id="frame">'+
-                '<div class="tasks_container">'+
-                    '<img class="label_img" id="closeTaskBtn" src="{% static "images/close.png" %}" width="30" height="30" onclick="closeTasks()">' +
+                var data = 
+                    '<img class="label_img_task" id="closeTaskBtn" src="{% static "images/close.png" %}" width="30" height="30" onclick="closeTasks()">' +
                           '<div id="taskContent">'+ 
                           '</div>'+
-                        '<div id="taskFormCont">'+
+                        '<div>'+
+                         '{% if request.user.is_superuser %}'+
                           '<form method="POST" id="taskForm">'+
                             '{% csrf_token %}'+
                              '<textarea wrap="soft" class="contentTask" id="content"></textarea>'+
-                             '<img id="addTask" class="label_img" src="{% static "images/addwork.png" %}" width="30" height="30" onclick="newTask(' + user + ', ' + work_object + ', event)">' +
+                             '<div>'+
+                            //    '<input type="date" id="datetimepicker">'+
+                               '<img type="date" id="datetimepicker" class="label_img_task" src="{% static "images/enter.png" %}" width="30" height="30">'+
+                               '<img id="addTask" class="label_img_task" src="{% static "images/addwork.png" %}" width="30" height="30" onclick="newTask(' + user + ', ' + work_object + ', event)">' +
+                             '</div>'+
                           '</form>'+
-                       '</div>'+
-                    '</div>'+
-                '</div>';
+                         '{% endif %}'+
+                       '</div>';
             }else if(tasks_container.style.display === 'flex'){
                 tasks_container.style.display = 'none';
                 data = ''
             }
             tasks_container.innerHTML = data
     }
+
+    flatpickr("#datetimepicker", {
+      enableTime: true,
+      dateFormat: "Y-m-d H:i",
+    });
+    
+    var processButton = document.getElementById("processButton");
+    
+    processButton.addEventListener("click", function() {
+      var selectedDate = document.getElementById("datetimepicker").value;
+      console.log("Selected date:", selectedDate);
+    
+      // Process the selected date further
+      // ...
+    });
+
 
     // Create a new Task
     function newTask(user, work_object, event){

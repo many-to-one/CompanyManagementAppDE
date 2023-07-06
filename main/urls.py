@@ -19,6 +19,7 @@ urlpatterns = [
     path('doneTask/', doneTask, name='doneTask'),
     path('deleteTaskQuestion/', deleteTaskQuestion, name='deleteTaskQuestion'),
     path('deleteTask/', deleteTask, name='deleteTask'),
+    path('schedule/', schedule, name='schedule'),
     path('deleteUserFromObjectQuestion/<user_pk>/<work_object_pk>/', deleteUserFromObjectQuestion, name='deleteUserFromObjectQuestion'),
     path('deleteUserFromObject/<user_pk>/<work_object_pk>/', deleteUserFromObject, name='deleteUserFromObject'),
     path('deleteWorkObjectQuestion/<work_object_pk>/', deleteWorkObjectQuestion, name='deleteWorkObjectQuestion'),

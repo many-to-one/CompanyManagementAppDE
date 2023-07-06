@@ -137,6 +137,7 @@ class WorkObject(models.Model):
     
 
 class Task(models.Model):
+    date = models.DateTimeField(default=timezone.now)
     user = models.ForeignKey(
         CustomUser, 
         related_name='wyconawca',
