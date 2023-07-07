@@ -34,8 +34,16 @@
         {% endif %}
         <div class="block">
             <ul class="navbar">
+                <li class="nav-el"><a href="{% url 'home' %}">GŁÓWNA</a></li>
                 <li class="nav-el"><a href="{% url 'user' request.user.pk %}">PROFIL</a></li>
-                <li class="nav-el"><a href="{% url 'home' %}">HOME</a></li>
+                <li class="nav-el">
+                    <a href="{% url 'schedule' %}" class="tags_cont_mini">
+                        GRAFIK
+                        {% if request.user.is_authenticated %}
+                            <span class="header_quantity" id="scheduleQuantity"></span>
+                        {% endif %}
+                    </a>
+                </li>
                 <li class="nav-el">
                     <a href="{% url 'work_objects' request.user.pk %}" class="tags_cont_mini">
                         MIEJSCA PRACY 
@@ -80,6 +88,7 @@
     <script>
 
         var chatDownQuantity = document.getElementById('chat_down_all_quantity')
+        var scheduleQuantity = document.getElementById('scheduleQuantity')
         var sideMenu = document.getElementById('header-container')
         var buttonMenu = document.getElementById('toggle_menu')
         var closeMenu = document.getElementById('close_menu')
@@ -94,6 +103,16 @@
                  url: "{% url 'showCountAll' %}",
                  success: (response) => {
                      chatDownQuantity.textContent = response.count
+                 }
+             })
+
+             // The online unread messages count
+            $.ajax({
+                 type: 'GET',
+                 url: "{% url 'taskQuantity' %}",
+                 success: (response) => {
+                    scheduleQuantity.textContent = response.count
+                    console.log('counttasks', response.count)
                  }
              })
 

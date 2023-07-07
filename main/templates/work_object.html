@@ -14,6 +14,7 @@
 <body>
 
     {% block content %}
+
     <!-- ##################### TASKs ##################### -->
     <div id="tasks_container"></div>
     <!-- ##################### END OF TASKS ##################### -->
@@ -178,8 +179,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 
     <script> 
 
@@ -391,23 +391,48 @@
             },
             success: function(response){
                 for(var key in response.tasks_list){
-                    console.log('tasks', response.tasks_list[key])
                     if(response.tasks_list[key]){
+                        var date =  '<div id="taskDateImg">'+
+                                        '<div id="taskDateBg">'+
+                                            '<div id="taskDate">'+
+                                                '<p>'+
+                                                    response.tasks_list[key].date.slice(0, 2)+
+                                                '</p>'+
+                                                '<p>'+
+                                                    response.tasks_list[key].date.slice(2, -4)+
+                                                '</p>'+
+                                            '</div>'+
+                                        '</div>'+
+                                    '</div>'+
+                                    '<p id="taskYear">'+
+                                        response.tasks_list[key].date.slice(-4)+
+                                    '</p>'
                         var taskElement = response.tasks_list[key].done === true ? 
                         '<p id="done">' + response.tasks_list[key].content + '</p>' : 
                         '<p>' + response.tasks_list[key].content + '</p>';
                         var deleteTaskBtn = response.tasks_list[key].done === true?
                         '<img class="label_img_task" id="deleteTaskBtn" src="{% static "images/delete.png" %}" width="30" height="30" onclick="deleteQuestionTask('+response.tasks_list[key].id+', '+user+', '+work_object+')">' :
                         '';
-                        var data = '<div id="labelTaskCont">' +
-                                        '<div id="task">' +
-                                             taskElement +
+                        var taskStyle = response.tasks_list[key].done === true ?
+                        'doneTaskColor' :
+                        'activeTaskColor';
+                        var data = '<div id="labelTaskCont">' + 
+                                        '<div id="task" class="'+taskStyle+'">' +
+                                            
+                                            '<div class="row_task_cont">'+
+                                                '<div id="taskDateCont">'+  
+                                                    date +
+                                                '</div>'+
+                                                taskElement +
+                                            '</div>'+
+
                                           '<div class="row_task_cont">'+
                                             '<img class="label_img_task" src="{% static "images/enter.png" %}" width="30" height="30" onclick="doneTask('+response.tasks_list[key].id+', '+user+', '+work_object+')">' +
                                               '{% if request.user.is_superuser %}'+
                                                  deleteTaskBtn +
                                               '{% endif %}'+
                                           '</div>'+
+
                                         '</div>' +
                                     '</div>';
                         $('#taskContent').append(data);
@@ -429,8 +454,11 @@
                             '{% csrf_token %}'+
                              '<textarea wrap="soft" class="contentTask" id="content"></textarea>'+
                              '<div>'+
-                            //    '<input type="date" id="datetimepicker">'+
-                               '<img type="date" id="datetimepicker" class="label_img_task" src="{% static "images/enter.png" %}" width="30" height="30">'+
+                               '<div class="label_img_task">'+
+                                '<div class="label_datetimepicker">'+
+                                 '<input type="date" id="datetimepicker">'+
+                                 '</div>'+
+                                '</div>'+
                                '<img id="addTask" class="label_img_task" src="{% static "images/addwork.png" %}" width="30" height="30" onclick="newTask(' + user + ', ' + work_object + ', event)">' +
                              '</div>'+
                           '</form>'+
@@ -443,25 +471,10 @@
             tasks_container.innerHTML = data
     }
 
-    flatpickr("#datetimepicker", {
-      enableTime: true,
-      dateFormat: "Y-m-d H:i",
-    });
-    
-    var processButton = document.getElementById("processButton");
-    
-    processButton.addEventListener("click", function() {
-      var selectedDate = document.getElementById("datetimepicker").value;
-      console.log("Selected date:", selectedDate);
-    
-      // Process the selected date further
-      // ...
-    });
-
-
     // Create a new Task
     function newTask(user, work_object, event){
         event.preventDefault();
+        var datetimepickerValue = document.getElementById("datetimepicker").value;
         var content = document.getElementById("content").value;
         console.log('newuser', user)
         console.log('new_work_object', work_object)
@@ -471,6 +484,7 @@
             type: 'POST',
             url: "{% url 'new_task'  %}",
             data: {
+                  'date': datetimepickerValue,
                   'content': content,
                   'user': user,
                   'work_object': work_object,
@@ -517,7 +531,6 @@
     }
 
     // Question for deleting the task
-    var deleteQuestion = document.getElementById('deleteQuestion')
     function deleteQuestionTask(pk, user, work_object){
         $.ajax({
             type: 'POST',
@@ -528,16 +541,17 @@
             },
             success: function(response){
                 if(response.message === 'ok'){
+                    var deleteQuestion = document.getElementById('deleteQuestion')
                     tasks_container.style.display = 'none';
                     deleteQuestion.style.display = 'flex';
                     var data = '<div id="questCont">'+
                                     '<p>'+"Usunąć te zadanie?"+'</p>'+
                                     '<div class="row_cont_in_label">'+
-                                        '<button class="btn" onclick="closeQuestionDelete()">'+
-                                            '<a>'+"Nie"+'</a>'+
-                                        '</button>'+
                                         '<button class="btn" onclick="deleteTask('+pk+', '+user+', '+work_object+')">'+
                                             '<a>'+"Tak"+'</a>'+
+                                        '</button>'+
+                                        '<button class="btn" onclick="closeQuestionDelete()">'+
+                                            '<a>'+"Nie"+'</a>'+
                                         '</button>'+
                                     '</div>'+
                                 '</div>';
@@ -554,7 +568,6 @@
 
     // Delete the task
     function deleteTask(pk, user, work_object){
-        console.log('pk', pk)
         $.ajax({
             type: 'POST',
             url: "{% url 'deleteTask' %}",
@@ -563,7 +576,6 @@
                 'csrfmiddlewaretoken': '{{ csrf_token }}'
             },
             success: function(response){
-                alert('Zadanie  '+ response.message +' zostało usuniętę');
                 deleteQuestion.style.display = 'none';
                 showTasks(user, work_object);
             },

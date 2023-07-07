@@ -1,10 +1,12 @@
-from io import BytesIO
-import json
+# from io import BytesIO
+# import json
+from django.utils import timezone
+import locale
 import os
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from django.views.generic import ListView
+# from django.views.generic import ListView
 from .models import (
     VacationRequest, 
     Vacations, 
@@ -27,7 +29,7 @@ from django.core.paginator import Paginator
 import openpyxl
 from openpyxl.utils import get_column_letter
 from django.http import HttpResponse
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 
 def index(request):
@@ -168,7 +170,7 @@ def task(request):
         tasks = Task.objects.filter(
             user=user,
             work_object=work_object,
-            ).order_by('-id')
+            ).order_by('date_obj')
 
         tasks_list = tasks.values()
         response = {
@@ -179,12 +181,20 @@ def task(request):
 
 def new_task(request):
     if request.method == 'POST':
+        date = request.POST.get('date')
         user_pk = request.POST.get('user')
         work_object_pk = request.POST.get('work_object')
         content = request.POST.get('content')
         user = CustomUser.objects.get(id=int(user_pk))
         work_object = WorkObject.objects.get(id=int(work_object_pk))
+
+        locale.setlocale(locale.LC_TIME, 'pl_PL')  # Polish locale
+        date = datetime.strptime(date, '%Y-%m-%d') # Ex: '2023-07-07'
+        formatted_date = date.strftime('%d %b %Y') # Ex: '07 lipiec 2023'
+
         newTask = Task(
+            date_obj=date,
+            date=formatted_date,
             user=user,
             username=user.username,
             work_object=work_object,
@@ -192,12 +202,36 @@ def new_task(request):
         )
         newTask.save()
         response_data = {
+            'date': date,
             'user': user.username,
             'work_object': work_object.id,
             'content': content,
             'newTask': newTask.id,
         }
     return JsonResponse(response_data)
+
+
+def taskQuantity(request):
+    if request.method == 'GET':
+        user = request.user
+        if user.is_superuser:
+            tasks = Task.objects.filter(
+            done=False
+            )
+        else:
+            tasks = Task.objects.filter(
+                user=user,
+                done=False
+            )
+        count = 0
+        for t in tasks:
+            count += 1
+            # return count
+        respnse = {
+            'count': count
+        }
+        print('TASKCOUNT', count)
+    return JsonResponse(respnse)
 
 
 def getTask(request):
@@ -283,13 +317,21 @@ def deleteTask(request):
     return JsonResponse(response)
 
 
+from django.db.models.functions import ExtractMonth
 def schedule(request):
     user = request.user
     tasks = Task.objects.filter(
         user=user
-    ).order_by('-id')
+    )
+    locale.setlocale(locale.LC_TIME, 'pl_PL')
+    for task in tasks:
+        date_obj = datetime.strptime(task.date, '%d %b %Y')
+        task.date_obj = date_obj
+        task.save()
+        print('TASKDATE', date_obj)
+    # tasks.annotate(month=ExtractMonth('date')).order_by('-month')
     context = {
-        'tasks': tasks,
+        'tasks': tasks.order_by('date_obj'),
     }
     return render(request, 'shedule.html', context)
 

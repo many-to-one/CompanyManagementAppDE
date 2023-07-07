@@ -1,59 +1,56 @@
 {% extends 'base.html' %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    {% block content %}
-
-    <div class="page-container">
-        <div class="title">
-            <div class="back">
-                <a class="label_img" href="{% url 'home' %}">
-                    <img src="{% static 'images/back.png' %}" width="30" height="30">
-                </a>
-                <p class="topic">GRAFIK</p>
-            </div>
-        </div>
-        <div id="scheduleCont">
-            <div id="taskContent">
-                    {% for task in tasks %}
-                        <div id="task">
-                            {% if task.done == True %}
-                                <p id="done">{{ task.content }}</p>
-                            {% else %}
-                                <p>{{ task.content }}</p>
-                            {% endif %}
-                            <div class="row_task_cont">
-                                <a class="label_img" href="{% url 'work_object' task.work_object.pk %}">
-                                    <img src="{% static 'images/enter.png' %}" width="30" height="30">
-                                </a>
-                            </div>
-                        </div>
-                    {% endfor %}
-            </div>
-        </div>
+{% block content %}
+<div class="page-container">
+  <div class="title">
+    <div class="back">
+      <a class="label_img" href="{% url 'home' %}">
+        <img src="{% static 'images/back.png' %}" width="30" height="30">
+      </a>
+      <p class="topic">GRAFIK</p>
     </div>
+  </div>
+  <div id="scheduleCont">
+    {% for task in tasks %}
+      <div id="task" class="scheduleStyle{% if task.done == True %}Done{% else %}Active{% endif %}">
+        <div class="row_task_cont">
+          <div id="taskDateCont">
+            <div id="taskDateImg">
+              <div id="taskDateBg">
+                <div id="taskDate">
+                  <p>{{ task.date|slice:":2" }}</p>
+                  <p>{{ task.date|slice:"2:-4" }}</p>
+                </div>
+              </div>
+            </div>
+            <p id="taskYear">{{ task.date|slice:"-4:" }}</p>
+          </div>
+          {% if task.done == True %}
+            <p id="done">{{ task.content }}</p>
+          {% else %}
+            <p>{{ task.content }}</p>
+          {% endif %}
+        </div>
+        <div class="row_task_cont">
+          <a class="label_img" href="{% url 'work_object' task.work_object.pk %}">
+            <img src="{% static 'images/enter.png' %}" width="30" height="30">
+          </a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
 
-    <script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var tasksContainer = document.getElementById("tasks_container");
+    tasksContainer.style.display = "block";
+  });
 
-        var tasks_container = document.getElementById("tasks_container");
-
-        document.addEventListener("DOMContentLoaded", function() {
-          tasks_container.style.display = "block";
-        });
-
-        window.addEventListener("beforeunload", function() {
-          tasks_container.style.display = "none";
-        });
-
-    </script>
-
-    {% endblock %}
-</body>
-</html>
+  window.addEventListener("beforeunload", function() {
+    var tasksContainer = document.getElementById("tasks_container");
+    tasksContainer.style.display = "none";
+  });
+</script>
+{% endblock %}

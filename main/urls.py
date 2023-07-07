@@ -16,6 +16,7 @@ urlpatterns = [
     path('work_object/<pk>/', workObjectView, name='work_object'),
     path('task/', task, name='task'),
     path('new_task/', new_task, name='new_task'),
+    path('taskQuantity/', taskQuantity, name='taskQuantity'),
     path('doneTask/', doneTask, name='doneTask'),
     path('deleteTaskQuestion/', deleteTaskQuestion, name='deleteTaskQuestion'),
     path('deleteTask/', deleteTask, name='deleteTask'),

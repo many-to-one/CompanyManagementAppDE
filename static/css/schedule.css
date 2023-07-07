@@ -4,13 +4,51 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 10px;
     margin-left: 112px;
     margin-top: 130px;
+    padding-top: 20px;
     border: transparent;
     border-radius: 10px;
     box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
-    height: 78vh;
+    height: 74vh;
     width: 83vw;
+    overflow-y: auto;
+}
+
+.scheduleStyleActive {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--input-bg-color);
+    color: #2a2a2a;
+    border-radius: 5px;
+    border: transparent;
+    height: auto;
+    width: 58vw;
+    min-height: 40px;
+    font-size: 16px;
+    padding: 10px;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+    overflow-y: auto;
+}
+
+.scheduleStyleDone {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    background-color: rgba(247,247,247, .2);
+    color: #2a2a2a;
+    border-radius: 5px;
+    border: transparent;
+    height: auto;
+    width: 58vw;
+    min-height: 40px;
+    font-size: 16px;
+    padding: 10px;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
     overflow-y: auto;
 }
 
@@ -18,7 +56,7 @@
     #scheduleCont{
         margin-left: 68px;
         width: 87vw;
-        height: 85vh;
+        height: 78vh;
     }
 }
 

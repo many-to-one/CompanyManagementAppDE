@@ -137,29 +137,42 @@ class WorkObject(models.Model):
     
 
 class Task(models.Model):
-    date = models.DateTimeField(default=timezone.now)
+    date_obj = models.DateTimeField(default=timezone.now) ## For sorted dates
+    date = models.CharField(
+        null=True,
+        max_length=15,
+        verbose_name='Data',
+    )
     user = models.ForeignKey(
         CustomUser, 
         related_name='wyconawca',
         on_delete=models.SET_NULL, ## It helps to protect the task after the User will be deleted
         null=True,
+        verbose_name='Użytkownik',
     )
     username = models.CharField(
         null=True,
         max_length=150,
+        verbose_name='Imię',
     )
     work_object = models.ForeignKey(
         WorkObject, 
         related_name='object',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='Objekt',
     )
     content = models.CharField(
         null=True,
         max_length=250,
+        verbose_name='Treść',
     )
     done = models.BooleanField(
-        default=False
+        default=False,
+        verbose_name='Wykonano',
     )
+
+    def formatted_date(self):
+        return self.date.strftime('%d %B %Y')
 
     def __str__(self) -> str:
         return self.username

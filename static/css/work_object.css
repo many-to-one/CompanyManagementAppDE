@@ -253,7 +253,6 @@
 }
 
 #labelTaskCont {
-    /* padding: 10px; */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -271,6 +270,7 @@
     background-color: var(--main-bg-color);
     box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
     cursor: pointer;
+    opacity: 1 !important;
   }
 
   .label_img_task:hover {
@@ -285,9 +285,10 @@
 
 #task {
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    background-color: var(--input-bg-color);
+    /* background-color: var(--input-bg-color); */
     color: #2a2a2a;
     border-radius: 5px;
     border: transparent;
@@ -298,6 +299,23 @@
     padding: 10px;
     box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
     overflow-y: auto;
+}
+
+.activeTaskColor {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--input-bg-color);
+    border-radius: 5px;
+    border: transparent;
+    height: auto;
+    width: 58vw;
+    min-height: 40px;
+}
+
+.doneTaskColor {
+    background-color: rgba(247,247,247, .2);
 }
 
 #taskForm {
@@ -323,6 +341,7 @@
 
 #done {
     text-decoration: line-through;
+    opacity: .5;
 }
 
 #addTask {
@@ -370,6 +389,80 @@ textarea {
     align-items: center;
     justify-content: center;
     gap: 10px;
+}
+
+.label_datetimepicker {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    background-color: #2a3b61;
+    cursor: pointer;
+}
+
+#datetimepicker {
+    width: 15px;
+    height: 15px;
+    color: white;
+    border-radius: 50px;
+    cursor: pointer;
+}
+
+#taskDateCont {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+}
+
+/* #taskDateImg {
+    display: block;
+} */
+
+#taskDateImg:hover{
+    animation: rotate 2s infinite linear;
+}
+
+@keyframes rotate {
+    0% {
+      transform: rotateY(0deg);
+    }
+    100% {
+      transform: rotateY(360deg);
+    }
+  }
+
+#taskDateBg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    background-color: white;
+    border: none;
+    border-radius: 5px;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+}
+
+#taskDate {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 5px;
+    font-size: 10px;
+    background-color: #2a3b61;
+}
+
+#taskDate p {
+    color: white;
 }
 
 @media screen and (max-width: 1180px) {
