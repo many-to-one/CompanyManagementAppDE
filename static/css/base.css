@@ -282,6 +282,16 @@ tr:nth-child(even) td {
   display: flex;
   align-items: center;
   gap: 20px;
+  font-size: 16px;
+}
+
+@media screen and (max-width: 450px) {
+  .row_cont_in_label {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 12px;
+  }
 }
 
 .label_img {

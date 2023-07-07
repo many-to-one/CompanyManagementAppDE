@@ -320,7 +320,10 @@ def deleteTask(request):
 from django.db.models.functions import ExtractMonth
 def schedule(request):
     user = request.user
-    tasks = Task.objects.filter(
+    if user.is_superuser:
+        tasks = Task.objects.all()
+    else:
+        tasks = Task.objects.filter(
         user=user
     )
     locale.setlocale(locale.LC_TIME, 'pl_PL')
@@ -328,8 +331,6 @@ def schedule(request):
         date_obj = datetime.strptime(task.date, '%d %b %Y')
         task.date_obj = date_obj
         task.save()
-        print('TASKDATE', date_obj)
-    # tasks.annotate(month=ExtractMonth('date')).order_by('-month')
     context = {
         'tasks': tasks.order_by('date_obj'),
     }
@@ -1709,7 +1710,16 @@ def raports(request):
     users_list = set()
     users_list = {wo[0] for wo in works}
 
-    total = total_coffee_food + total_fuel + total_phone_costs + total_payment
+    # total = total_coffee_food + total_fuel + total_phone_costs + total_payment
+    if any(element is not None for element in [total_payment, total_phone_costs, total_fuel, total_coffee_food]):
+        total = total_payment + total_phone_costs + total_fuel + total_coffee_food
+    else:
+        total = '0:00'
+        total_payment = '0:00'
+        total_phone_costs = '0:00'
+        total_fuel = '0:00'
+        total_coffee_food = '0:00'
+
     context = {
         'works': works,
         'users': users, 

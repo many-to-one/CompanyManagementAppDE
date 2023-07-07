@@ -31,7 +31,7 @@
                         <img src="{% static 'images/back.png' %}" width="30" height="30">
                     </a>
                     <a class="label_img" href="{% url 'schedule' %}">
-                        <img src="{% static 'images/enter.png' %}" width="30" height="30">
+                        <img src="{% static 'images/schedule.png' %}" width="30" height="30">
                     </a>
                     <h3>{{ work_object.name }}</h3>
                 </div>
@@ -71,7 +71,7 @@
                             <div class="row_cont_in_label">
                                 <img 
                                     class="label_img" 
-                                    src="{% static 'images/addwork.png' %}" 
+                                    src="{% static 'images/schedule.png' %}" 
                                     width="30" height="30"
                                     onclick="showTasks('{{ user.pk }}', '{{work_object.pk}}' )"
                                 >
@@ -91,7 +91,7 @@
                             {% if user == request.user %}
                             <img 
                                 class="label_img" 
-                                src="{% static 'images/addwork.png' %}" 
+                                src="{% static 'images/schedule.png' %}" 
                                 width="30" height="30"
                                 onclick="showTasks('{{ user.pk }}', '{{work_object.pk}}' )"
                             >
@@ -402,11 +402,11 @@
                                                     response.tasks_list[key].date.slice(2, -4)+
                                                 '</p>'+
                                             '</div>'+
+                                            '<p id="taskYear">'+
+                                                response.tasks_list[key].date.slice(-4)+
+                                            '</p>'+
                                         '</div>'+
-                                    '</div>'+
-                                    '<p id="taskYear">'+
-                                        response.tasks_list[key].date.slice(-4)+
-                                    '</p>'
+                                    '</div>';
                         var taskElement = response.tasks_list[key].done === true ? 
                         '<p id="done">' + response.tasks_list[key].content + '</p>' : 
                         '<p>' + response.tasks_list[key].content + '</p>';
@@ -418,7 +418,7 @@
                         'activeTaskColor';
                         var data = '<div id="labelTaskCont">' + 
                                         '<div id="task" class="'+taskStyle+'">' +
-                                            
+
                                             '<div class="row_task_cont">'+
                                                 '<div id="taskDateCont">'+  
                                                     date +
@@ -427,7 +427,7 @@
                                             '</div>'+
 
                                           '<div class="row_task_cont">'+
-                                            '<img class="label_img_task" src="{% static "images/enter.png" %}" width="30" height="30" onclick="doneTask('+response.tasks_list[key].id+', '+user+', '+work_object+')">' +
+                                            '<img class="label_img_task" src="{% static "images/done.png" %}" width="35" height="35" onclick="doneTask('+response.tasks_list[key].id+', '+user+', '+work_object+')">' +
                                               '{% if request.user.is_superuser %}'+
                                                  deleteTaskBtn +
                                               '{% endif %}'+
@@ -453,12 +453,13 @@
                           '<form method="POST" id="taskForm">'+
                             '{% csrf_token %}'+
                              '<textarea wrap="soft" class="contentTask" id="content"></textarea>'+
-                             '<div>'+
+                             '<div id="task_mini_cont">'+
                                '<div class="label_img_task">'+
                                 '<div class="label_datetimepicker">'+
-                                 '<input type="date" id="datetimepicker">'+
+                                 '<input type="date" id="datetimepickerTask">'+
                                  '</div>'+
                                 '</div>'+
+                                '<br>'+
                                '<img id="addTask" class="label_img_task" src="{% static "images/addwork.png" %}" width="30" height="30" onclick="newTask(' + user + ', ' + work_object + ', event)">' +
                              '</div>'+
                           '</form>'+
@@ -474,7 +475,7 @@
     // Create a new Task
     function newTask(user, work_object, event){
         event.preventDefault();
-        var datetimepickerValue = document.getElementById("datetimepicker").value;
+        var datetimepickerValue = document.getElementById("datetimepickerTask").value;
         var content = document.getElementById("content").value;
         console.log('newuser', user)
         console.log('new_work_object', work_object)

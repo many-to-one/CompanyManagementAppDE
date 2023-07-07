@@ -13,6 +13,15 @@
   </div>
   <div id="scheduleCont">
     {% for task in tasks %}
+    <!-- <div class="label_img_sch">
+        <p class="init">{{ task.username }}</p>
+        <p class="init">{{ task.work_object.name }}</p>
+    </div> -->
+    <div class="before">
+        <div class="label_img_sch">
+            <p class="init">{{ task.username }}</p>
+            <p class="init">{{ task.work_object.name }}</p>
+        </div>
       <div id="task" class="scheduleStyle{% if task.done == True %}Done{% else %}Active{% endif %}">
         <div class="row_task_cont">
           <div id="taskDateCont">
@@ -22,9 +31,10 @@
                   <p>{{ task.date|slice:":2" }}</p>
                   <p>{{ task.date|slice:"2:-4" }}</p>
                 </div>
+                <p id="taskYear">{{ task.date|slice:"-4:" }}</p>
               </div>
             </div>
-            <p id="taskYear">{{ task.date|slice:"-4:" }}</p>
+            <!-- <p id="taskYear">{{ task.date|slice:"-4:" }}</p> -->
           </div>
           {% if task.done == True %}
             <p id="done">{{ task.content }}</p>
@@ -33,11 +43,16 @@
           {% endif %}
         </div>
         <div class="row_task_cont">
+            <!-- <div>
+                <p class="init">{{ task.username }}</p>
+                <p class="init">{{ task.work_object.name }}</p> -->
+            <!-- </div> -->
           <a class="label_img" href="{% url 'work_object' task.work_object.pk %}">
-            <img src="{% static 'images/enter.png' %}" width="30" height="30">
+            <img src="{% static 'images/workobject.png' %}" width="30" height="30">
           </a>
         </div>
       </div>
+    </div>
     {% endfor %}
   </div>
 </div>

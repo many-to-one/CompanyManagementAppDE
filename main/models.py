@@ -163,7 +163,7 @@ class Task(models.Model):
     )
     content = models.CharField(
         null=True,
-        max_length=250,
+        max_length=500,
         verbose_name='Treść',
     )
     done = models.BooleanField(
