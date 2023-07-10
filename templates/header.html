@@ -93,6 +93,9 @@
         var buttonMenu = document.getElementById('toggle_menu')
         var closeMenu = document.getElementById('close_menu')
         var vacations = document.getElementById('vacations_filter_cont')
+        var scheduleCont = document.getElementById('scheduleCont')
+        var before = document.getElementsByClassName('before')
+        var title = document.getElementsByClassName('title')
 
         // Close or Open menu
         function toggleMenu(){
@@ -112,9 +115,22 @@
                  url: "{% url 'taskQuantity' %}",
                  success: (response) => {
                     scheduleQuantity.textContent = response.count
-                    console.log('counttasks', response.count)
                  }
              })
+
+        //      $.ajax({
+        //       type: 'GET',
+        //       url: "{% url 'header' %}",
+        //       data: {
+        //           'menu': 'active',
+        //       },
+        //       success: (data) => {
+        //         console.log('ok', data)
+        //       },
+        //       error: (data) => {
+        //           console.log('error')
+        //       }                
+        //   })   
 
             if (sideMenu.style.left === "0px") {
               sideMenu.style.left = "-170px"; // Close the menu
@@ -122,12 +138,43 @@
               closeMenu.style.display = 'none';
               buttonMenu.style.display = 'block';
               vacations.style.position = 'fixed'; // make the header in the vacations.html fixed 
+
+            //   $.ajax({
+            //     type: 'GET',
+            //     url: "{% url 'header' %}",
+            //     data: {
+            //         'menu': 'inactive',
+            //     },
+            //     success: (data) => {
+            //         console.log('ok', data)
+            //     },
+            //     error: (data) => {
+            //         console.log('error')
+            //     }                
+            // })
+              
             } else {
               sideMenu.style.left = "0px"; // Open the menu
               toggle_menu.style.left = "160px";
               closeMenu.style.display = 'block';
               buttonMenu.style.display = 'none'; 
               vacations.style.position = 'static'; // make the header in the vacations.html static
+              scheduleCont.style.visibility = 'hidden'
+
+            //   $.ajax({
+            //     type: 'GET',
+            //     url: "{% url 'header' %}",
+            //     data: {
+            //         'menu': 'active',
+            //     },
+            //     success: (data) => {
+            //         console.log('ok', data)
+            //     },
+            //     error: (data) => {
+            //         console.log('error')
+            //     }                
+            // })
+
             }
 
         }

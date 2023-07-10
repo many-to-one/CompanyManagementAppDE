@@ -13,10 +13,6 @@
   </div>
   <div id="scheduleCont">
     {% for task in tasks %}
-    <!-- <div class="label_img_sch">
-        <p class="init">{{ task.username }}</p>
-        <p class="init">{{ task.work_object.name }}</p>
-    </div> -->
     <div class="before">
         <div class="label_img_sch">
             <p class="init">{{ task.username }}</p>
@@ -34,7 +30,6 @@
                 <p id="taskYear">{{ task.date|slice:"-4:" }}</p>
               </div>
             </div>
-            <!-- <p id="taskYear">{{ task.date|slice:"-4:" }}</p> -->
           </div>
           {% if task.done == True %}
             <p id="done">{{ task.content }}</p>
@@ -43,10 +38,6 @@
           {% endif %}
         </div>
         <div class="row_task_cont">
-            <!-- <div>
-                <p class="init">{{ task.username }}</p>
-                <p class="init">{{ task.work_object.name }}</p> -->
-            <!-- </div> -->
           <a class="label_img" href="{% url 'work_object' task.work_object.pk %}">
             <img src="{% static 'images/workobject.png' %}" width="30" height="30">
           </a>
@@ -57,7 +48,32 @@
   </div>
 </div>
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
+
+function hideCont(){
+  var scheduleCont = document.getElementById('scheduleCont')
+  $.ajax({
+    type: 'GET',
+    url: "{% url 'header' %}",
+    success: (response) => {
+        if(response.menu === 'active'){
+          console.log('response', response)
+          scheduleCont.style.display = 'none';
+        }else{
+          console.log('response', response)
+          scheduleCont.style.display = 'flex';
+        }
+      }
+    })
+}
+
+// window.onload = function() {
+//     hideCont()
+//   };
+
+// setInterval(hideCont, 500);
+
   document.addEventListener("DOMContentLoaded", function() {
     var tasksContainer = document.getElementById("tasks_container");
     tasksContainer.style.display = "block";
@@ -67,5 +83,6 @@
     var tasksContainer = document.getElementById("tasks_container");
     tasksContainer.style.display = "none";
   });
+
 </script>
 {% endblock %}

@@ -296,9 +296,15 @@ class Vacations(models.Model):
     user = models.ForeignKey(
         CustomUser, 
         related_name='user',
-        on_delete=models.CASCADE,
+        # on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True,
         )
+    username = models.CharField(
+        null=True,
+        max_length=50,
+        verbose_name='Imię użytkownika',
+    )
     year = models.CharField(
         default='0000',
         max_length=4,
@@ -354,7 +360,7 @@ class Vacations(models.Model):
     )
 
     def __str__(self) -> str:
-        return self.user.username
+        return str(self.id)
     
 
 class VacationRequest(models.Model):

@@ -15,7 +15,16 @@ h2 {
     border-radius: 10px;
 }
 
-@media screen and (max-width: 945px) {
+.field {
+    background-color: var(--main-bg-color);
+    width: 220px;
+    height: 20px;
+    padding: 10px;
+    margin: 10px;
+    border-radius: 10px;
+}
+
+@media screen and (max-width: 1180px) {
     .add_vacations_grafic_container {
         margin-top: 30px;
         width: 64vw;
@@ -24,16 +33,18 @@ h2 {
         padding: 10px;
         border-radius: 10px;
     }
+
+    .field {
+        background: transparent;
+        width: 220px;
+        height: 0px;
+        padding: 0px;
+        margin: 0px;
+        border-radius: 0px;
+    }
 }
 
-.add_vacations_grafic_container p {
-    background-color: var(--main-bg-color);
-    width: 220px;
-    height: 20px;
-    padding: 10px;
-    margin: 10px;
-    border-radius: 10px;
-}
+/* add_vacations_grafic_container p */
 
 .vacations_btn {
     padding: 5px;

@@ -33,12 +33,12 @@
         <div class="add_vacations_grafic_container">
 
             <div class="vacations_mini_cont">
-                <p>Imię i nazwisko:</p>
-                <p>{{ request.user }}</p>
+                <p class="field">Imię i nazwisko:</p>
+                <p class="vacations_input">{{ request.user }}</p>
             </div>
 
             <div class="vacations_mini_cont">
-                <p>Typ urlopu:</p>
+                <p class="field">Typ urlopu:</p>
                 <select class="vacations_input"  name="type" placeholder="Typ urlopu" id="select" onchange="changeOption()">
                     {% for type in types %}                    
                         <option value="{{ type }}">{{ type }}</option>
@@ -48,17 +48,17 @@
 
             <div id="steel">
                 <div class="vacations_mini_cont">
-                    <p>Od:</p>
+                    <p class="field">Od:</p>
                     <input name="v_from" id="dateFrom" type="date" class="vacations_input" value="{{date}}" >
                 </div>
     
                 <div class="vacations_mini_cont">
-                    <p>Do:</p>
+                    <p class="field">Do:</p>
                     <input name="v_to" id="dateTo" type="date" class="vacations_input" value="{{date}}" oninput="sumDays()">
                 </div>
     
                 <div class="vacations_mini_cont">
-                    <p>Liczba dni urlopu:</p>
+                    <p class="field">Liczba dni urlopu:</p>
                     <input type="text" name="days_planned" id="days_planned" class="vacations_input" value="1">
                 </div>
             </div>

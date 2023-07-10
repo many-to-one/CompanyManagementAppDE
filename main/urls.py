@@ -3,6 +3,7 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
+    path('header/', header, name='header'),
     path('home/', index, name='home'),
     path('user_work/<pk>/', userWork, name='user_work'),
     path('update_user_work/<work_pk>/', updateUserWork, name='update_user_work'),
@@ -31,7 +32,7 @@ urlpatterns = [
     path('showCount/<username>/<work_object_pk>/', showCount, name='showCount'),
     path('showCountAll/', showCountAll, name='showCountAll'),
     path('chat/<pk>/', chat, name='chat'),
-    path('vacations/<pk>/', vacations, name='vacations'),
+    path('vacations/<pk>/', vacations, name='vacations'), #1776
     path('delete_vacations_question/', delete_vacations_question, name='delete_vacations_question'),
     path('delete_vacations/', delete_vacations, name='delete_vacations'),
     path('vacationsExcelPage/', vacationsExcelPage, name='vacationsExcelPage'),

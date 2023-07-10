@@ -317,7 +317,37 @@ def deleteTask(request):
     return JsonResponse(response)
 
 
-from django.db.models.functions import ExtractMonth
+def header(request):
+    if request.method == 'GET':
+        menu_ = ''
+        if 'menu' in request.GET:
+            # Handle GET request with data
+            menu = request.GET.get('menu')
+            if menu == 'active':
+                menu_ = 'active'
+            else:
+                menu_ = 'inactive'
+            print('MENU', menu)
+            response = {
+                'menu': menu_
+            }
+            return JsonResponse(response)
+        else:
+            # Handle GET request without data
+            if menu_ == 'active':
+                response = {
+                'menu': 'active'
+                }
+            else:
+                response = {
+                'menu': 'inactive'
+                }
+            print('MENU with no data')
+            return JsonResponse(response)
+
+
+    
+
 def schedule(request):
     user = request.user
     if user.is_superuser:
@@ -1260,10 +1290,11 @@ from django.db.models import Prefetch
 def raports(request):
     if request.user.is_superuser:
         works = Work.objects.prefetch_related(Prefetch('user')).order_by('-date')
+        work_objects = WorkObject.objects.all()
     else:
         works = Work.objects.prefetch_related(Prefetch('user')).filter(user=request.user).order_by('-date')
+        work_objects = WorkObject.objects.filter(user=request.user)
     users = CustomUser.objects.all().values('id', 'username')
-    work_objects = WorkObject.objects.all()
 
     if request.user.is_superuser:
 
@@ -1744,7 +1775,9 @@ def raports(request):
 
 def vacations(request, pk):
     user = get_object_or_404(CustomUser, id=pk)
-    users = CustomUser.objects.all().values('username')
+    # users = CustomUser.objects.all().values('username')
+    # username_list = [user['username'] for user in users]
+    users = Vacations.objects.all().values('username')
     username_list = [user['username'] for user in users]
     vacations = Vacations.objects.filter(user__id=user.id).order_by('-id')
     years_list = [vacation.v_from[:4] for vacation in vacations] 
@@ -1784,7 +1817,11 @@ def vacations(request, pk):
     if request.method == 'POST':
         if 'user' in request.POST:
             user_option = request.POST.get('user')
-            user = get_object_or_404(CustomUser, username=user_option)
+            # user = get_object_or_404(CustomUser, username=user_option)
+            try:
+                user = CustomUser.objects.get(username=user_option)
+            except:
+                return render(request, 'error.html', {'error': 'Użytkownik nie istnije'})
             return redirect('vacations', user.id)
 
         elif 'year' in request.POST:
@@ -1867,7 +1904,7 @@ def vacationsToExcel(request):
     elif user is not None and year is not None:
         vacations = Vacations.objects.filter(
             v_from__startswith=year,
-            user__username=user
+            username=user
         ).order_by('-id')
 
     wb = openpyxl.Workbook()
@@ -1890,7 +1927,7 @@ def vacationsToExcel(request):
 
     # Add the table data
     for row_num, vacation in enumerate(vacations, 2):
-        sheet.cell(row=row_num, column=1).value = vacation.user.username
+        sheet.cell(row=row_num, column=1).value = vacation.username
         sheet.cell(row=row_num, column=2).value = vacation.date
         sheet.cell(row=row_num, column=3).value = vacation.type
         sheet.cell(row=row_num, column=4).value = vacation.v_from
@@ -2098,6 +2135,7 @@ def addVacation(request):
         try:
             vacation = Vacations(
             user=request.user,
+            username=user.username,
             date=date,
             v_from=v_from,
             v_to=v_to,
@@ -2126,7 +2164,6 @@ def addVacation(request):
                         messages.warning(request, 'Ten termin już zarezerwowany, wybierz inny')
                         vacation.delete()
                         return redirect('addVacation')
-                        # return redirect('vacations', user.id)
                     else:
                         x_date += timedelta(days=1)
 
