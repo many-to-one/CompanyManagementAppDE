@@ -29,6 +29,14 @@ class Login(LoginView):
     redirect_authenticated_user = True
     form_class = AuthenticationForm
     template_name = 'login.html'
+
+    def form_valid(self, form):
+        user = form.get_user()
+        if user.acceptation:
+            return super().form_valid(form)
+        else:
+            context = {'error': 'Nie zostałeś jeszcze zwerefikowany'}
+            return render(self.request, 'error.html', context)
     
     def form_invalid(self, form):
         messages.error(self.request,'Invalid username or password')
@@ -104,12 +112,19 @@ def Profile(request, pk):
             'nfz_adress', 'phone_number', 'bank', 'bic_swift', 'bank_account',
             'health_insurance_de', 'health_insurance_de_number', 'shoe_size',
             'growth', 'work_clothes', 'rights', 'vacations_days_quantity_de',
-            'last_year_vacations_days_quantity_de', 'days_to_use_in_current_year_de'
+            'last_year_vacations_days_quantity_de', 'days_to_use_in_current_year_de',
+            'acceptation',
         ]
 
         for field in prof_list:
+            if field == 'acceptation':
+                value = request.POST.get(field)
+                if value == 'Tak':
+                    setattr(user, field, True)
+                else:
+                    setattr(user, field, False)
             value = request.POST.get(field)
-            if value:
+            if value and value != request.POST.get('acceptation'):
                 try:
                     setattr(user, field, value)
                 except Exception as e:

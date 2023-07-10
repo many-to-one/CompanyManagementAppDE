@@ -13,11 +13,14 @@
 
 {% block content %}
 
-    <!-- <div class="container"> -->
+        <div class="title">
+            <h1>ERGO</h1>
+        </div>
+    
         <form method='POST' class='auth-form'>
             {% csrf_token %}
 
-            <h3>Logo Nazwa</h3>
+            <h3>Logowanie</h3>
         
             <input type="text" placeholder="Email" name="username" class="input">
         
@@ -33,7 +36,6 @@
         
         
         </form>
-    <!-- </div> -->
 
 {% endblock %}
 </body>

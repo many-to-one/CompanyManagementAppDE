@@ -16,6 +16,7 @@ class CustomUserAdmin(UserAdmin):
         ("User Info",{ 
          
             "fields": (
+                "acceptation",
                 "username", 
                 "email", 
                 # "password",

@@ -7,6 +7,10 @@ from .manager import CustomUserManager
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
+    acceptation = models.BooleanField(
+        _('Zatwierdź'),
+        default=False,
+    )
     username = models.CharField(
         _('Użytkownik'),
         null=True,

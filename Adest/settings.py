@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 import environ
-from main.middleware import AuthRequiredMiddleware
+from main.middleware import AuthenticationMiddleware
 
 env = environ.Env()
 environ.Env.read_env()
@@ -60,17 +60,15 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'global_login_required.GlobalLoginRequiredMiddleware', ## pip install django-glrm
-    # 'main.middleware.AuthRequiredMiddleware',
+    # 'global_login_required.GlobalLoginRequiredMiddleware', ## pip install django-glrm
+    'main.middleware.AuthenticationMiddleware',
 ]
 
-GLRM_TEMPLATE_NAME = '404.html'
-
-PUBLIC_VIEWS = [
-    'users.views.Register',
-    'users.views.Login',
-    'users.views.forgotPassword',
-]
+# PUBLIC_VIEWS = [
+#     'users.views.Register',
+#     'users.views.Login',
+#     'users.views.forgotPassword',
+# ]
 
 DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': lambda request: DEBUG and request.META['REMOTE_ADDR'] == '127.0.0.1',

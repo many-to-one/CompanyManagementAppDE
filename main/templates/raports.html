@@ -68,7 +68,7 @@
                     <div class="delete" id="deleteMarked">
                         <input type="checkbox" onclick="checkAll()">
                         <p>Usuń zaznaczone</p>
-                        <input type="image" src="{% static 'images/delete.png' %}" width="30" height="30">
+                        <input type="image" src="{% static 'images/delete.png' %}" width="20" height="20">
                     </div>
                 <thead>
                     <tr>
@@ -91,7 +91,7 @@
                         <th></th>
                         <th>
                             <div class="label_img">
-                                <input type="image" src="{% static 'images/delete.png' %}" width="30" height="30">
+                                <input type="image" src="{% static 'images/delete.png' %}" width="20" height="20">
                             </div>
                         </th>
                     </tr>
@@ -120,12 +120,12 @@
                         <td class="nch" data-label="Opłata">{{work.payment}}</td>
                             <td class="ch">
                                 <a class="label_img" href="{% url 'update_user_work' work.pk %}" >
-                                    <img src="{% static 'images/edit.png' %}" width="30" height="30">
+                                    <img src="{% static 'images/edit.png' %}" width="20" height="20">
                                 </a>
                             </td>
                             <td class="nch">
                                 <a class="label_img" href="{% url 'deleteUserWorkQuastion' work.pk %}">
-                                    <img src="{% static 'images/delete.png' %}" width="30" height="30">
+                                    <img src="{% static 'images/delete.png' %}" width="20" height="20">
                                 </a>
                             </td>
                     </tr>

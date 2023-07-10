@@ -13,18 +13,25 @@
     
 {% block content %}
 
-    <p>Register</p>
-    
-    <form method="POST" class="auth-form" enctype="multipart/form-data">
-        {% csrf_token %}
-        {% for f in form %}
-            <label for="{{ f.auto_id }}">{{ f.label }}</label>
-            {{f}}
-        {% endfor %}
-        <button class="auth-btn" type="submit">
-            <p class="btn-title">Zarejestruj się</p>
-        </button>
-    </form>
+        <div class="title">
+            <div class="back">
+              <a class="label_img" href="{% url 'login' %}">
+                <img src="{% static 'images/back.png' %}" width="30" height="30">
+              </a>
+              <p class="topic">Rejestracja</p>
+            </div>
+          </div>
+          
+          <form method="POST" class="auth-form" enctype="multipart/form-data">
+              {% csrf_token %}
+              {% for f in form %}
+                  <label for="{{ f.auto_id }}">{{ f.label }}</label>
+                  {{f}}
+              {% endfor %}
+              <button class="auth-btn" type="submit">
+                  <p class="btn-title">Zarejestruj się</p>
+              </button>
+          </form>
 
 {% endblock %}    
 
