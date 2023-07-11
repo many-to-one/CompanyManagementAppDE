@@ -16,7 +16,9 @@ class AuthenticationMiddleware:
         'forgot_password', 
         'register', 
         'change_password', 
-        # 'logout',
+        'accept_ip_address',
+        'block_ip_address',
+        'chack_email',
     ]
 
     def __init__(self, get_response):

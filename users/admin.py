@@ -19,6 +19,7 @@ class CustomUserAdmin(UserAdmin):
                 "acceptation",
                 "username", 
                 "email", 
+                "ip_address",
                 # "password",
                 "fp_token",
                 "token_expiration",

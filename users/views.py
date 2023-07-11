@@ -2,27 +2,37 @@
 # from typing import Any, Dict
 # from django.db import models
 # from django.http import HttpRequest, HttpResponse
+# from django.forms.models import BaseModelForm
+# from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import DetailView, CreateView, UpdateView, ListView 
+from django.views.generic import CreateView, UpdateView 
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import logout
 from django.contrib import messages
 from django.utils.http import urlsafe_base64_decode
 from datetime import datetime, timedelta
 from django.utils import timezone
-from .utils import create_token, forgot_password_mail
+from .utils import blacklist_token, check_user_ip_mail, create_token, forgot_password_mail
 from .forms import CustomUserChangeForm, CustomUserCreationForm, \
-                   AuthenticationForm, ForgotPassword
+                   AuthenticationForm
 from .models import BlacklistToken, CustomUser
 from django.core.paginator import Paginator
-import uuid
 
 
 class Register(CreateView):
     form_class = CustomUserCreationForm
     success_url = reverse_lazy('login')
     template_name = 'register.html'
+
+    def form_valid(self, form):
+        user = form.save(commit=False)
+        user.ip_address = {
+            'ip': [self.request.META.get('REMOTE_ADDR')],
+            'block': [],
+            }
+        user.save
+        return super().form_valid(form)
 
 
 class Login(LoginView):
@@ -35,18 +45,36 @@ class Login(LoginView):
     def form_valid(self, form):
         user = form.get_user()
         if user.acceptation:
-            # if request.user.is_authenticated:
+            # Get ip_address of request.user
             ip_address = self.request.META.get('REMOTE_ADDR')
-            print('ip_address', ip_address)
-            token = create_token()
-            token_list = BlacklistToken.objects.values_list('token', flat=True)
-            if token in token_list:
-                return render(self.request, 'error.html', 
-                              context={'error': 'Niepoprawny token po Logowaniu'})
-            user.fp_token = token
-            user.token_expiration = timezone.now() + timedelta(minutes=1)
-            user.save()
-            return super().form_valid(form)
+            # List of users IP's
+            stored_ip = user.ip_address.get('ip')  
+            block_ip = user.ip_address.get('block') 
+             
+            # Check if IP address is in list of accepted IP addresses       
+            if ip_address in stored_ip:
+                # Creating a new token for loged user
+                token = create_token()
+                # Checking if the token is not in blacklist
+                token_list = BlacklistToken.objects.values_list('token', flat=True)
+                if token in token_list:
+                    return render(self.request, 'error.html', 
+                                  context={'error': 'Niepoprawny token po Logowaniu'})
+                user.fp_token = token
+                # Set the expire tme of token (30 min)
+                user.token_expiration = timezone.now() + timedelta(minutes=30)
+                user.save()
+                return super().form_valid(form)
+            
+            # Check if IP address is in list of blocked IP addresses 
+            elif block_ip:
+                if ip_address in block_ip:
+                    context = {'error': '404'}
+                    return render(self.request, 'error.html', context)
+                    # return redirect('logout')
+            else:
+                check_user_ip_mail(user)
+                return redirect('chack_email')
         else:
             context = {'error': 'Nie zostałeś jeszcze zwerefikowany'}
             return render(self.request, 'error.html', context)
@@ -56,12 +84,54 @@ class Login(LoginView):
         return self.render_to_response(self.get_context_data(form=form))
     
 
+def block_ip_address(request, token, uidb64):
+    user = get_object_or_404(CustomUser,
+                             id=urlsafe_base64_decode(uidb64))
+    print('user', user)
+    token_time = f'{token[36:40]}-{token[76:78]}-{token[114:116]} {token[152:154]}:{token[190:192]}'
+    time_now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    one_minute = timedelta(minutes=1)
+    new_time = str(time_now) + str(one_minute)
+    print('request.method', request.method)
+    if request.method == 'GET':
+        print('token_time', token_time)
+        print('time_now', time_now)
+        print('new_time', new_time[:7])
+        if token_time == str(time_now) or str(time_now) == str(new_time[:-7]):
+            user.ip_address['block'].append(request.META.get('REMOTE_ADDR'))
+            user.save()
+            return render(request, 'success.html',
+                          context={'success': 'Urządzenie zostało zablokowane'})
+    else:
+        return render(request, 'error.html',
+                      context={'error': 'Niewłaściwy token'})
+    
+
+def accept_ip_address(request, token, uidb64):
+    user = get_object_or_404(CustomUser,
+                             id=urlsafe_base64_decode(uidb64))
+    token_time = f'{token[36:40]}-{token[76:78]}-{token[114:116]} {token[152:154]}:{token[190:192]}'
+    time_now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    one_minute = timedelta(minutes=1)
+    new_time = str(time_now) + str(one_minute)
+    if request.method == 'GET':
+        if token_time == str(time_now) or str(time_now) == str(new_time[:-7]):
+            user.ip_address['ip'].append(request.META.get('REMOTE_ADDR'))
+            user.save()
+            return render(request, 'success.html',
+                          context={'success': 'Urządzenie zostało potwierdzone'})
+        else:
+            return render(request, 'error.html',
+                          context={'error': 'Niewłaściwy token'})
+    
+
+def chack_email(request):
+    return render(request, 'logout.html')
+
+
 def logout_view(request):
     user = get_object_or_404(CustomUser, id=request.user.pk)
-    token_to_blacklist = BlacklistToken(
-        token=user.fp_token
-    )
-    token_to_blacklist.save()
+    blacklist_token(user.fp_token)
     logout(request)
     return redirect('login')
 

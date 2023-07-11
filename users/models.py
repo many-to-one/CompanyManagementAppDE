@@ -27,6 +27,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         null=True,
         blank=True,
     )
+    ip_address = models.JSONField(
+        null=True,
+    )
     birthday = models.CharField(
         _('Data urodzenia'),
         null=True,
@@ -225,3 +228,19 @@ class BlacklistToken(models.Model):
         return str(self.blacklisted_at)[:20]
     
 
+class IPAddressList(models.Model):
+    username = models.CharField(
+        max_length=250, 
+        null=True,
+    )
+    ip_address = models.CharField(
+        max_length=1000, 
+        null=True,
+    )
+    blocked = models.BooleanField(
+        default=False,
+    )
+
+
+    def __str__(self):
+        return str(self.ip_address)
