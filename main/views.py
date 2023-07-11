@@ -1,12 +1,10 @@
-# from io import BytesIO
-# import json
+from datetime import datetime, timedelta, date
 from django.utils import timezone
 import locale
 import os
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-# from django.views.generic import ListView
 from .models import (
     VacationRequest, 
     Vacations, 
@@ -19,20 +17,22 @@ from .models import (
     )
 from django.http import JsonResponse
 from django.db.models import Sum
-from datetime import datetime, timedelta
 from django.db.models import F
-# from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from datetime import date
 from users.models import CustomUser
 from django.core.paginator import Paginator
 import openpyxl
 from openpyxl.utils import get_column_letter
 from django.http import HttpResponse
-# import matplotlib.pyplot as plt
+import uuid
 
 
 def index(request):
+    # user = get_object_or_404(CustomUser, id=request.user.pk)
+    # if user.token_expiration != timezone.now():
+    #     return redirect('logout')
+    # print('token_expiration', user.token_expiration)
+    # print('time', timezone.now())
     return render(request, "home.html")
 
 

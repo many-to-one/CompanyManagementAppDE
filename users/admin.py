@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from .forms import CustomUserCreationForm, CustomUserChangeForm
-from .models import CustomUser
+from .models import BlacklistToken, CustomUser
 
 
 class CustomUserAdmin(UserAdmin):
@@ -20,7 +20,8 @@ class CustomUserAdmin(UserAdmin):
                 "username", 
                 "email", 
                 # "password",
-                # "fp_token",
+                "fp_token",
+                "token_expiration",
                 "birthday",
                 "birthplace",
                 "workplace",
@@ -88,3 +89,4 @@ class CustomUserAdmin(UserAdmin):
 
 
 admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(BlacklistToken)

@@ -9,12 +9,14 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth import logout
 from django.contrib import messages
 from django.utils.http import urlsafe_base64_decode
-import datetime
-from .utils import forgot_password_mail
+from datetime import datetime, timedelta
+from django.utils import timezone
+from .utils import create_token, forgot_password_mail
 from .forms import CustomUserChangeForm, CustomUserCreationForm, \
                    AuthenticationForm, ForgotPassword
-from .models import CustomUser
+from .models import BlacklistToken, CustomUser
 from django.core.paginator import Paginator
+import uuid
 
 
 class Register(CreateView):
@@ -25,7 +27,7 @@ class Register(CreateView):
 
 class Login(LoginView):
     # in settings.py
-    # LOGIN_REDIRECT_URL = "users:profile"
+    # LOGIN_REDIRECT_URL = "main:home"
     redirect_authenticated_user = True
     form_class = AuthenticationForm
     template_name = 'login.html'
@@ -33,6 +35,17 @@ class Login(LoginView):
     def form_valid(self, form):
         user = form.get_user()
         if user.acceptation:
+            # if request.user.is_authenticated:
+            ip_address = self.request.META.get('REMOTE_ADDR')
+            print('ip_address', ip_address)
+            token = create_token()
+            token_list = BlacklistToken.objects.values_list('token', flat=True)
+            if token in token_list:
+                return render(self.request, 'error.html', 
+                              context={'error': 'Niepoprawny token po Logowaniu'})
+            user.fp_token = token
+            user.token_expiration = timezone.now() + timedelta(minutes=1)
+            user.save()
             return super().form_valid(form)
         else:
             context = {'error': 'Nie zostałeś jeszcze zwerefikowany'}
@@ -44,8 +57,12 @@ class Login(LoginView):
     
 
 def logout_view(request):
+    user = get_object_or_404(CustomUser, id=request.user.pk)
+    token_to_blacklist = BlacklistToken(
+        token=user.fp_token
+    )
+    token_to_blacklist.save()
     logout(request)
-    messages.success(request, 'Log out')
     return redirect('login')
 
 
@@ -62,43 +79,44 @@ def forgotPassword(request):
         if request.method == 'POST':
             email = request.POST.get('email')
             user = CustomUser.objects.get(email=email)
-            now = datetime.datetime.now()
+            now = datetime.now()
             forgot_password_mail(email, user)
-            # return redirect('change_password')
     except Exception as e:
         print(e)
+        return render(request, 'error.html', 
+                              context={'error': e})
     return render(request, 'forgot_password.html')
 
 
 def changePassword(request, token, uidb64):
     token_time = f'{token[36:40]}-{token[76:78]}-{token[114:116]} {token[152:154]}:{token[190:192]}'
-    time_now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-    one_minute = datetime.timedelta(minutes=1)
+    time_now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    one_minute = timedelta(minutes=1)
     new_time = str(time_now) + str(one_minute)
-    
-    try:
-        if request.method == 'POST' and token_time == str(time_now) or request.method == 'POST' and str(time_now) == str(new_time[:-7]):
-            password1 = request.POST.get('password1')
-            password2 = request.POST.get('password2')
-            user_id = urlsafe_base64_decode(uidb64)
-            user = CustomUser.objects.get(id=user_id)
-            if password1 != password2:
-                messages.add_message(request, messages.error, "Hasła nie są podobne do siebie")
-                # messages.error(request, 'Hasła nie są podobne do siebie')
-                return redirect('login')
-            elif token == user.fp_token:
-                print('Tokeny podobne do siebie')
-                messages.add_message(request, messages.error, "Token is used")
-                return redirect('login')
-            user.set_password(password2)
-            user.fp_token = token
-            user.save()
-            messages.add_message(request, messages.error, "Hasło zostało zmienione")
-            return redirect('login')
-        messages.add_message(request, messages.error, "Token is invalid")
-        return redirect('login')
-    except Exception as e:
-        print(e)
+    if request.method == 'GET':
+        if token_time == str(time_now) or token_time == str(new_time[:-7]):
+            print('GET token_time', token_time)
+            print('GET time_now', time_now)
+            print('GET new_time', new_time[:-7])
+        else:
+            print('ERROR!!!!!!!!!!!!!!!!!!')
+            return render(request, 'error.html', 
+                          context={'error': 'Niewłaściwy token'})
+    if request.method == 'POST':  
+        print('POST token_time', token_time)
+        print('POST time_now', time_now)
+        print('POST new_time', new_time[:-7])
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        user_id = urlsafe_base64_decode(uidb64)
+        user = CustomUser.objects.get(id=user_id)
+        print('Poszło', password1, password2)
+        user.set_password(password2)
+        user.fp_token = token
+        user.save()
+        return render(request, 'success_change_password.html', 
+               context={'success': 'Hasło zostało zmienione'})
+
     return render(request, 'change_password.html')
     
 

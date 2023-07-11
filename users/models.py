@@ -22,6 +22,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         max_length=192,
         unique=True,
     )
+    token_expiration = models.DateTimeField(
+        _('Czas życia tokena'),
+        null=True,
+        blank=True,
+    )
     birthday = models.CharField(
         _('Data urodzenia'),
         null=True,
@@ -202,3 +207,21 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             'user',
             kwargs={'pk': str(self.id)}
         )
+    
+
+class BlacklistToken(models.Model):
+    date = models.DateTimeField(
+        _('Data'),
+        null=True,
+        blank=True,
+    )
+    token = models.CharField(
+        max_length=192, 
+        unique=True
+    )
+    blacklisted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.blacklisted_at)[:20]
+    
+
