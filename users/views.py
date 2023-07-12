@@ -192,6 +192,7 @@ def changePassword(request, token, uidb64):
 
 def Profile(request, pk):
     user = get_object_or_404(CustomUser, id=pk)
+    # user = CustomUser.objects.get(id=pk)
     if request.method == 'POST':
         prof_list = [
             'username', 'email', 'birthday', 'workplace', 'religion',
@@ -211,7 +212,8 @@ def Profile(request, pk):
                     setattr(user, field, True)
                 else:
                     setattr(user, field, False)
-            value = request.POST.get(field)
+            else:
+                value = request.POST.get(field)
             if value and value != request.POST.get('acceptation'):
                 try:
                     setattr(user, field, value)

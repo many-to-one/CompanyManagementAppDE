@@ -21,36 +21,36 @@
                     
                         <div class="vacations_mini_cont">
                             <p>Imię i nazwisko:</p>
-                            <p>{{ req.v_request.user }}</p>
+                            <p>{{ req.v_request__username }}</p>
                         </div>
                     
                         <div class="vacations_mini_cont">
                             <p>Data wniosku:</p>
-                            <p>{{ req.v_request.date }}</p>
+                            <p>{{ req.v_request__date }}</p>
                         </div>
                     
                         <div class="vacations_mini_cont" name="type">
                             <p>Typ urlopu:</p>
-                            <p>{{ req.v_request.type }}</p>
+                            <p>{{ req.v_request__type }}</p>
                         </div>
                     
                         <div class="vacations_mini_cont">
                             <p>Od:</p>
-                            <p>{{ req.v_request.v_from }}</p>
+                            <p>{{ req.v_request__v_from }}</p>
                         </div>
                     
                         <div class="vacations_mini_cont">
                             <p>Do:</p>
-                            <p>{{ req.v_request.v_to }}</p>
+                            <p>{{ req.v_request__v_to }}</p>
                         </div>
                     
                         <div class="vacations_mini_cont">
                             {% if req.v_request.type == 'z powodu siły wyższej' %}
                                 <p>Liczba godzin urlopu:</p>
-                                <p>{{ req.v_request.days_planned }}</p>
+                                <p>{{ req.v_request__days_planned }}</p>
                             {% else %}
                                 <p>Liczba dni urlopu:</p>
-                                <p>{{ req.v_request.days_planned }}</p>
+                                <p>{{ req.v_request__days_planned }}</p>
                             {% endif %}
                         </div>
 

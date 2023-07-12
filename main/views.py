@@ -28,11 +28,6 @@ import uuid
 
 
 def index(request):
-    # user = get_object_or_404(CustomUser, id=request.user.pk)
-    # if user.token_expiration != timezone.now():
-    #     return redirect('logout')
-    # print('token_expiration', user.token_expiration)
-    # print('time', timezone.now())
     return render(request, "home.html")
 
 
@@ -44,16 +39,14 @@ def notFound(request):
 #*************************************************** ALL WORK OBJECTS *************************************************#
 #**********************************************************************************************************************#
 
-# @login_required
-def WorkObjects(request, pk):
-    user = CustomUser.objects.get(id=pk)
-    if user.is_superuser:
+def WorkObjects(request):
+    if request.user.is_superuser:
         work_objects = WorkObject.objects.all()
     else:
         work_objects = WorkObject.objects.filter(
-            user=user
+            user=request.user
         )
-    work_objects_list = WorkObject.objects.values_list('name', flat=True)
+    work_objects_list = work_objects.values_list('name', flat=True)
 
     if request.method == 'POST':
         select = request.POST.get('object')
@@ -351,7 +344,7 @@ def header(request):
 def schedule(request):
     user = request.user
     if user.is_superuser:
-        tasks = Task.objects.all()
+        tasks = Task.objects.all().prefetch_related('work_object')
     else:
         tasks = Task.objects.filter(
         user=user
@@ -494,72 +487,6 @@ def chat(request, pk):
             'new_message_id': new_message.id
         }
         return JsonResponse(response)
-
-
-
-# def chat(request, pk):
-#     if request.method == 'GET':
-#         # path = pk
-#         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-#         work_object = get_object_or_404(WorkObject, id=pk)
-#         messages = Message.objects.filter(
-#                     work_object=work_object,
-#                 )
-#         for mess in messages:
-#             read = IsRead.objects.filter(
-#                 message=mess
-#             )
-#             for r in read:
-#                 if r.username == request.user.username:
-#                     r.is_read=True
-#                     r.save()
-#         # template = Template("{% load messages %} {% messages_quantity username work_object %}")
-#         # context = Context({'username': request.user.username, 'work_object': work_object})
-#         # count = template.render(context)
-#         response = {
-#             'user': request.user.username,
-#             'messages': list(messages.values()),
-#             'current_time': current_time,
-#             # 'count': count,
-#         }
-#         return JsonResponse(response)
-#     if request.method == 'POST':
-#         work_object = get_object_or_404(WorkObject, id=pk)
-#         # all_users = CustomUser.objects.filter(workobject__id=pk).values('username')
-#         # users = [u['username'] for u in all_users]
-#         # print('users', users)
-#         users = CustomUser.objects.filter(workobject__id=pk)
-#         r_user = request.user
-#         content = request.POST.get('txt')
-#         user = request.POST.get('user')
-#         print('user', user)
-#         messages = Message.objects.filter(
-#             work_object=work_object,
-#         )
-#         new_message = Message(
-#                 name = user,
-#                 sender=r_user,
-#                 content=content,
-#                 day = f"{datetime.now().strftime('%d %B %Y')}  ",
-#                 time = f'{datetime.now().hour}:{datetime.now().minute}',
-#                 work_object=work_object,
-#                 for_sender_is_read=True,
-#             )
-#         new_message.save()
-#         for u in users:
-#             read = IsRead(
-#                 message=new_message,
-#                 username=u.username,
-#                 work_object=work_object,
-#             )
-#             read.save()
-    
-#         response = {
-#             'new_message_id': new_message.id
-#         }
-#         print('--')
-#         return JsonResponse(response)
-
 
 
 #**********************************************************************************************************************#
@@ -1780,6 +1707,7 @@ def vacations(request, pk):
     users = Vacations.objects.all().values('username')
     username_list = [user['username'] for user in users]
     vacations = Vacations.objects.filter(user__id=user.id).order_by('-id')
+    # vacations = Vacations.objects.prefetch_related('user').order_by('-id')
     years_list = [vacation.v_from[:4] for vacation in vacations] 
     paginator = Paginator(vacations, 2)
     page_number = request.GET.get('page')
@@ -1840,7 +1768,7 @@ def vacations(request, pk):
     context = {
         'vacations': vacations,
         'user': user,
-        'users': username_list,
+        'users': set(username_list),
         'actually_days_to_use': vacations.actually_days_to_use,
         'years_list': set(years_list),
         'days_used_in_current_year': user.vacations_days_quantity_de - user.days_to_use_in_current_year_de,
@@ -2500,9 +2428,20 @@ def allVacationRequests(request):
 
 
 def vacationRequest(request, pk):
-    req = VacationRequest.objects.get(v_request__id=pk)
+    req = VacationRequest.objects.filter(
+        v_request__id=pk
+        ).select_related(
+        'v_request'
+        ).values(
+        'v_request__username', 
+        'v_request__type', 
+        'v_request__date', 
+        'v_request__v_from', 
+        'v_request__v_to', 
+        'v_request__days_planned'
+        ).first()
+  
     vacation = Vacations.objects.get(id=pk)
-    user = CustomUser.objects.get(id=vacation.user.id)
     type = vacation.type
 
     ## Days quantity from the first day of the year
@@ -2512,34 +2451,34 @@ def vacationRequest(request, pk):
 
     ## Days of vacations DE actually to use in current year
     current_month = datetime.now().month
-    days_to_use = user.vacations_days_quantity_de / 12 * current_month
+    days_to_use = vacation.user.vacations_days_quantity_de / 12 * current_month ###
     vacation.actually_days_to_use = round(days_to_use)
 
     if request.method == 'POST':
         if 'accept' in request.POST and type in ['wypoczynkowy', 'na żądanie']:
             vacation.accepted = True
             vacation.consideration = False
-            if user.last_year_vacations_days_quantity_de > 0: 
-                if req.v_request.days_planned >= user.last_year_vacations_days_quantity_de:
-                    vacation.days_used_in_last_year = user.vacations_days_quantity_de - vacation.days_to_use_in_last_year
-                    vacation.days_used_in_current_year = req.v_request.days_planned - user.last_year_vacations_days_quantity_de
+            if vacation.user.last_year_vacations_days_quantity_de > 0: ###
+                if req.v_request.days_planned >= vacation.user.last_year_vacations_days_quantity_de: ###
+                    vacation.days_used_in_last_year = vacation.user.vacations_days_quantity_de - vacation.days_to_use_in_last_year ###
+                    vacation.days_used_in_current_year = req.v_request.days_planned - vacation.user.last_year_vacations_days_quantity_de ###
                     vacation.days_to_use_in_last_year = 0
-                    user.days_to_use_in_current_year_de = user.vacations_days_quantity_de - vacation.days_used_in_current_year
-                    user.last_year_vacations_days_quantity_de = 0
+                    vacation.user.days_to_use_in_current_year_de = vacation.user.vacations_days_quantity_de - vacation.days_used_in_current_year ###
+                    vacation.user.last_year_vacations_days_quantity_de = 0 ###
                 else:
-                    user.last_year_vacations_days_quantity_de -=  req.v_request.days_planned
-                    vacation.days_to_use_in_last_year = user.last_year_vacations_days_quantity_de  ## Duplicate for Vacations model
-                    vacation.days_used_in_last_year = user.vacations_days_quantity_de - user.last_year_vacations_days_quantity_de
-                    vacation.days_to_use_in_current_year = vacation.user.vacations_days_quantity - vacation.days_used_in_current_year
+                    vacation.user.last_year_vacations_days_quantity_de -=  req.v_request.days_planned ###
+                    vacation.days_to_use_in_last_year = vacation.user.last_year_vacations_days_quantity_de  ## Duplicate for Vacations model ###
+                    vacation.days_used_in_last_year = vacation.user.vacations_days_quantity_de - vacation.user.last_year_vacations_days_quantity_de ###
+                    vacation.days_to_use_in_current_year = vacation.user.vacations_days_quantity - vacation.days_used_in_current_year ###
             else:
-                user.days_to_use_in_current_year_de = user.days_to_use_in_current_year_de - req.v_request.days_planned
-                vacation.days_used_in_current_year = user.vacations_days_quantity_de - user.days_to_use_in_current_year_de
-                vacation.days_used_in_last_year = user.vacations_days_quantity_de - user.last_year_vacations_days_quantity_de
+                vacation.user.days_to_use_in_current_year_de = vacation.user.days_to_use_in_current_year_de - req.v_request.days_planned
+                vacation.days_used_in_current_year = vacation.user.vacations_days_quantity_de - vacation.user.days_to_use_in_current_year_de
+                vacation.days_used_in_last_year = vacation.user.vacations_days_quantity_de - vacation.user.last_year_vacations_days_quantity_de
             if today == start_of_year:
-                user.last_year_vacations_days_quantity_de = vacation.days_to_use_in_current_year
-                user.days_to_use_in_current_year_de = user.vacations_days_quantity_de
+                vacation.user.last_year_vacations_days_quantity_de = vacation.days_to_use_in_current_year
+                vacation.user.days_to_use_in_current_year_de = vacation.user.vacations_days_quantity_de
             vacation.save()
-            user.save()
+            vacation.user.save()
             return redirect('allVacationRequests')
         
         

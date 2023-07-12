@@ -1,13 +1,14 @@
 from django import template
 from ..models import VacationRequest
+from django.db.models import Count
 
 register = template.Library()
 
 @register.simple_tag
 def request_quantity():
-    reqs = VacationRequest.objects.all().order_by('-v_request__id')
-    count = 0
-    for r in reqs:
-        if r.v_request.consideration is True:
-            count += 1
-    return count
+    reqs = VacationRequest.objects.filter(
+        v_request__consideration=True
+    ).order_by(
+        '-v_request__id'
+    ).select_related('v_request')
+    return reqs.count()

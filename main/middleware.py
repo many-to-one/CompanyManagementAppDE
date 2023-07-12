@@ -42,8 +42,5 @@ class AuthenticationMiddleware:
             logout(request)
             return redirect('login')
 
-        # elif request.user.fp_token == None:
-        #     return redirect('login')
-
         response = self.get_response(request)
         return response
