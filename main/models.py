@@ -171,45 +171,45 @@ class Task(models.Model):
         verbose_name='Wykonano',
     )
 
-    def formatted_date(self):
-        return self.date.strftime('%d %B %Y')
+    # def formatted_date(self) :
+    #     return self.date.strftime('%d %B %Y')
 
     def __str__(self) -> str:
         return self.username
     
 
-class TotalWorkObject(models.Model):
-    name = models.CharField(
-        null=True,
-        max_length=150,
-    )
-    obj_coffee_food = models.CharField(
-        null=True,
-        default=0.00,
-        max_length=100,
-        verbose_name='Kawa/Posiłki',
-    )
-    obj_fuel = models.CharField(
-        null=True,
-        default=0.00,
-        max_length=100,
-        verbose_name='Paliwo',
-    )
-    obj_prepayment = models.CharField(
-        null=True,   
-        default=0.00,
-        max_length=100,   
-        verbose_name='Zaliczka',
-    )
-    obj_phone_costs = models.CharField(
-        null=True,
-        default=0.00,
-        max_length=100,
-        verbose_name='Telefon',
-    ) 
-    work_object = models.ManyToManyField(
-        WorkObject,
-    )
+# class TotalWorkObject(models.Model):
+#     name = models.CharField(
+#         null=True,
+#         max_length=150,
+#     )
+#     obj_coffee_food = models.CharField(
+#         null=True,
+#         default=0.00,
+#         max_length=100,
+#         verbose_name='Kawa/Posiłki',
+#     )
+#     obj_fuel = models.CharField(
+#         null=True,
+#         default=0.00,
+#         max_length=100,
+#         verbose_name='Paliwo',
+#     )
+#     obj_prepayment = models.CharField(
+#         null=True,   
+#         default=0.00,
+#         max_length=100,   
+#         verbose_name='Zaliczka',
+#     )
+#     obj_phone_costs = models.CharField(
+#         null=True,
+#         default=0.00,
+#         max_length=100,
+#         verbose_name='Telefon',
+#     ) 
+#     work_object = models.ManyToManyField(
+#         WorkObject,
+#     )
 
 
 class WorkType(models.Model):
@@ -369,5 +369,5 @@ class VacationRequest(models.Model):
         on_delete=models.CASCADE, 
     )
 
-    def __str__(self) -> str:
+    def __str__(self) -> str: 
         return self.v_request.date

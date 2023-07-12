@@ -31,8 +31,8 @@ def index(request):
     return render(request, "home.html")
 
 
-def notFound(request):
-    return redirect('glrm:error')
+# def notFound(request):
+#     return redirect('glrm:error')
 
 
 #**********************************************************************************************************************#
@@ -522,25 +522,25 @@ def createWorkObject(request):
 #**********************************************************************************************************************#
 
 
-def createWorkType(request):
-    users = CustomUser.objects.all()
-    if request.method == 'POST':
-        users = CustomUser.objects.all()
-        worktype = WorkType.objects.create()
-        worktype_name = request.POST.get('worktype_name')
-        if worktype_name != '':
-            worktype.name = worktype_name
-            users_email = request.POST.getlist('users')
-            worktype.user.add(*users_email)
-            worktype.save()
-            return redirect('work_objects')
-        work_none = WorkType.objects.filter(name=None)
-        work_none.delete()
-        return redirect('home')
-    context = {
-        'users': users,
-    }
-    return render(request, 'create_work_type.html', context)
+# def createWorkType(request):
+#     users = CustomUser.objects.all()
+#     if request.method == 'POST':
+#         users = CustomUser.objects.all()
+#         worktype = WorkType.objects.create()
+#         worktype_name = request.POST.get('worktype_name')
+#         if worktype_name != '':
+#             worktype.name = worktype_name
+#             users_email = request.POST.getlist('users')
+#             worktype.user.add(*users_email)
+#             worktype.save()
+#             return redirect('work_objects')
+#         work_none = WorkType.objects.filter(name=None)
+#         work_none.delete()
+#         return redirect('home')
+#     context = {
+#         'users': users,
+#     }
+#     return render(request, 'create_work_type.html', context)
 
 
 #**********************************************************************************************************************#

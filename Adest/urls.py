@@ -4,9 +4,6 @@ from django.urls import include, path
 import debug_toolbar
 from django.conf.urls.static import static
 
-from main.views import notFound
-
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('main.urls')),
