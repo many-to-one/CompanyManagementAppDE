@@ -31,10 +31,6 @@ def index(request):
     return render(request, "home.html")
 
 
-# def notFound(request):
-#     return redirect('glrm:error')
-
-
 #**********************************************************************************************************************#
 #*************************************************** ALL WORK OBJECTS *************************************************#
 #**********************************************************************************************************************#
@@ -63,7 +59,7 @@ def WorkObjects(request):
         'work_objects_list': work_objects_list,
     }
 
-    return render(request,'work_objects.html', context)
+    return render(request, 'work_objects.html', context)
 
 
 
@@ -81,27 +77,40 @@ def workObjectView(request, **kwargs):
        )
 
     ##############################
-    ### Totals for sorted_from ###
-    total_coffee_food = Work.objects.filter(work_object=work_object.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-    total_fuel = Work.objects.filter(work_object=work_object.name,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-    total_prepayment = Work.objects.filter(work_object=work_object.name,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-    total_phone_costs = Work.objects.filter(work_object=work_object.name,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-    total_payment = Work.objects.filter(work_object=work_object.name,).aggregate(total_payment=Sum('payment'))['total_payment']
-    total_sum_time_sec = Work.objects.filter(work_object=work_object.name,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-    total_sum_over_time_sec = Work.objects.filter(work_object=work_object.name,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+    ### Totals for work_object ###
 
-    if total_sum_time_sec:
+    total_fields = {
+        'total_coffee_food': 'coffee_food',
+        'total_fuel': 'fuel',
+        'total_prepayment': 'prepayment',
+        'total_phone_costs': 'phone_costs',
+        'total_payment': 'payment',
+        'total_sum_time_sec': 'sum_time_sec',
+        'total_sum_over_time_sec': 'sum_over_time_sec'
+    }
+
+    totals = {}
+    for field_name, field in total_fields.items():
+        total = Work.objects.filter(
+            work_object=work_object.name
+            ).aggregate(
+            total=Sum(field)
+            )['total']
+        totals[field_name] = total
+
+    # Calculate total work time in this object
+    if totals['total_sum_time_sec']:
         ### total_sum_time_sec => hours:minutes ###
-        total_hours = total_sum_time_sec // 3600
-        total_sec = total_sum_time_sec % 3600
+        total_hours = totals['total_sum_time_sec'] // 3600
+        total_sec = totals['total_sum_time_sec'] % 3600
         total_min = total_sec // 60
-        total_work_time = f'{int(total_hours)}:{int(total_min)}'
+        total_work_time = f'{int(total_hours)}:{int(total_min)}' 
     else:
         total_work_time = '0:00'
-    if total_sum_over_time_sec:
+    if totals['total_sum_over_time_sec']:
         ### total_sum_over_time_sec => hours:minutes ###
-        total_hours = total_sum_over_time_sec // 3600
-        total_sec = total_sum_over_time_sec % 3600
+        total_hours = totals['total_sum_over_time_sec'] // 3600
+        total_sec = totals['total_sum_over_time_sec'] % 3600
         total_min = total_sec // 60
         if total_min < 10 or total_min == 0.0:
             total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
@@ -120,21 +129,35 @@ def workObjectView(request, **kwargs):
             if user == '':
                 error = 'Nie wybrano żadnego użytkownika'
                 return render(request, 'error.html', {'error': error})
-            add_user = CustomUser.objects.get(username=user)
-            work_object.user.add(add_user)
-            work_object.save()
-            work_object, created = WorkObject.objects.get_or_create(id=kwargs['pk'])
+            # add_user = CustomUser.objects.get(username=user)
+            add_user = get_object_or_404(CustomUser, username=user)
+            try:
+                work_object.user.add(add_user)
+                work_object.save()
+            except Exception as e:
+                return render(request, 
+                              'error.html',
+                              context={'error': f'Wystąpił błąd: użytkownika nie istnieje, {e}'}
+                              )
+            work_object = get_object_or_404(WorkObject, id=kwargs['pk'])
             users = work_object.user.all()
 
-    if any(element is not None for element in [total_payment, total_phone_costs, total_fuel, total_coffee_food]):
-        total = total_payment + total_phone_costs + total_fuel + total_coffee_food
-        # Rest of your code
+    total_lists = [
+        totals['total_payment'],
+        totals['total_phone_costs'],
+        totals['total_fuel'],
+        totals['total_coffee_food']
+    ]
+
+    if any(element is not None for element in total_lists):
+        total = sum(total_lists)
     else:
         total = '0:00'
-        total_payment = '0:00'
-        total_phone_costs = '0:00'
-        total_fuel = '0:00'
-        total_coffee_food = '0:00'
+        totals['total_payment'] = '0:00'
+        totals['total_prepayment'] = '0:00'
+        totals['total_phone_costs'] = '0:00'
+        totals['total_fuel'] = '0:00'
+        totals['total_coffee_food'] = '0:00'
 
 
     context = {
@@ -143,11 +166,11 @@ def workObjectView(request, **kwargs):
         'work_object': work_object,
         'users': users,
         'allusers': allusers,
-        'total_coffee_food': total_coffee_food,
-        'total_fuel': total_fuel,
-        'total_prepayment': total_prepayment,
-        'total_phone_costs': total_phone_costs,
-        'total_payment': total_payment,
+        'total_coffee_food': totals['total_coffee_food'],
+        'total_fuel': totals['total_fuel'],
+        'total_prepayment': totals['total_prepayment'],
+        'total_phone_costs': totals['total_phone_costs'],
+        'total_payment': totals['total_payment'],
         'total_work_time': total_work_time,
         'total': total,
     }
@@ -160,12 +183,16 @@ def task(request):
         work_object_pk = request.GET.get('work_object')
         user = get_object_or_404(CustomUser, id=int(user_pk))
         work_object = get_object_or_404(WorkObject, id=int(work_object_pk))
-        tasks = Task.objects.filter(
-            user=user,
-            work_object=work_object,
-            ).order_by('date_obj')
+        try:
+            tasks = Task.objects.filter(
+                user=user,
+                work_object=work_object,
+                ).order_by('date_obj')
 
-        tasks_list = tasks.values()
+            tasks_list = tasks.values()
+        except Exception as e:
+            return render(request, 'error.html',
+                          context={'error': e})
         response = {
             'tasks_list': list(tasks_list),
             }
@@ -178,22 +205,27 @@ def new_task(request):
         user_pk = request.POST.get('user')
         work_object_pk = request.POST.get('work_object')
         content = request.POST.get('content')
-        user = CustomUser.objects.get(id=int(user_pk))
-        work_object = WorkObject.objects.get(id=int(work_object_pk))
+        user = get_object_or_404(CustomUser, id=int(user_pk) )
+        work_object = get_object_or_404(WorkObject, id=int(work_object_pk))
 
         locale.setlocale(locale.LC_TIME, 'pl_PL')  # Polish locale
         date = datetime.strptime(date, '%Y-%m-%d') # Ex: '2023-07-07'
         formatted_date = date.strftime('%d %b %Y') # Ex: '07 lipiec 2023'
 
-        newTask = Task(
-            date_obj=date,
-            date=formatted_date,
-            user=user,
-            username=user.username,
-            work_object=work_object,
-            content=content,
-        )
-        newTask.save()
+        try:
+            newTask = Task(
+                date_obj=date,
+                date=formatted_date,
+                user=user,
+                username=user.username,
+                work_object=work_object,
+                content=content,
+            )
+            newTask.save()
+        except Exception as e:
+            return render(request,
+                          'error.html',
+                          context={'error': f'Wystąpił błąd przy utworzeniu nowego zadania: {e}'})
         response_data = {
             'date': date,
             'user': user.username,
@@ -208,23 +240,30 @@ def taskQuantity(request):
     if request.method == 'GET':
         user = request.user
         if user.is_superuser:
-            tasks = Task.objects.filter(
-            done=False
-            )
+            try:
+                tasks = Task.objects.filter(
+                    done=False
+                )
+            except Exception as e:
+                response = {
+                    'message': str(e)
+                }
         else:
-            tasks = Task.objects.filter(
-                user=user,
-                done=False
-            )
-        count = 0
-        for t in tasks:
-            count += 1
-            # return count
-        respnse = {
-            'count': count
+            try:
+                tasks = Task.objects.filter(
+                    user=user,
+                    done=False
+                )
+            except Exception as e:
+                response = {
+                    'message': str(e)
+                }
+
+        response = {
+            'count': tasks.count()
         }
-        print('TASKCOUNT', count)
-    return JsonResponse(respnse)
+        print('TASKCOUNT', tasks.count())
+    return JsonResponse(response)
 
 
 def getTask(request):
@@ -320,7 +359,6 @@ def header(request):
                 menu_ = 'active'
             else:
                 menu_ = 'inactive'
-            print('MENU', menu)
             response = {
                 'menu': menu_
             }
@@ -335,7 +373,6 @@ def header(request):
                 response = {
                 'menu': 'inactive'
                 }
-            print('MENU with no data')
             return JsonResponse(response)
 
 
@@ -344,11 +381,21 @@ def header(request):
 def schedule(request):
     user = request.user
     if user.is_superuser:
-        tasks = Task.objects.all().prefetch_related('work_object')
+        try:
+            tasks = Task.objects.all().prefetch_related('work_object')
+        except Exception as e:
+            return render(request,
+                          'error.html',
+                          context={'error': f'Wystąpił błąd (Grafik): {e}'})
     else:
-        tasks = Task.objects.filter(
-        user=user
-    )
+        try:
+            tasks = Task.objects.filter(
+                user=user
+            )
+        except Exception as e:
+            return render(request,
+                          'error.html',
+                          context={'error': f'Wystąpił błąd (Grafik): {e}'})
     locale.setlocale(locale.LC_TIME, 'pl_PL')
     for task in tasks:
         date_obj = datetime.strptime(task.date, '%d %b %Y')
@@ -361,8 +408,13 @@ def schedule(request):
 
 
 def deleteUserFromObjectQuestion(request, user_pk, work_object_pk):
-    user_query = CustomUser.objects.filter(id=user_pk).values_list('username')
-    user = [user[0] for user in user_query]
+    try:
+        user_query = CustomUser.objects.filter(id=user_pk).values_list('username')
+        user = [user[0] for user in user_query]
+    except Exception as e:
+            return render(request,
+                          'error.html',
+                          context={'error': f'Wystąpił błąd: {e}'})
     context = {
         'user': user[0],
         'user_pk': user_pk,
@@ -372,8 +424,8 @@ def deleteUserFromObjectQuestion(request, user_pk, work_object_pk):
 
 
 def deleteUserFromObject(request, user_pk, work_object_pk):
-    work_object = WorkObject.objects.get(id=work_object_pk)
-    user = CustomUser.objects.get(id=user_pk)
+    user = get_object_or_404(CustomUser, id=user_pk)
+    work_object = get_object_or_404(WorkObject, id=work_object_pk)
     try:
         work_object.user.remove(user)
         work_object.save()
@@ -388,7 +440,7 @@ def deleteUserFromObject(request, user_pk, work_object_pk):
 
 
 def deleteWorkObjectQuestion(request, work_object_pk):
-    work_object = WorkObject.objects.get(id=work_object_pk)
+    work_object = get_object_or_404(WorkObject, id=work_object_pk)
     context = {
         'work_object': work_object,
     }
@@ -397,7 +449,7 @@ def deleteWorkObjectQuestion(request, work_object_pk):
 
 def deleteWorkObject(request, work_object_pk):   
     try:
-        work_object = WorkObject.objects.get(id=work_object_pk)
+        work_object = get_object_or_404(WorkObject, id=work_object_pk)
         work_object.delete()
         context = {
             'work_object_name': work_object.name
@@ -426,7 +478,6 @@ def showCountAll(request):
             template = Template("{% load messages %} {% all_messages_quantity username %}")
             context = Context({'username': username,})
             count = template.render(context)
-            print('count', count)
         else:
             count = 0
         response = {'count': count,}
@@ -441,9 +492,13 @@ def chat(request, pk):
         work_object = get_object_or_404(WorkObject, id=pk)
 
         # Update is_read flag for messages
-        read_messages = Message.objects.filter(work_object=work_object)
-        read_filter = Q(message__in=read_messages) & Q(username=request.user.username)
-        IsRead.objects.filter(read_filter).update(is_read=True)
+        try:
+            read_messages = Message.objects.filter(work_object=work_object)
+            read_filter = Q(message__in=read_messages) & Q(username=request.user.username)
+            IsRead.objects.filter(read_filter).update(is_read=True)
+        except Exception as e:
+            error = f'Wystąpił błąd: {e}, nie można wyświetlić wiadomości'
+            return render(request, 'error.html', {'error': error})
 
         messages = read_messages.values()
 
@@ -456,21 +511,29 @@ def chat(request, pk):
     
     if request.method == 'POST':
         work_object = get_object_or_404(WorkObject, id=pk)
-        users = CustomUser.objects.filter(workobject__id=pk)
+        try:
+            users = CustomUser.objects.filter(workobject__id=pk)
+        except Exception as e:
+            error = f'Wystąpił błąd: {e}'
+            return render(request, 'error.html', {'error': error})
         r_user = request.user
         content = request.POST.get('txt')
         user = request.POST.get('user')
 
         # Create the new message
-        new_message = Message.objects.create(
-            name=user,
-            sender=r_user,
-            content=content,
-            day=f"{datetime.now().strftime('%d %B %Y')}  ",
-            time=f'{datetime.now().hour}:{datetime.now().minute}',
-            work_object=work_object,
-            for_sender_is_read=True,
-        )
+        try:
+            new_message = Message.objects.create(
+                name=user,
+                sender=r_user,
+                content=content,
+                day=f"{datetime.now().strftime('%d %B %Y')}  ",
+                time=f'{datetime.now().hour}:{datetime.now().minute}',
+                work_object=work_object,
+                for_sender_is_read=True,
+            )
+        except Exception as e:
+            error = f'Wystąpił błąd: {e}, nie można wysłać wiadomości'
+            return render(request, 'error.html', {'error': error})
 
         # Create IsRead instances for all users
         is_read_list = [
@@ -501,12 +564,14 @@ def createWorkObject(request):
         workname = request.POST.get('workname')
         print('workname ---', workname)
         if workname != '':
-            work.name = workname
-            print('workname +++', workname)
-            users_list = request.POST.getlist('users')
-            print('users_list: ', users_list)
-            work.user.add(*users_list)
-            work.save()
+            try:
+                work.name = workname
+                users_list = request.POST.getlist('users')
+                work.user.add(*users_list)
+                work.save()
+            except Exception as e:
+                error = f'Wystąpił błąd: {e}, nie można utworzyć object'
+                return render(request, 'error.html', {'error': error})
             return redirect('work_objects', request.user.pk)
         work_none = WorkObject.objects.filter(name=None)
         work_none.delete()
@@ -616,58 +681,69 @@ def userWork(request, pk):
         prepayment = request.POST.get('prepayment')
         phone_costs = request.POST.get('phone_costs')
         user = CustomUser.objects.get(id=pk)
-        work = Work.objects.create()
-        work.date = date
-        work.username = user.username
-        work.timestart = timestart
-        work.timefinish = timefinish
-        work.diff_time = wt 
-        work.over_time = ot
-        #############################################
-        ### For calculation time without overtime ###
-        # if diff.seconds > 28800:                  #
-        #     work.sum_time_sec = 28800             #
-        # else:                                     #
-        #     work.sum_time_sec = diff.seconds      #
-        #############################################
-        work.sum_time_sec = diff.seconds
-        work.sum_over_time_sec = over_time
-        work.work_object = work_object
-        work.work_type = work_type
-        work.coffee_food = coffee_food
-        work.prepayment = prepayment
-        work.fuel = fuel
-        work.phone_costs = phone_costs
-        work.payment = (user.payment / 3600) * diff.seconds
-        work.user.add(user)
-        work.save()
-        return redirect('raports')
+        try:
+            work = Work.objects.create()
+            work.date = date
+            work.username = user.username
+            work.timestart = timestart
+            work.timefinish = timefinish
+            work.diff_time = wt 
+            work.over_time = ot
+            #############################################
+            ### For calculation time without overtime ###
+            # if diff.seconds > 28800:                  #
+            #     work.sum_time_sec = 28800             #
+            # else:                                     #
+            #     work.sum_time_sec = diff.seconds      #
+            #############################################
+            work.sum_time_sec = diff.seconds
+            work.sum_over_time_sec = over_time
+            work.work_object = work_object
+            work.work_type = work_type
+            work.coffee_food = coffee_food
+            work.prepayment = prepayment
+            work.fuel = fuel
+            work.phone_costs = phone_costs
+            work.payment = round((user.payment / 3600) * diff.seconds, 2)
+            work.user.add(user)
+            work.save()
+            return redirect('raports')
+        except Exception as e:
+            error = f'Nie można zaraportować pracę z powodu błędu: {e}'
+            return render(request, 'error.html',
+                          context={'error': error})
+    
+
     else:
         allworks = Work.objects.prefetch_related('user').order_by('-date')
         work_objects = WorkObject.objects.filter(user__id=pk)
         work_type = WorkType.objects.all()
-        total_coffee_food = Work.objects.filter(user__id=pk).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-        if total_coffee_food is not None:
-            total_coffee_food = '{:.2f}'.format(total_coffee_food)
-        total_fuel = Work.objects.filter(user__id=pk).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-        if total_fuel is not None:
-            total_fuel = '{:.2f}'.format(total_fuel)
-        total_prepayment = Work.objects.filter(user__id=pk).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-        if total_prepayment is not None:
-            total_prepayment = '{:.2f}'.format(total_prepayment)
-        total_phone_costs = Work.objects.filter(user__id=pk).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-        if total_phone_costs is not None:
-            total_phone_costs = '{:.2f}'.format(total_phone_costs)
-        total_payment = Work.objects.filter(user__id=pk).aggregate(total_payment=Sum('payment'))['total_payment']
-        if total_payment is not None:
-            total_payment = '{:.2f}'.format(total_payment)
-        total_sum_time_sec = Work.objects.filter(user__id=pk).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-        total_sum_over_time_sec = Work.objects.filter(user__id=pk).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
 
-        if total_sum_time_sec:
+        total_fields = {
+            'total_coffee_food': 'coffee_food',
+            'total_fuel': 'fuel',
+            'total_prepayment': 'prepayment',
+            'total_phone_costs': 'phone_costs',
+            'total_payment': 'payment',
+            'total_sum_time_sec': 'sum_time_sec',
+            'total_sum_over_time_sec': 'sum_over_time_sec'
+        }
+
+        totals = {}
+        for field_name, field in total_fields.items():
+            total = Work.objects.filter(
+                user__id=pk
+                ).aggregate(
+                total=Sum(field)
+                )['total']
+            totals[field_name] = total
+            # if total is not None:
+            #     total = '{:.2f}'.format(total)
+
+        if totals['total_sum_time_sec']:
             ### total_sum_time_sec => hours:minutes ###
-            total_hours = total_sum_time_sec // 3600
-            total_sec = total_sum_time_sec % 3600
+            total_hours = totals['total_sum_time_sec'] // 3600
+            total_sec = totals['total_sum_time_sec'] % 3600
             total_min = total_sec // 60
             if total_min < 10 or total_min == 0.0:
                 total_work_time = f'{int(total_hours)}:0{int(total_min)}'
@@ -676,10 +752,10 @@ def userWork(request, pk):
         else:
             total_work_time = '0:00'
 
-        if total_sum_over_time_sec:
+        if totals['total_sum_over_time_sec']:
             ### total_sum_over_time_sec => hours:minutes ###
-            total_hours = total_sum_over_time_sec // 3600
-            total_sec = total_sum_over_time_sec % 3600
+            total_hours = totals['total_sum_over_time_sec'] // 3600
+            total_sec = totals['total_sum_over_time_sec'] % 3600
             total_min = total_sec // 60
             if total_min < 10 or total_min == 0.0:
                 total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
@@ -692,11 +768,11 @@ def userWork(request, pk):
         'allworks': allworks,
         'work_objects': work_objects,
         'work_type': work_type,
-        'total_coffee_food': total_coffee_food,
-        'total_fuel': total_fuel,
-        'total_prepayment' : total_prepayment,
-        'total_phone_costs': total_phone_costs,
-        'total_payment': total_payment,
+        'total_coffee_food': totals['total_coffee_food'],
+        'total_fuel': totals['total_fuel'],
+        'total_prepayment' : totals['total_prepayment'],
+        'total_phone_costs': totals['total_phone_costs'],
+        'total_payment': totals['total_payment'],
         'total_work_time': total_work_time,
         'total_work_over_time': total_work_over_time,
         }
@@ -772,33 +848,34 @@ def updateUserWork(request, work_pk):
         fuel = request.POST.get('fuel')
         prepayment = request.POST.get('prepayment')
         phone_costs = request.POST.get('phone_costs')
-        # work = Work.objects.get(id=work_pk)
-        work.date = date
-        work.timestart = timestart
-        work.timefinish = timefinish
-        work.diff_time = wt 
-        work.over_time = ot
-        #############################################
-        ### For calculation time without overtime ###
-        # if diff.seconds > 28800:                  #
-        #     work.sum_time_sec = 28800             #
-        # else:                                     #
-        #     work.sum_time_sec = diff.seconds      #
-        #############################################
-        work.sum_time_sec = diff.seconds
-        work.sum_over_time_sec = over_time
-        work.work_object = work_object
-        work.work_type = work_type
-        work.coffee_food = coffee_food
-        work.prepayment = prepayment
-        work.fuel = fuel
-        work.phone_costs = phone_costs
-        work.payment = (user.payment / 3600) * diff.seconds       
-        work.save()
-        # return redirect('user_work', user.id)
+        try:
+            work.date = date
+            work.timestart = timestart
+            work.timefinish = timefinish
+            work.diff_time = wt 
+            work.over_time = ot
+            #############################################
+            ### For calculation time without overtime ###
+            # if diff.seconds > 28800:                  #
+            #     work.sum_time_sec = 28800             #
+            # else:                                     #
+            #     work.sum_time_sec = diff.seconds      #
+            #############################################
+            work.sum_time_sec = diff.seconds
+            work.sum_over_time_sec = over_time
+            work.work_object = work_object
+            work.work_type = work_type
+            work.coffee_food = coffee_food
+            work.prepayment = prepayment
+            work.fuel = fuel
+            work.phone_costs = phone_costs
+            work.payment = (user.payment / 3600) * diff.seconds       
+            work.save()
+        except Exception as e:
+            error = f'Wystąpił błąd: {e}'
+            return render(request, 'error.html', context=error)
         return redirect('raports')
     else:
-        # work_o = Work.objects.get(id=work_pk)
         work_objects = WorkObject.objects.filter(user__id=user.id)
         work_type = WorkType.objects.all()
 
@@ -814,7 +891,6 @@ def deleteUserWorkQuastion(request, work_pk):
     marked = request.session.get('marked')
     try:
         work = Work.objects.get(id=work_pk)
-        print('work_pk', work_pk)
     except Exception as e:
         error = f'Wystąpił błąd: {e}'
         return render(request, 'error.html', {'error': error})
@@ -831,7 +907,6 @@ def deleteUserWork(request, work_pk):
     try:
         work = Work.objects.get(id=work_pk)
         work.delete()
-        print('work deleted', work)
         return redirect('success_delete_user_work', work.date)
     except Exception as e:
         error = f'Wystąpił błąd: {e}'
@@ -847,11 +922,9 @@ def deleteListUserWorkQuestion(request):
 
 
 def deleteListUserWork(request):
-    marked = request.session.get('marked')
+    marked = request.session.get('marked', [])
     try:
-        for m in marked:
-            work = Work.objects.get(id=m)
-            work.delete()
+        Work.objects.filter(id__in=marked).delete()
         return render (request, 'success_delete_list_user_work.html')
     except Exception as e:
         error = f'Wystąpił błąd: {e}'
@@ -864,151 +937,112 @@ def deleteListUserWork(request):
 
 
 def getUserRaport(request, user_pk):
-    user = CustomUser.objects.get(pk=user_pk)
+    user = get_object_or_404(CustomUser, id=user_pk)
     work_objects = WorkObject.objects.filter(user__id=user_pk)
-    # works = Work.objects.filter(user__id=user_pk).order_by('date')
     if request.user.is_superuser:
-        works = Work.objects.prefetch_related('user').order_by('-date')
+        try:
+            works = Work.objects.prefetch_related('user').order_by('-date')
+        except Exception as e:
+            error = f'Nie można wyświetlić raport z powodu błędu: {e}'
+            return render(request, 'error.html', context=error)
     else:
-        works = Work.objects.filter(user=request.user).order_by('-date')
+        try:
+            works = Work.objects.filter(user=request.user).order_by('-date')
+        except Exception as e:
+            error = f'Nie można wyświetlić raport z powodu błędu: {e}'
+            return render(request, 'error.html', context=error)
+        
     ######################
     ### Totals for all ###
-    total_coffee_food = Work.objects.filter(user__id=user_pk,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-    total_fuel = Work.objects.filter(user__id=user_pk).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-    total_prepayment = Work.objects.filter(user__id=user_pk).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-    total_phone_costs = Work.objects.filter(user__id=user_pk).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-    total_payment = Work.objects.filter(user__id=user_pk).aggregate(total_payment=Sum('payment'))['total_payment']
-    total_sum_time_sec = Work.objects.filter(user__id=user_pk).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-    total_sum_over_time_sec = Work.objects.filter(user__id=user_pk).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
 
-    if total_sum_time_sec: 
-        ### total_sum_time_sec => hours:minutes ###
-        total_hours = total_sum_time_sec // 3600
-        total_sec = total_sum_time_sec % 3600
-        total_min = total_sec // 60
-        total_work_time = f'{int(total_hours)}:{int(total_min)}'
-    else:
-        total_work_time = '0:00'
-    if total_sum_over_time_sec:
-        ### total_sum_over_time_sec => hours:minutes ###
-        total_hours = total_sum_over_time_sec // 3600
-        total_sec = total_sum_over_time_sec % 3600
-        total_min = total_sec // 60
-        if total_min < 10 or total_min == 0.0:
-            total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
-        else:
-            total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
-    else:
-        total_work_over_time = '0:00'
+    total_fields = {
+            'total_coffee_food': 'coffee_food',
+            'total_fuel': 'fuel',
+            'total_prepayment': 'prepayment',
+            'total_phone_costs': 'phone_costs',
+            'total_payment': 'payment',
+            'total_sum_time_sec': 'sum_time_sec',
+            'total_sum_over_time_sec': 'sum_over_time_sec'
+        }
+
+    totals = {}
+    for field_name, field in total_fields.items():
+        total = Work.objects.filter(
+            user__id=user_pk
+            ).aggregate(
+            total=Sum(field)
+            )['total']
+        totals[field_name] = total
 
     ### End Totals for all ###
     ##########################
 
     if request.method == 'POST':
-
         if 'marked' in request.POST:
             marked = request.POST.getlist('marked')
             request.session['marked'] = marked
             if marked is not None:
                 return redirect ('deleteListUserWorkQuestion')
             
-        ### Sorted by date ###
+        ### Sorted by date 
         sorted_from = request.POST.get('sorted_from')
         work_object = request.POST.get('work_object')
 
         #####################################################################################
         ###################################  SORTED FROM  ###################################
         #####################################################################################
+
         if sorted_from:
             year, month, day = sorted_from.split('-')
             sorted_to = request.POST.get('sorted_to')
             year_, month_, day_ = sorted_to.split('-')
             start = datetime(int(year), int(month), int(day))
             end = datetime(int(year_), int(month_), int(day_))
-            works = Work.objects.filter(
-                date__range=(start, end),
-                user__id=user_pk,
-            ).order_by('date')
-            ##############################
-            ### Totals for sorted_from ###
-            total_coffee_food = Work.objects.filter(date__range=(start, end)).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = Work.objects.filter(date__range=(start, end)).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = Work.objects.filter(date__range=(start, end)).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = Work.objects.filter(date__range=(start, end)).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = Work.objects.filter(date__range=(start, end)).aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = Work.objects.filter(date__range=(start, end)).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = Work.objects.filter(date__range=(start, end)).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+            try:
+                works = Work.objects.filter(
+                    date__range=(start, end),
+                    user__id=user_pk,
+                ).order_by('date')
+            except Exception as e:
+                error = f'Nie można wyświetlić raport z powodu błędu: {e}'
+                return render(request, 'error.html', context=error)
 
-            if total_sum_time_sec:
-                ### total_sum_time_sec => hours:minutes ###
-                total_hours = total_sum_time_sec // 3600
-                total_sec = total_sum_time_sec % 3600
-                total_min = total_sec // 60
-                total_work_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_time = '0:00'
-            if total_sum_over_time_sec:
-                ### total_sum_over_time_sec => hours:minutes ###
-                total_hours = total_sum_over_time_sec // 3600
-                total_sec = total_sum_over_time_sec % 3600
-                total_min = total_sec // 60
-                if total_min < 10 or total_min == 0.0:
-                    total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
-                else:
-                    total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_over_time = '0:00'
-            ### End Totals for sorted_from ###
-            ##################################
+            # Totals
+            totals = {}
+            for field_name, field in total_fields.items():
+                total = works.aggregate(
+                    total=Sum(field)
+                    )['total']
+                totals[field_name] = total
 
         
         #####################################################################################
         ###################################  WORK OBJECT  ###################################
         #####################################################################################
+
         if work_object: 
-            wo = WorkObject.objects.get(id=work_object)
-            works = Work.objects.filter(
-                work_object=wo.name,
-                user__id=user_pk,
-                ).order_by('date')
-            print('WO:', wo.name)
-            ##############################
-            ### Totals for sorted_from ###
-            total_coffee_food = Work.objects.filter(work_object=wo.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = Work.objects.filter(work_object=wo.name,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = Work.objects.filter(work_object=wo.name,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = Work.objects.filter(work_object=wo.name,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = Work.objects.filter(work_object=wo.name,).aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = Work.objects.filter(work_object=wo.name,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = Work.objects.filter(work_object=wo.name,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
-
-            if total_sum_time_sec:
-                ### total_sum_time_sec => hours:minutes ###
-                total_hours = total_sum_time_sec // 3600
-                total_sec = total_sum_time_sec % 3600
-                total_min = total_sec // 60
-                total_work_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_time = '0:00'
-            if total_sum_over_time_sec:
-                ### total_sum_over_time_sec => hours:minutes ###
-                total_hours = total_sum_over_time_sec // 3600
-                total_sec = total_sum_over_time_sec % 3600
-                total_min = total_sec // 60
-                if total_min < 10 or total_min == 0.0:
-                    total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
-                else:
-                    total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_over_time = '0:00'
-            ### End Totals for sorted_from ###
-            ################################## 
-
-
+            wo = get_object_or_404(WorkObject, id=work_object)
+            try:
+                works = Work.objects.filter(
+                    work_object=wo.name,
+                    user__id=user_pk,
+                    ).order_by('date')
+            except Exception as e:
+                error = f'Nie można wyświetlić raport z powodu błędu: {e}'
+                return render(request, 'error.html', context=error)
+            
+            # Totals
+            totals = {}
+            for field_name, field in total_fields.items():
+                total = works.aggregate(
+                    total=Sum(field)
+                    )['total']
+                totals[field_name] = total
         
         #####################################################################################
         ##########################  SORTED FROM & WORK OBJECT  ##############################
         #####################################################################################
+
         if sorted_from and work_object:
             year, month, day = sorted_from.split('-')
             sorted_to = request.POST.get('sorted_to')
@@ -1016,42 +1050,43 @@ def getUserRaport(request, user_pk):
             start = datetime(int(year), int(month), int(day))
             end = datetime(int(year_), int(month_), int(day_))
             wo = WorkObject.objects.get(id=work_object)
-            works = Work.objects.filter(
-                date__range=(start, end),
-                work_object=wo.name,
-                user__id=user_pk,
-            ).order_by('date')
-            ##############################
-            ### Totals for sorted_from ###
-            total_coffee_food = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = Work.objects.filter(date__range=(start, end),work_object=wo.name,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+            try:
+                works = Work.objects.filter(
+                        date__range=(start, end),
+                        work_object=wo.name,
+                        user__id=user_pk,
+                    ).order_by('date')
+            except Exception as e:
+                error = f'Nie można wyświetlić raport z powodu błędu: {e}'
+                return render(request, 'error.html', context=error)
+            
+            # Totals
+            totals = {}
+            for field_name, field in total_fields.items():
+                total = works.aggregate(
+                    total=Sum(field)
+                    )['total']
+                totals[field_name] = total
 
-            if total_sum_time_sec:
-                ### total_sum_time_sec => hours:minutes ###
-                total_hours = total_sum_time_sec // 3600
-                total_sec = total_sum_time_sec % 3600
-                total_min = total_sec // 60
-                total_work_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_time = '0:00'
-            if total_sum_over_time_sec:
-                ### total_sum_over_time_sec => hours:minutes ###
-                total_hours = total_sum_over_time_sec // 3600
-                total_sec = total_sum_over_time_sec % 3600
-                total_min = total_sec // 60
-                if total_min < 10 or total_min == 0.0:
-                    total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
-                else:
-                    total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_over_time = '0:00'
-            ### End Totals for sorted_from ###
-            ##################################
+    if totals['total_sum_time_sec']: 
+        ### total_sum_time_sec => hours:minutes ###
+        total_hours = totals['total_sum_time_sec'] // 3600
+        total_sec = totals['total_sum_time_sec'] % 3600
+        total_min = total_sec // 60
+        total_work_time = f'{int(total_hours)}:{int(total_min)}'
+    else:
+        total_work_time = '0:00'
+    if totals['total_sum_over_time_sec']:
+        ### total_sum_over_time_sec => hours:minutes ###
+        total_hours = totals['total_sum_over_time_sec'] // 3600
+        total_sec = totals['total_sum_over_time_sec'] % 3600
+        total_min = total_sec // 60
+        if total_min < 10 or total_min == 0.0:
+            total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
+        else:
+            total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
+    else:
+        total_work_over_time = '0:00'
 
     paginator = Paginator(works, 35)
     page_number = request.GET.get('page')
@@ -1061,11 +1096,11 @@ def getUserRaport(request, user_pk):
         'user': user,
         'works': works,
         'work_objects': work_objects,
-        'total_coffee_food': total_coffee_food,
-        'total_fuel': total_fuel,
-        'total_prepayment': total_prepayment,
-        'total_phone_costs': total_phone_costs,
-        'total_payment': total_payment,
+        'total_coffee_food': totals['total_coffee_food'],
+        'total_fuel': totals['total_fuel'],
+        'total_prepayment': totals['total_prepayment'],
+        'total_phone_costs': totals['total_phone_costs'],
+        'total_payment': totals['total_payment'],
         'total_work_time': total_work_time,
         'total_work_over_time': total_work_over_time,
         'page_obj': page_obj,
@@ -1080,6 +1115,35 @@ def getUserRaport(request, user_pk):
 
 def workObjectRaport(request, user_pk, object_pk):
 
+    total_fields = {
+                'total_coffee_food': 'coffee_food',
+                'total_fuel': 'fuel',
+                'total_prepayment': 'prepayment',
+                'total_phone_costs': 'phone_costs',
+                'total_payment': 'payment',
+                'total_sum_time_sec': 'sum_time_sec',
+                'total_sum_over_time_sec': 'sum_over_time_sec'
+            }
+
+    ### Sorted by workobject ###
+    work_object = get_object_or_404(WorkObject, id=object_pk)
+
+    ### Sorted by date continue.. ###
+    try:
+        work_by_date = Work.objects.filter(
+            user__id=user_pk,
+            work_object=work_object.name,
+        ).order_by('date')
+    except Exception as e:
+        error = f'Nie można wyświetlić raport z powodu błędu: {e}'
+        return render(request, 'error.html', context=error)
+
+    # Totals
+    totals = {}
+    for field_name, field in total_fields.items():
+        total = work_by_date.aggregate(total=Sum(field))['total']
+        totals[field_name] = round(total, 2)
+    
     if request.method == 'POST':
 
         ### Sorted by date ###
@@ -1095,114 +1159,85 @@ def workObjectRaport(request, user_pk, object_pk):
             ### Sorted by date pause.. ###
 
             ### Sorted by workobject ###
-            work_object = WorkObject.objects.get(
-                pk=object_pk,
-                )
+            work_object = get_object_or_404(WorkObject, id=object_pk)
 
-             ### Sorted by date continue.. ###
-            work_by_date = Work.objects.filter(
-                user__id=user_pk,
-                date__range=(start, end),
-                work_object=work_object.name,
-            ).order_by('date')
+            ### Sorted by date continue.. ###
+            try:
+                work_by_date = Work.objects.filter(
+                    user__id=user_pk,
+                    date__range=(start, end),
+                    work_object=work_object.name,
+                ).order_by('date')
+            except Exception as e:
+                error = f'Nie można wyświetlić raport z powodu błędu: {e}'
+                return render(request, 'error.html', context=error)
 
-            #########################
-            ### Totals for choice ###
-            total_coffee_food = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object.name,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object.name,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object.name,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object.name,).aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object.name,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = Work.objects.filter(date__range=(start, end), user__id=user_pk, work_object=work_object.name,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+            # Totals
+            totals = {}
+            for field_name, field in total_fields.items():
+                total = work_by_date.aggregate(total=Sum(field))['total']
+                totals[field_name] = total
 
-            if total_sum_time_sec:
-                ### total_sum_time_sec => hours:minutes ###
-                total_hours = total_sum_time_sec // 3600
-                total_sec = total_sum_time_sec % 3600
-                total_min = total_sec // 60
-                total_work_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_time = '0:00'
-            if total_sum_over_time_sec:
-                ### total_sum_over_time_sec => hours:minutes ###
-                total_hours = total_sum_over_time_sec // 3600
-                total_sec = total_sum_over_time_sec % 3600
-                total_min = total_sec // 60
-                if total_min < 10 or total_min == 0.0:
-                    total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
-                else:
-                    total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_over_time = '0:00'
+    ## Open page without filtering
+    # if totals['total_coffee_food'] is None and \
+    #    totals['total_prepayment'] is None and \
+    #    totals['total_fuel'] is None and \
+    #    totals['total_phone_costs'] is None and \
+    #    totals['total_payment'] is None:
+    #     totals['total_coffee_food'] = 0.00
+    #     totals['total_prepayment'] = 0.00
+    #     totals['total_fuel'] = 0.00
+    #     totals['total_phone_costs'] = 0.00
+    #     totals['total_payment'] = 0.00
+    
+    total_lists = [
+        totals['total_payment'],
+        totals['total_phone_costs'],
+        totals['total_fuel'],
+        totals['total_coffee_food']
+    ]
 
-            ### End Totals for choice ###
-            #############################
-
+    if any(element is not None for element in total_lists):
+        total = sum(total_lists)
     else:
-        ### Sorted by workobject ###
-        work_object = WorkObject.objects.get(
-            pk=object_pk,
-            )
-        ### Sorted by date continue.. ###
-        work_by_date = Work.objects.filter(
-            user__id=user_pk,
-            work_object=work_object.name,
-        ).order_by('date')
+        total = '0:00'
+        totals['total_payment'] = '0:00'
+        totals['total_prepayment'] = '0:00'
+        totals['total_phone_costs'] = '0:01'
+        totals['total_fuel'] = '0:00'
+        totals['total_coffee_food'] = '0:00'
 
-        #########################
-        ### Totals for choice ###
-        total_coffee_food = Work.objects.filter(user__id=user_pk, work_object=work_object.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-        total_fuel = Work.objects.filter(user__id=user_pk, work_object=work_object.name,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-        total_prepayment = Work.objects.filter(user__id=user_pk, work_object=work_object.name,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-        total_phone_costs = Work.objects.filter(user__id=user_pk, work_object=work_object.name,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-        total_payment = Work.objects.filter(user__id=user_pk, work_object=work_object.name,).aggregate(total_payment=Sum('payment'))['total_payment']
-        total_sum_time_sec = Work.objects.filter(user__id=user_pk, work_object=work_object.name,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-        total_sum_over_time_sec = Work.objects.filter(user__id=user_pk, work_object=work_object.name,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
-
-        if total_sum_time_sec:
-            ### total_sum_time_sec => hours:minutes ###
-            total_hours = total_sum_time_sec // 3600
-            total_sec = total_sum_time_sec % 3600
-            total_min = total_sec // 60
-            total_work_time = f'{int(total_hours)}:{int(total_min)}'
+    ### End Totals for choice ###
+    #############################
+    
+    if totals['total_sum_time_sec']: 
+        ### total_sum_time_sec => hours:minutes ###
+        total_hours = totals['total_sum_time_sec'] // 3600
+        total_sec = totals['total_sum_time_sec'] % 3600
+        total_min = total_sec // 60
+        total_work_time = f'{int(total_hours)}:{int(total_min)}'
+    else:
+        total_work_time = '0:00'
+    if totals['total_sum_over_time_sec']:
+        ### total_sum_over_time_sec => hours:minutes ###
+        total_hours = totals['total_sum_over_time_sec'] // 3600
+        total_sec = totals['total_sum_over_time_sec'] % 3600
+        total_min = total_sec // 60
+        if total_min < 10 or total_min == 0.0:
+            total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
         else:
-            total_work_time = '0:00'
-        if total_sum_over_time_sec:
-            ### total_sum_over_time_sec => hours:minutes ###
-            total_hours = total_sum_over_time_sec // 3600
-            total_sec = total_sum_over_time_sec % 3600
-            total_min = total_sec // 60
-            if total_min < 10 or total_min == 0.0:
-                total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
-            else:
-                total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
-        else:
-            total_work_over_time = '0:00'
-
-        ## Open page without filtering
-        if total_coffee_food is None and \
-           total_prepayment is None and \
-           total_fuel is None and \
-           total_phone_costs is None and \
-           total_payment is None:
-            total_coffee_food = 0.00
-            total_prepayment = 0.00
-            total_fuel = 0.00
-            total_phone_costs = 0.00
-            total_payment = 0.00
-
-        ### End Totals for choice ###
-        #############################
+            total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
+    else:
+        total_work_over_time = '0:00'
 
     context = {
         'work_by_date': work_by_date,
         'work_object': work_object,
-        'total_coffee_food': total_coffee_food,
-        'total_fuel': total_fuel,
-        'total_prepayment': total_prepayment,
-        'total_phone_costs': total_phone_costs,
-        'total_payment': total_payment,
+        'total_coffee_food': totals['total_coffee_food'],
+        'total_fuel': totals['total_fuel'],
+        'total_prepayment': totals['total_prepayment'],
+        'total_phone_costs': totals['total_phone_costs'],
+        'total_payment': totals['total_payment'],
         'total_work_time': total_work_time,
         'total_work_over_time': total_work_over_time,
     }
@@ -1215,82 +1250,41 @@ def workObjectRaport(request, user_pk, object_pk):
 
 from django.db.models import Prefetch
 def raports(request):
+
+    total_fields = {
+                'total_coffee_food': 'coffee_food',
+                'total_fuel': 'fuel',
+                'total_prepayment': 'prepayment',
+                'total_phone_costs': 'phone_costs',
+                'total_payment': 'payment',
+                'total_sum_time_sec': 'sum_time_sec',
+                'total_sum_over_time_sec': 'sum_over_time_sec'
+            }
+    
     if request.user.is_superuser:
-        works = Work.objects.prefetch_related(Prefetch('user')).order_by('-date')
-        work_objects = WorkObject.objects.all()
+        try:
+            works = Work.objects.prefetch_related(Prefetch('user')).order_by('-date')
+            work_objects = WorkObject.objects.all()
+        except Exception as e:
+            error = f'Nie można wyświetlić raport z powodu błędu: {e}'
+            return render(request, 'error.html', context=error)
     else:
-        works = Work.objects.prefetch_related(Prefetch('user')).filter(user=request.user).order_by('-date')
-        work_objects = WorkObject.objects.filter(user=request.user)
+        try:
+            works = Work.objects.prefetch_related(Prefetch('user')).filter(user=request.user).order_by('-date')
+            work_objects = WorkObject.objects.filter(user=request.user)
+        except Exception as e:
+            error = f'Nie można wyświetlić raport z powodu błędu: {e}'
+            return render(request, 'error.html', context=error)
+        
     users = CustomUser.objects.all().values('id', 'username')
+        
+    # Totals without filters
+    totals = {}
+    for field_name, field in total_fields.items():
+        total = works.aggregate(total=Sum(field))['total']
+        totals[field_name] = round(total, 2)
 
-    if request.user.is_superuser:
-
-        ##############################
-        ### Totals for sorted_from ###
-        total_coffee_food = Work.objects.all().aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-        total_fuel = Work.objects.all().aggregate(total_fuel=Sum('fuel'))['total_fuel']
-        total_prepayment = Work.objects.all().aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-        total_phone_costs = Work.objects.all().aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-        total_payment = Work.objects.all().aggregate(total_payment=Sum('payment'))['total_payment']
-        total_sum_time_sec = Work.objects.all().aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-        total_sum_over_time_sec = Work.objects.all().aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
-
-        if total_sum_time_sec:
-            ### total_sum_time_sec => hours:minutes ###
-            total_hours = total_sum_time_sec // 3600
-            total_sec = total_sum_time_sec % 3600
-            total_min = total_sec // 60
-            total_work_time = f'{int(total_hours)}:{int(total_min)}'
-        else:
-            total_work_time = '0:00'
-        if total_sum_over_time_sec:
-            ### total_sum_over_time_sec => hours:minutes ###
-            total_hours = total_sum_over_time_sec // 3600
-            total_sec = total_sum_over_time_sec % 3600
-            total_min = total_sec // 60
-            if total_min < 10 or total_min == 0.0:
-                total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
-            else:
-                total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
-        else:
-            total_work_over_time = '0:00'
-        ### End Totals for sorted_from ###
-        ##################################
-
-    else:
-        user = request.user
-        ##############################
-        ### Totals for sorted_from ###
-        total_coffee_food = Work.objects.filter(user__id=user.id).values('coffee_food').aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-        total_fuel = Work.objects.filter(user__id=user.id).values('fuel').aggregate(total_fuel=Sum('fuel'))['total_fuel']
-        total_prepayment = Work.objects.filter(user__id=user.id).values('prepayment').aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-        total_phone_costs = Work.objects.filter(user__id=user.id).values('phone_costs').aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-        total_payment = Work.objects.filter(user__id=user.id).values('payment').aggregate(total_payment=Sum('payment'))['total_payment']
-        total_sum_time_sec = Work.objects.filter(user__id=user.id).values('sum_time_sec').aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-        total_sum_over_time_sec = Work.objects.filter(user__id=user.id).values('sum_over_time_sec').aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
-
-        if total_sum_time_sec:
-            ### total_sum_time_sec => hours:minutes ###
-            total_hours = total_sum_time_sec // 3600
-            total_sec = total_sum_time_sec % 3600
-            total_min = total_sec // 60
-            total_work_time = f'{int(total_hours)}:{int(total_min)}'
-        else:
-            total_work_time = '0:00'
-        if total_sum_over_time_sec:
-            ### total_sum_over_time_sec => hours:minutes ###
-            total_hours = total_sum_over_time_sec // 3600
-            total_sec = total_sum_over_time_sec % 3600
-            total_min = total_sec // 60
-            if total_min < 10 or total_min == 0.0:
-                total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
-            else:
-                total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
-        else:
-            total_work_over_time = '0:00'
-        ### End Totals for sorted_from ###
-        ##################################
-
+    # Filters
     if request.method == 'POST':
 
         if 'marked' in request.POST:
@@ -1306,358 +1300,222 @@ def raports(request):
         #####################################################################################
         ###################################  SORTED FROM  ###################################
         #####################################################################################
+
         if sorted_from:
-            # if sorted_to == '':
-            #     messages.warning(request, 'Puste pole musi być uzupełnione')
-            #     return redirect('raports')
             year, month, day = sorted_from.split('-')
             sorted_to = request.POST.get('sorted_to')
             year_, month_, day_ = sorted_to.split('-')
             start = datetime(int(year), int(month), int(day))
             end = datetime(int(year_), int(month_), int(day_))
-            works = Work.objects.prefetch_related('user').filter(
-                date__range=(start, end),
-            ).order_by('-date')
+            try:
+                works = Work.objects.prefetch_related('user').filter(
+                    date__range=(start, end),
+                ).order_by('-date')
+            except Exception as e:
+                error = f'Nie można wyświetlić raport z powodu błędu: {e}'
+                return render(request, 'error.html', context=error)
             ### Making the excel file of raports ###
             if user == '' and work_object == '':
                 filterRaport = request.POST.get('filterRaport')
                 if filterRaport == 'download':
-                    print('SORTED FROM', works)
                     request.session['works'] = list(works.values())
                     return redirect('raportsToExcel')
             
-            ##############################
-            ### Totals for sorted_from ###
-            total_coffee_food = Work.objects.filter(date__range=(start, end)).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = Work.objects.filter(date__range=(start, end)).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = Work.objects.filter(date__range=(start, end)).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = Work.objects.filter(date__range=(start, end)).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = Work.objects.filter(date__range=(start, end)).aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = Work.objects.filter(date__range=(start, end)).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = Work.objects.filter(date__range=(start, end)).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
-
-            if total_sum_time_sec:
-                ### total_sum_time_sec => hours:minutes ###
-                total_hours = total_sum_time_sec // 3600
-                total_sec = total_sum_time_sec % 3600
-                total_min = total_sec // 60
-                total_work_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_time = '0:00'
-            if total_sum_over_time_sec:
-                ### total_sum_over_time_sec => hours:minutes ###
-                total_hours = total_sum_over_time_sec // 3600
-                total_sec = total_sum_over_time_sec % 3600
-                total_min = total_sec // 60
-                if total_min < 10 or total_min == 0.0:
-                    total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
-                else:
-                    total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_over_time = '0:00'
-            ### End Totals for sorted_from ###
-            ##################################
+            # Totals 
+            totals = {}
+            for field_name, field in total_fields.items():
+                total = works.aggregate(total=Sum(field))['total']
+                totals[field_name] = round(total, 2)
 
 
         #####################################################################################
         #######################################  USER  ######################################
         #####################################################################################
+
         if user:
-            works = Work.objects.filter(username=user).order_by('-date')
+            try:
+                works = Work.objects.filter(username=user).order_by('-date')
+            except Exception as e:
+                error = f'Nie można wyświetlić raport z powodu błędu: {e}'
+                return render(request, 'error.html', context=error)
             if sorted_from == '' and work_object == '':
                 ### Making the excel file of raports ###
                 filterRaport = request.POST.get('filterRaport')
                 if filterRaport == 'download':
-                    print('USER', works)
                     request.session['works'] = list(works.values())
                     return redirect('raportsToExcel')
             
-            ##############################
-            ### Totals for sorted_from ###
-            total_coffee_food = works.aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = works.aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = works.aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = works.aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = works.aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = works.aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = works.aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
-
-            if total_sum_time_sec:
-                ### total_sum_time_sec => hours:minutes ###
-                total_hours = total_sum_time_sec // 3600
-                total_sec = total_sum_time_sec % 3600
-                total_min = total_sec // 60
-                total_work_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_time = '0:00'
-            if total_sum_over_time_sec:
-                ### total_sum_over_time_sec => hours:minutes ###
-                total_hours = total_sum_over_time_sec // 3600
-                total_sec = total_sum_over_time_sec % 3600
-                total_min = total_sec // 60
-                if total_min < 10 or total_min == 0.0:
-                    total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
-                else:
-                    total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_over_time = '0:00'
-            ### End Totals for sorted_from ###
-            ##################################
+            # Totals 
+            totals = {}
+            for field_name, field in total_fields.items():
+                total = works.aggregate(total=Sum(field))['total']
+                totals[field_name] = round(total, 2)
 
 
         #####################################################################################
         ###################################  WORK OBJECT  ###################################
         #####################################################################################
+
         if work_object: 
-            wo = WorkObject.objects.get(id=work_object)
-            works = Work.objects.filter(work_object=wo.name).order_by('-date')
+            wo = get_object_or_404(WorkObject, id=work_object)
+            try:
+                works = Work.objects.filter(work_object=wo.name).order_by('-date')
+            except Exception as e:
+                error = f'Nie można wyświetlić raport z powodu błędu: {e}'
+                return render(request, 'error.html', context=error)
             if sorted_from == '' and user == '':
                 ### Making the excel file of raports ###
                 filterRaport = request.POST.get('filterRaport')
                 if filterRaport == 'download':
-                    print('WORK OBJECT', works)
                     request.session['works'] = list(works.values())
                     return redirect('raportsToExcel')
             
-            ##############################
-            ### Totals for sorted_from ###
-            total_coffee_food = Work.objects.filter(work_object=wo.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = Work.objects.filter(work_object=wo.name,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = Work.objects.filter(work_object=wo.name,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = Work.objects.filter(work_object=wo.name,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = Work.objects.filter(work_object=wo.name,).aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = Work.objects.filter(work_object=wo.name,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = Work.objects.filter(work_object=wo.name,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
-
-            if total_sum_time_sec:
-                ### total_sum_time_sec => hours:minutes ###
-                total_hours = total_sum_time_sec // 3600
-                total_sec = total_sum_time_sec % 3600
-                total_min = total_sec // 60
-                total_work_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_time = '0:00'
-            if total_sum_over_time_sec:
-                ### total_sum_over_time_sec => hours:minutes ###
-                total_hours = total_sum_over_time_sec // 3600
-                total_sec = total_sum_over_time_sec % 3600
-                total_min = total_sec // 60
-                if total_min < 10 or total_min == 0.0:
-                    total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
-                else:
-                    total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_over_time = '0:00'
-            ### End Totals for sorted_from ###
-            ################################## 
+            # Totals 
+            totals = {}
+            for field_name, field in total_fields.items():
+                total = works.aggregate(total=Sum(field))['total']
+                totals[field_name] = round(total, 2)
 
 
         #####################################################################################
         ##########################  SORTED FROM & WORK OBJECT  ##############################
         #####################################################################################
+
         if sorted_from and work_object:
             year, month, day = sorted_from.split('-')
             sorted_to = request.POST.get('sorted_to')
             year_, month_, day_ = sorted_to.split('-')
             start = datetime(int(year), int(month), int(day))
             end = datetime(int(year_), int(month_), int(day_))
-            wo = WorkObject.objects.get(id=work_object)
-            works = Work.objects.prefetch_related('user').filter(
-                date__range=(start, end),
-                work_object=wo.name,
-            ).order_by('-date')
+            wo = get_object_or_404(WorkObject, id=work_object)
+            try:
+                works = Work.objects.prefetch_related('user').filter(
+                    date__range=(start, end),
+                    work_object=wo.name,
+                ).order_by('-date')
+            except Exception as e:
+                error = f'Nie można wyświetlić raport z powodu błędu: {e}'
+                return render(request, 'error.html', context=error)
             if user == '':
                 ### Making the excel file of raports ###
                 filterRaport = request.POST.get('filterRaport')
                 if filterRaport == 'download':
-                    print('SORTED FROM & WORK OBJECT', works)
                     request.session['works'] = list(works.values())
                     return redirect('raportsToExcel')
             
-            ##############################
-            ### Totals for sorted_from ###
-            total_coffee_food = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = Work.objects.filter(date__range=(start, end),work_object=wo.name,).aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = Work.objects.filter(date__range=(start, end), work_object=wo.name,).aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
 
-            if total_sum_time_sec:
-                ### total_sum_time_sec => hours:minutes ###
-                total_hours = total_sum_time_sec // 3600
-                total_sec = total_sum_time_sec % 3600
-                total_min = total_sec // 60
-                total_work_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_time = '0:00'
-            if total_sum_over_time_sec:
-                ### total_sum_over_time_sec => hours:minutes ###
-                total_hours = total_sum_over_time_sec // 3600
-                total_sec = total_sum_over_time_sec % 3600
-                total_min = total_sec // 60
-                if total_min < 10 or total_min == 0.0:
-                    total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
-                else:
-                    total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_over_time = '0:00'
-            ### End Totals for sorted_from ###
-            ##################################
+            # Totals 
+            totals = {}
+            for field_name, field in total_fields.items():
+                total = works.aggregate(total=Sum(field))['total']
+                totals[field_name] = round(total, 2)
 
 
         #####################################################################################
         #################################  SORTED FROM & USER  ##############################
         #####################################################################################
+
         if sorted_from and user:
             year, month, day = sorted_from.split('-')
             sorted_to = request.POST.get('sorted_to')
             year_, month_, day_ = sorted_to.split('-')
             start = datetime(int(year), int(month), int(day))
             end = datetime(int(year_), int(month_), int(day_))
-            works = Work.objects.filter(
-                date__range=(start, end),
-                username=user,
-            ).order_by('-date')
+            try:
+                works = Work.objects.filter(
+                    date__range=(start, end),
+                    username=user,
+                ).order_by('-date')
+            except Exception as e:
+                error = f'Nie można wyświetlić raport z powodu błędu: {e}'
+                return render(request, 'error.html', context=error)
             if work_object == '':
                 ### Making the excel file of raports ###
                 filterRaport = request.POST.get('filterRaport')
                 if filterRaport == 'download':
-                    print('SORTED FROM & USER', works)
                     request.session['works'] = list(works.values())
                     return redirect('raportsToExcel')
 
-            ##############################
-            ### Totals for sorted_from ###
-            total_coffee_food = works.aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = works.aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = works.aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = works.aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = works.aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = works.aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = works.aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
-
-            if total_sum_time_sec:
-                ### total_sum_time_sec => hours:minutes ###
-                total_hours = total_sum_time_sec // 3600
-                total_sec = total_sum_time_sec % 3600
-                total_min = total_sec // 60
-                total_work_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_time = '0:00'
-            if total_sum_over_time_sec:
-                ### total_sum_over_time_sec => hours:minutes ###
-                total_hours = total_sum_over_time_sec // 3600
-                total_sec = total_sum_over_time_sec % 3600
-                total_min = total_sec // 60
-                if total_min < 10 or total_min == 0.0:
-                    total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
-                else:
-                    total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_over_time = '0:00'
-            ### End Totals for sorted_from ###
-            ##################################
+            # Totals 
+            totals = {}
+            for field_name, field in total_fields.items():
+                total = works.aggregate(total=Sum(field))['total']
+                totals[field_name] = round(total, 2)
 
 
         #####################################################################################
         #################################  WORK OBJECT & USER  ##############################
         #####################################################################################
+
         if work_object and user:
-            wo = WorkObject.objects.get(id=work_object)
-            works = Work.objects.filter(
-                work_object=wo.name,
-                username=user
-                ).order_by('-date')
+            wo = get_object_or_404(WorkObject, id=work_object)
+            try:
+                works = Work.objects.filter(
+                    work_object=wo.name,
+                    username=user
+                    ).order_by('-date')
+            except Exception as e:
+                error = f'Nie można wyświetlić raport z powodu błędu: {e}'
+                return render(request, 'error.html', context=error)
             if sorted_from == '':
                 ### Making the excel file of raports ###
                 filterRaport = request.POST.get('filterRaport')
                 if filterRaport == 'download':
-                    print('WORK OBJECT & USER', works)
                     request.session['works'] = list(works.values())
                     return redirect('raportsToExcel')
-            ##############################
-            ### Totals for sorted_from ###
-            total_coffee_food = works.aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = works.aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = works.aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = works.aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = works.aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = works.aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = works.aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
 
-            if total_sum_time_sec:
-                ### total_sum_time_sec => hours:minutes ###
-                total_hours = total_sum_time_sec // 3600
-                total_sec = total_sum_time_sec % 3600
-                total_min = total_sec // 60
-                total_work_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_time = '0:00'
-            if total_sum_over_time_sec:
-                ### total_sum_over_time_sec => hours:minutes ###
-                total_hours = total_sum_over_time_sec // 3600
-                total_sec = total_sum_over_time_sec % 3600
-                total_min = total_sec // 60
-                if total_min < 10 or total_min == 0.0:
-                    total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
-                else:
-                    total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_over_time = '0:00'
-            ## End Totals for sorted_from ###
-            #################################
+            # Totals 
+            totals = {}
+            for field_name, field in total_fields.items():
+                total = works.aggregate(total=Sum(field))['total']
+                totals[field_name] = round(total, 2)
 
 
         #####################################################################################
         ##########################  SORTED FROM & WORK OBJECT & USER  #######################
         #####################################################################################  
+
         if sorted_from and user and work_object:
-            wo = WorkObject.objects.get(id=work_object)
-            works = Work.objects.filter(
-                date__range=(start, end),
-                work_object=wo.name,
-                username=user,
-            ).order_by('-date')
+            wo = get_object_or_404(WorkObject, id=work_object)
+            try:
+                works = Work.objects.filter(
+                    date__range=(start, end),
+                    work_object=wo.name,
+                    username=user,
+                ).order_by('-date')
+            except Exception as e:
+                error = f'Nie można wyświetlić raport z powodu błędu: {e}'
+                return render(request, 'error.html', context=error)
             ### Making the excel file of raports ###
             filterRaport = request.POST.get('filterRaport')
-            print('filterRaport', filterRaport)
             if filterRaport == 'download':
-                print('SORTED FROM & WORK OBJECT & USER', works)
                 request.session['works'] = list(works.values())
                 return redirect('raportsToExcel')
-            ##############################
-            ### Totals for sorted_from ###
-            total_coffee_food = works.aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-            total_fuel = works.aggregate(total_fuel=Sum('fuel'))['total_fuel']
-            total_prepayment = works.aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-            total_phone_costs = works.aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-            total_payment = works.aggregate(total_payment=Sum('payment'))['total_payment']
-            total_sum_time_sec = works.aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-            total_sum_over_time_sec = works.aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
-
-            if total_sum_time_sec:
-                ### total_sum_time_sec => hours:minutes ###
-                total_hours = total_sum_time_sec // 3600
-                total_sec = total_sum_time_sec % 3600
-                total_min = total_sec // 60
-                total_work_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_time = '0:00'
-            if total_sum_over_time_sec:
-                ### total_sum_over_time_sec => hours:minutes ###
-                total_hours = total_sum_over_time_sec // 3600
-                total_sec = total_sum_over_time_sec % 3600
-                total_min = total_sec // 60
-                if total_min < 10 or total_min == 0.0:
-                    total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
-                else:
-                    total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
-            else:
-                total_work_over_time = '0:00'
-            ### End Totals for sorted_from ###
-            ##################################
+            # Totals 
+            totals = {}
+            for field_name, field in total_fields.items():
+                total = works.aggregate(total=Sum(field))['total']
+                totals[field_name] = round(total, 2)
+    
+    if totals['total_sum_time_sec']: 
+        ### total_sum_time_sec => hours:minutes ###
+        total_hours = totals['total_sum_time_sec'] // 3600
+        total_sec = totals['total_sum_time_sec'] % 3600
+        total_min = total_sec // 60
+        total_work_time = f'{int(total_hours)}:{int(total_min)}'
+    else:
+        total_work_time = '0:00'
+    if totals['total_sum_over_time_sec']:
+        ### total_sum_over_time_sec => hours:minutes ###
+        total_hours = totals['total_sum_over_time_sec'] // 3600
+        total_sec = totals['total_sum_over_time_sec'] % 3600
+        total_min = total_sec // 60
+        if total_min < 10 or total_min == 0.0:
+            total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
+        else:
+            total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
+    else:
+        total_work_over_time = '0:00'
 
     paginator = Paginator(works, 35)
     page_number = request.GET.get('page')
@@ -1668,25 +1526,32 @@ def raports(request):
     users_list = set()
     users_list = {wo[0] for wo in works}
 
-    # total = total_coffee_food + total_fuel + total_phone_costs + total_payment
-    if any(element is not None for element in [total_payment, total_phone_costs, total_fuel, total_coffee_food]):
-        total = total_payment + total_phone_costs + total_fuel + total_coffee_food
+    total_lists = [
+        totals['total_payment'],
+        totals['total_phone_costs'],
+        totals['total_fuel'],
+        totals['total_coffee_food']
+    ]
+
+    if any(element is not None for element in total_lists):
+        total = sum(total_lists)
     else:
         total = '0:00'
-        total_payment = '0:00'
-        total_phone_costs = '0:00'
-        total_fuel = '0:00'
-        total_coffee_food = '0:00'
+        totals['total_payment'] = '0:00'
+        totals['total_prepayment'] = '0:00'
+        totals['total_phone_costs'] = '0:00'
+        totals['total_fuel'] = '0:00'
+        totals['total_coffee_food'] = '0:00'
 
     context = {
         'works': works,
         'users': users, 
         'work_objects': work_objects,
-        'total_coffee_food': total_coffee_food,
-        'total_fuel': total_fuel,
-        'total_prepayment': total_prepayment,
-        'total_phone_costs': total_phone_costs,
-        'total_payment': total_payment,
+        'total_coffee_food': totals['total_coffee_food'],
+        'total_fuel': totals['total_fuel'],
+        'total_prepayment': totals['total_prepayment'],
+        'total_phone_costs': totals['total_phone_costs'],
+        'total_payment': totals['total_payment'],
         'total_work_time': total_work_time,
         'total_work_over_time': total_work_over_time,
         'page_obj': page_obj,
@@ -1702,12 +1567,13 @@ def raports(request):
 
 def vacations(request, pk):
     user = get_object_or_404(CustomUser, id=pk)
-    # users = CustomUser.objects.all().values('username')
-    # username_list = [user['username'] for user in users]
-    users = Vacations.objects.all().values('username')
-    username_list = [user['username'] for user in users]
-    vacations = Vacations.objects.filter(user__id=user.id).order_by('-id')
-    # vacations = Vacations.objects.prefetch_related('user').order_by('-id')
+    try:
+        users = Vacations.objects.all().values('username')
+        username_list = [user['username'] for user in users]
+        vacations = Vacations.objects.filter(user__id=user.id).order_by('-id')
+    except Exception as e:
+                error = f'Nie można wyświetlić urlopów z powodu błędu: {e}'
+                return render(request, 'error.html', context=error)
     years_list = [vacation.v_from[:4] for vacation in vacations] 
     paginator = Paginator(vacations, 2)
     page_number = request.GET.get('page')
@@ -1745,7 +1611,6 @@ def vacations(request, pk):
     if request.method == 'POST':
         if 'user' in request.POST:
             user_option = request.POST.get('user')
-            # user = get_object_or_404(CustomUser, username=user_option)
             try:
                 user = CustomUser.objects.get(username=user_option)
             except:
@@ -1755,10 +1620,14 @@ def vacations(request, pk):
         elif 'year' in request.POST:
             year = request.POST.get('year')
             if year is not None:
-                vacations = Vacations.objects.filter(
-                    user__id=request.user.id,
-                    v_from__startswith=year,
-                    ).order_by('-id')
+                try:
+                    vacations = Vacations.objects.filter(
+                        user__id=request.user.id,
+                        v_from__startswith=year,
+                        ).order_by('-id')
+                except Exception as e:
+                    error = f'Nie można wyświetlić raport z powodu błędu: {e}'
+                    return render(request, 'error.html', context=error)
         elif 'marked' in request.POST:
             marked = request.POST.getlist('marked')
             if marked is not None:
@@ -1825,8 +1694,8 @@ def vacationsToExcel(request):
     year = request.session.get('year') 
     if user == '' and year is not None:
         vacations = Vacations.objects.filter(
-        v_from__startswith=year,
-    ).order_by('-id')
+            v_from__startswith=year,
+        ).order_by('-id')
     elif user == '' and year == '':
         vacations = Vacations.objects.all().order_by('-id')
     elif user is not None and year is not None:
@@ -1882,6 +1751,15 @@ def vacationsToExcel(request):
 
 def raportsToExcel(request):
 
+    total_fields = {
+                'total_coffee_food': 'coffee_food',
+                'total_fuel': 'fuel',
+                'total_prepayment': 'prepayment',
+                'total_phone_costs': 'phone_costs',
+                'total_payment': 'payment',
+                'total_sum_time_sec': 'sum_time_sec',
+                'total_sum_over_time_sec': 'sum_over_time_sec'
+            }
     works = request.session.get('works')
     ids = [w['id'] for w in works]
 
@@ -1891,9 +1769,50 @@ def raportsToExcel(request):
         if works:
             raports = Work.objects.filter(id__in=ids)
 
-        ##############################
-        ### Totals for sorted_from ###
-        # Work.objects.filter(id__in=visible_values)
+        # Totals 
+    #     totals = {}
+    #     for field_name, field in total_fields.items():
+    #         total = raports.aggregate(total=Sum(field))['total']
+    #         totals[field_name] = round(total, 2)
+
+    #     if totals['total_sum_time_sec']: 
+    #         ### total_sum_time_sec => hours:minutes ###
+    #         total_hours = totals['total_sum_time_sec'] // 3600
+    #         total_sec = totals['total_sum_time_sec'] % 3600
+    #         total_min = total_sec // 60
+    #         total_work_time = f'{int(total_hours)}:{int(total_min)}'
+    #     else:
+    #         total_work_time = '0:00'
+    #     if totals['total_sum_over_time_sec']:
+    #         ### total_sum_over_time_sec => hours:minutes ###
+    #         total_hours = totals['total_sum_over_time_sec'] // 3600
+    #         total_sec = totals['total_sum_over_time_sec'] % 3600
+    #         total_min = total_sec // 60
+    #         if total_min < 10 or total_min == 0.0:
+    #             total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
+    #         else:
+    #             total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
+    #     else:
+    #         total_work_over_time = '0:00'
+
+
+    # total_lists = [
+    #     totals['total_payment'],
+    #     totals['total_phone_costs'],
+    #     totals['total_fuel'],
+    #     totals['total_coffee_food']
+    # ]
+
+    # if any(element is not None for element in total_lists):
+    #     total = sum(total_lists)
+    # else:
+    #     total = '0:00'
+    #     totals['total_payment'] = '0:00'
+    #     totals['total_prepayment'] = '0:00'
+    #     totals['total_phone_costs'] = '0:00'
+    #     totals['total_fuel'] = '0:00'
+    #     totals['total_coffee_food'] = '0:00'
+
         total_coffee_food = raports.aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
         total_fuel = raports.aggregate(total_fuel=Sum('fuel'))['total_fuel']
         total_prepayment = raports.aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
@@ -1923,8 +1842,7 @@ def raportsToExcel(request):
             total_work_over_time = '0:00'
 
         total = total_coffee_food + total_fuel + total_phone_costs + total_payment
-        ### End Totals for sorted_from ###
-        ##################################
+
 
 
         wb = openpyxl.Workbook()
@@ -1968,8 +1886,12 @@ def raportsToExcel(request):
             sheet.cell(row=row_num, column=13).value = raport.payment
 
         for raport in range(0, 16):
-            column_values = ['RAZEM:', '', '', '', '', total_work_time, total_work_over_time, '', total_coffee_food,
-                            total_prepayment, total_fuel, total_phone_costs, total_payment, '', total]
+            column_values = ['RAZEM:', total, '', '', '', total_work_time, total_work_over_time, '', 
+                            total_coffee_food, total_prepayment, total_fuel, 
+                            total_phone_costs, total_payment, '']
+            # column_values = ['RAZEM:', '', '', '', '', total_work_time, total_work_over_time, '', 
+            #                  totals['total_coffee_food'], totals['total_prepayment'], totals['total_fuel'], 
+            #                 totals['total_phone_costs'], totals['total_payment'], '', total]
 
         for column, value in enumerate(column_values, 1):
             sheet.cell(row=len(raports)+4, column=column).value = value

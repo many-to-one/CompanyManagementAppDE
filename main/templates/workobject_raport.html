@@ -47,6 +47,7 @@
                 {% for work in work_by_date %}
                     <tr>
                         <td class="odd" data-label="Data">{{work.date}}</td>
+                        <td class="odd" data-label="Data">{{work.username}}</td>
                         <td class="even" data-label="Objekt">{{work.work_object}}</td>
                         <td class="odd" data-label="Początek">{{work.timestart}}</td>
                         <td class="even" data-label="Koniec">{{work.timefinish}}</td>
@@ -66,6 +67,7 @@
                 {% endfor %}
                     <tr>
                         <td>RAZEM:</td>
+                        <td></td>
                         <td></td>
                         <td></td>
                         <td></td>
