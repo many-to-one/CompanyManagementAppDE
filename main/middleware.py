@@ -32,15 +32,16 @@ class AuthenticationMiddleware:
                 return redirect('login')
         # The user will be loging out if the time of he's token
         # will be expired
-        # elif request.user.token_expiration < timezone.now():
-        #     # Getting BlacklistToken model from users.app
-        #     BlacklistToken = apps.get_model('users', 'BlacklistToken')
-        #     black_list = BlacklistToken(
-        #         token=request.user.fp_token
-        #     )
-        #     black_list.save()
-        #     logout(request)
-        #     return redirect('login')
+        elif request.user.token_expiration:
+            if request.user.token_expiration < timezone.now():
+                # Getting BlacklistToken model from users.app
+                BlacklistToken = apps.get_model('users', 'BlacklistToken')
+                black_list = BlacklistToken(
+                    token=request.user.fp_token
+                )
+                black_list.save()
+                logout(request)
+                return redirect('login')
 
         response = self.get_response(request)
         return response

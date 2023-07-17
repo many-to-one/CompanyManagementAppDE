@@ -22,6 +22,18 @@ environ.Env.read_env()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+# Path to .env
+env_file = os.path.join(BASE_DIR, '.env')
+
+# open the .env variable 
+with open(env_file) as f:
+    for line in f:
+        line = line.strip()
+        if line and not line.startswith('#'):
+            key, value = line.split('=', 1)
+            os.environ.setdefault(key, value)
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -46,7 +58,6 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'main.apps.MainConfig',
     'users.apps.UsersConfig',
-    # 'fontawesome',
 ]
 
 WSGI_APPLICATION = 'Adest.wsgi.application'
@@ -60,15 +71,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    # 'global_login_required.GlobalLoginRequiredMiddleware', ## pip install django-glrm
     'main.middleware.AuthenticationMiddleware',
 ]
-
-# PUBLIC_VIEWS = [
-#     'users.views.Register',
-#     'users.views.Login',
-#     'users.views.forgotPassword',
-# ]
 
 DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': lambda request: DEBUG and request.META['REMOTE_ADDR'] == '127.0.0.1',
@@ -109,14 +113,13 @@ TEMPLATES = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Adest',
-        'USER': 'AlexT',
-        'PASSWORD': 'testproject',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.environ.get('NAME'),
+        'USER': os.environ.get('USER'),
+        'PASSWORD': os.environ.get('PASSWORD'),
+        'HOST': os.environ.get('HOST'),
+        'PORT': os.environ.get('PORT'),
     }
 }
-
 
 
 # Password validation

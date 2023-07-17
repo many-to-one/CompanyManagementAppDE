@@ -21,7 +21,7 @@ class CustomUserAdmin(UserAdmin):
                 "email", 
                 "ip_address",
                 # "password",
-                "fp_token",
+                # "fp_token",
                 "token_expiration",
                 "birthday",
                 "birthplace",

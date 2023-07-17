@@ -55,14 +55,23 @@ class Login(LoginView):
 
     def form_valid(self, form):
         user = form.get_user()
-        # return super().form_valid(form)
+        if user.is_superuser:
+            user.acceptation = True
+            user.save()
         if user.acceptation:
             # Get ip_address of request.user
             ip_address = self.request.META.get('REMOTE_ADDR')
+            user.ip_address = {
+            'ip': [ip_address],
+            'block': [],
+            }
+            user.save()
+            # return super().form_valid(form)
             # List of users IP's
             if user.ip_address:
-                stored_ip = user.ip_address.get('ip')  
-                block_ip = user.ip_address.get('block') 
+                stored_ip = user.ip_address.get('ip') 
+                if user.ip_address: 
+                    block_ip = user.ip_address.get('block') 
              
                 # Check if IP address is in list of accepted IP addresses  
 
@@ -101,16 +110,12 @@ class Login(LoginView):
 def block_ip_address(request, token, uidb64):
     user = get_object_or_404(CustomUser,
                              id=urlsafe_base64_decode(uidb64))
-    print('user', user)
     token_time = f'{token[36:40]}-{token[76:78]}-{token[114:116]} {token[152:154]}:{token[190:192]}'
     time_now = datetime.now().strftime("%Y-%m-%d %H:%M")
     one_minute = timedelta(minutes=1)
     new_time = str(time_now) + str(one_minute)
     print('request.method', request.method)
     if request.method == 'GET':
-        print('token_time', token_time)
-        print('time_now', time_now)
-        print('new_time', new_time[:7])
         if token_time == str(time_now) or str(time_now) == str(new_time[:-7]):
             user.ip_address['block'].append(request.META.get('REMOTE_ADDR'))
             user.save()
@@ -145,7 +150,8 @@ def chack_email(request):
 
 def logout_view(request):
     user = get_object_or_404(CustomUser, id=request.user.pk)
-    blacklist_token(user.fp_token)
+    if user.fp_token:
+        blacklist_token(user.fp_token)
     logout(request)
     return redirect('login')
 
