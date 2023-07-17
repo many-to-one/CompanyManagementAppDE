@@ -25,9 +25,12 @@ import openpyxl
 from openpyxl.utils import get_column_letter
 from django.http import HttpResponse
 import uuid
+from main.tasks import add
 
 
 def index(request):
+    # result = add.delay(4, 5)
+    # print('RESUL', result)
     return render(request, "home.html")
 
 

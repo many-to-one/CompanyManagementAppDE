@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'main.apps.MainConfig',
     'users.apps.UsersConfig',
-    'fontawesome',
+    # 'fontawesome',
 ]
 
 WSGI_APPLICATION = 'Adest.wsgi.application'
@@ -99,18 +99,24 @@ TEMPLATES = [
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    #     'ENGINE': 'django.db.backends.mysql',
-    #     'NAME': 'adest',
-    #     'USER': 'admin',
-    #     'PASSWORD': 'admin',
-    #     'HOST': 'localhost',
-    #     'PORT': '3306', 
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'Adest',
+        'USER': 'AlexT',
+        'PASSWORD': 'testproject',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
+
 
 
 # Password validation
@@ -173,24 +179,35 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
+
+
 # DEBUG IN CONSOLE
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'handlers': {
-#         'console': {
-#             'class': 'logging.StreamHandler',
-#         },
-#     },
-#     'root': {
-#         'handlers': ['console'],
-#         'level': 'DEBUG',
-#     },
-#     'loggers': {
-#         'django.db.backends': {
-#             'handlers': ['console'],
-#             'level': 'DEBUG',
-#             'propagate': False,
-#         },
-#     },
-# }
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+    'loggers': {
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+
+# Celery Configuration
+# CELERY_BROKER_URL = 'redis://127.0.0.1:16379/0'
+# CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL') # Replace with your broker URL
+# CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND') # Replace with your result backend URL
+
+# CELERY_ACCEPT_CONTENT = ['json']
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'

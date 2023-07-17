@@ -31,7 +31,18 @@ class Register(CreateView):
             'ip': [self.request.META.get('REMOTE_ADDR')],
             'block': [],
             }
-        user.save
+        user.save()
+        # Creating a new token for loged user
+        token = create_token()
+        # Checking if the token is not in blacklist
+        token_list = BlacklistToken.objects.values_list('token', flat=True)
+        if token_list and token in token_list:
+            return render(self.request, 'error.html', 
+                          context={'error': 'Niepoprawny token po Logowaniu'})
+        # Set the expire tme of token (30 min)
+        user.fp_token = token
+        user.token_expiration = timezone.now() + timedelta(minutes=30)
+        user.save()
         return super().form_valid(form)
 
 
@@ -44,37 +55,40 @@ class Login(LoginView):
 
     def form_valid(self, form):
         user = form.get_user()
+        # return super().form_valid(form)
         if user.acceptation:
             # Get ip_address of request.user
             ip_address = self.request.META.get('REMOTE_ADDR')
             # List of users IP's
-            stored_ip = user.ip_address.get('ip')  
-            block_ip = user.ip_address.get('block') 
+            if user.ip_address:
+                stored_ip = user.ip_address.get('ip')  
+                block_ip = user.ip_address.get('block') 
              
-            # Check if IP address is in list of accepted IP addresses       
-            if ip_address in stored_ip:
-                # Creating a new token for loged user
-                token = create_token()
-                # Checking if the token is not in blacklist
-                token_list = BlacklistToken.objects.values_list('token', flat=True)
-                if token in token_list:
-                    return render(self.request, 'error.html', 
-                                  context={'error': 'Niepoprawny token po Logowaniu'})
-                user.fp_token = token
-                # Set the expire tme of token (30 min)
-                user.token_expiration = timezone.now() + timedelta(minutes=30)
-                user.save()
-                return super().form_valid(form)
+                # Check if IP address is in list of accepted IP addresses  
+
+                if ip_address in stored_ip:
+                    # Creating a new token for loged user
+                    token = create_token()
+                    # Checking if the token is not in blacklist
+                    token_list = BlacklistToken.objects.values_list('token', flat=True)
+                    if token in token_list:
+                        return render(self.request, 'error.html', 
+                                      context={'error': 'Niepoprawny token po Logowaniu'})
+                    user.fp_token = token
+                    # Set the expire tme of token (30 min)
+                    user.token_expiration = timezone.now() + timedelta(minutes=30)
+                    user.save()
+                    return super().form_valid(form)
             
-            # Check if IP address is in list of blocked IP addresses 
-            elif block_ip:
-                if ip_address in block_ip:
-                    context = {'error': '404'}
-                    return render(self.request, 'error.html', context)
-                    # return redirect('logout')
-            else:
-                check_user_ip_mail(user)
-                return redirect('chack_email')
+                # Check if IP address is in list of blocked IP addresses 
+                elif block_ip:
+                    if ip_address in block_ip:
+                        context = {'error': '404'}
+                        return render(self.request, 'error.html', context)
+                        # return redirect('logout')
+                else:
+                    check_user_ip_mail(user)
+                    return redirect('chack_email')
         else:
             context = {'error': 'Nie zostałeś jeszcze zwerefikowany'}
             return render(self.request, 'error.html', context)
