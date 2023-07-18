@@ -15,7 +15,18 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
-    postgresql-client
+    postgresql-client \
+    -y locales
+
+# Generate the 'pl_PL.UTF-8' locale
+RUN echo "pl_PL.UTF-8 UTF-8" >> /etc/locale.gen && \
+    locale-gen pl_PL.UTF-8
+
+# Set the locale environment variable
+ENV LC_ALL=pl_PL.UTF-8
+ENV LANG=pl_PL.UTF-8
+ENV LANGUAGE=pl_PL.UTF-8
+
 
 # Install Python dependencies
 RUN python -m pip install --upgrade pip

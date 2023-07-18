@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, date
+import json
 from django.utils import timezone
 import locale
 import os
@@ -203,6 +204,22 @@ def task(request):
     
 
 def new_task(request):
+
+    pl_month = {
+        'Jan': 'Sty',
+        'Feb': 'Lut',
+        'Mar': 'Mar',
+        'Apr': 'Kwi',
+        'May': 'Maj',
+        'Jun': 'Cze',
+        'Jul': 'Lip',
+        'Aug': 'Sie',
+        'Sep': 'Wrz',
+        'Oct': 'Paź',
+        'Nov': 'Lis',
+        'Dec': 'Gru',
+    }
+
     if request.method == 'POST':
         date = request.POST.get('date')
         user_pk = request.POST.get('user')
@@ -211,20 +228,24 @@ def new_task(request):
         user = get_object_or_404(CustomUser, id=int(user_pk) )
         work_object = get_object_or_404(WorkObject, id=int(work_object_pk))
 
-        locale.setlocale(locale.LC_TIME, 'pl_PL')  # Polish locale
+        # locale.setlocale(locale.LC_TIME, 'pl_PL')  # Polish locale not work in Container
+
         date = datetime.strptime(date, '%Y-%m-%d') # Ex: '2023-07-07'
         formatted_date = date.strftime('%d %b %Y') # Ex: '07 lipiec 2023'
+        print('pl_month[formatted_date[2:-4].strip()],', pl_month[formatted_date[2:-4].strip()],)
 
         try:
             newTask = Task(
                 date_obj=date,
                 date=formatted_date,
+                abbreviated_month=pl_month[formatted_date[2:-4].strip()],
                 user=user,
                 username=user.username,
                 work_object=work_object,
                 content=content,
             )
             newTask.save()
+            print('new_task_month', newTask.abbreviated_month)
         except Exception as e:
             return render(request,
                           'error.html',
@@ -399,14 +420,46 @@ def schedule(request):
             return render(request,
                           'error.html',
                           context={'error': f'Wystąpił błąd (Grafik): {e}'})
-    locale.setlocale(locale.LC_TIME, 'pl_PL')
-    for task in tasks:
-        date_obj = datetime.strptime(task.date, '%d %b %Y')
-        task.date_obj = date_obj
-        task.save()
-    context = {
-        'tasks': tasks.order_by('date_obj'),
+
+    # Stoped work in Docker:
+    # try:
+    #     locale.setlocale(locale.LC_TIME, 'pl_PL')
+    # except locale.Error as e:
+    #     print(f"Error setting locale: {e}")
+    # else:
+    #     print("Locale set successfully.")
+
+    # Abbreviated_month PL dict
+    pl_month = {
+        'Jan': 'Sty',
+        'Feb': 'Lut',
+        'Mar': 'Mar',
+        'Apr': 'Kwi',
+        'May': 'Maj',
+        'Jun': 'Cze',
+        'Jul': 'Lip',
+        'Aug': 'Sie',
+        'Sep': 'Wrz',
+        'Oct': 'Paź',
+        'Nov': 'Lis',
+        'Dec': 'Gru',
     }
+
+    if tasks:
+        for task in tasks:
+            date_obj = datetime.strptime(task.date, '%d %b %Y')
+            formatted_date = date_obj.strftime('%d %b %Y')
+            # .strip() Remove leading and trailing whitespaces from the formatted_date
+            task.date_obj = date_obj
+            task.abbreviated_month = pl_month[formatted_date[2:-4].strip()]
+            task.save()
+        context = {
+            'tasks': tasks.order_by('date_obj'),
+        }
+    else:
+        context = {
+                'no_tasks': 'Na razie nie ma żadnych zadań',
+            }
     return render(request, 'shedule.html', context)
 
 
@@ -575,7 +628,7 @@ def createWorkObject(request):
             except Exception as e:
                 error = f'Wystąpił błąd: {e}, nie można utworzyć object'
                 return render(request, 'error.html', {'error': error})
-            return redirect('work_objects', request.user.pk)
+            return redirect('work_objects')
         work_none = WorkObject.objects.filter(name=None)
         work_none.delete()
         return redirect('home')
@@ -615,7 +668,6 @@ def createWorkObject(request):
 #************************************************* USER CREATE HIS WORK ***********************************************#
 #**********************************************************************************************************************#
 
-
 def userWork(request, pk):
     if request.method == 'POST':
         date = request.POST.get('date')
@@ -639,7 +691,6 @@ def userWork(request, pk):
         start = datetime(int(year), int(month), int(day), int(start_hr), int(start_min))
         end = datetime(int(year), int(month), int(day), int(finish_hr), int(finish_min))
         diff = end - start
-        
         ### Overtime/day ###
         if diff.seconds > 28800:
             over_time = diff.seconds - 28800
@@ -663,7 +714,6 @@ def userWork(request, pk):
                 wt = f'{dif_hours}:0{dif_min}'
             else:
                 wt = f'{dif_hours}:{dif_min}'
-            print('wt', wt)
 
         ### if overtime/day is "0" ###
         else: 
@@ -684,6 +734,9 @@ def userWork(request, pk):
         prepayment = request.POST.get('prepayment')
         phone_costs = request.POST.get('phone_costs')
         user = CustomUser.objects.get(id=pk)
+        # work_object = WorkObject.objects.get(name=work_object)
+        payment = (user.payment / 3600) * diff.seconds
+        print('PAYMENT', payment, type(payment))
         try:
             work = Work.objects.create()
             work.date = date
@@ -691,7 +744,7 @@ def userWork(request, pk):
             work.timestart = timestart
             work.timefinish = timefinish
             work.diff_time = wt 
-            work.over_time = ot
+            work.over_time = float(ot)
             #############################################
             ### For calculation time without overtime ###
             # if diff.seconds > 28800:                  #
@@ -703,11 +756,11 @@ def userWork(request, pk):
             work.sum_over_time_sec = over_time
             work.work_object = work_object
             work.work_type = work_type
-            work.coffee_food = coffee_food
-            work.prepayment = prepayment
-            work.fuel = fuel
-            work.phone_costs = phone_costs
-            work.payment = round((user.payment / 3600) * diff.seconds, 2)
+            work.coffee_food = float(coffee_food)
+            work.prepayment = float(prepayment)
+            work.fuel = float(fuel)
+            work.phone_costs = float(phone_costs)
+            work.payment = round(payment, 2)
             work.user.add(user)
             work.save()
             return redirect('raports')
@@ -715,71 +768,10 @@ def userWork(request, pk):
             error = f'Nie można zaraportować pracę z powodu błędu: {e}'
             return render(request, 'error.html',
                           context={'error': error})
-    
 
-    else:
-        allworks = Work.objects.prefetch_related('user').order_by('-date')
-        work_objects = WorkObject.objects.filter(user__id=pk)
-        work_type = WorkType.objects.all()
-
-        total_fields = {
-            'total_coffee_food': 'coffee_food',
-            'total_fuel': 'fuel',
-            'total_prepayment': 'prepayment',
-            'total_phone_costs': 'phone_costs',
-            'total_payment': 'payment',
-            'total_sum_time_sec': 'sum_time_sec',
-            'total_sum_over_time_sec': 'sum_over_time_sec'
-        }
-
-        totals = {}
-        for field_name, field in total_fields.items():
-            total = Work.objects.filter(
-                user__id=pk
-                ).aggregate(
-                total=Sum(field)
-                )['total']
-            totals[field_name] = total
-            # if total is not None:
-            #     total = '{:.2f}'.format(total)
-
-        if totals['total_sum_time_sec']:
-            ### total_sum_time_sec => hours:minutes ###
-            total_hours = totals['total_sum_time_sec'] // 3600
-            total_sec = totals['total_sum_time_sec'] % 3600
-            total_min = total_sec // 60
-            if total_min < 10 or total_min == 0.0:
-                total_work_time = f'{int(total_hours)}:0{int(total_min)}'
-            else:
-                total_work_time = f'{int(total_hours)}:{int(total_min)}'
-        else:
-            total_work_time = '0:00'
-
-        if totals['total_sum_over_time_sec']:
-            ### total_sum_over_time_sec => hours:minutes ###
-            total_hours = totals['total_sum_over_time_sec'] // 3600
-            total_sec = totals['total_sum_over_time_sec'] % 3600
-            total_min = total_sec // 60
-            if total_min < 10 or total_min == 0.0:
-                total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
-            else:
-                total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
-        else:
-            total_work_over_time = '0:00'
-
-    context = {
-        'allworks': allworks,
-        'work_objects': work_objects,
-        'work_type': work_type,
-        'total_coffee_food': totals['total_coffee_food'],
-        'total_fuel': totals['total_fuel'],
-        'total_prepayment' : totals['total_prepayment'],
-        'total_phone_costs': totals['total_phone_costs'],
-        'total_payment': totals['total_payment'],
-        'total_work_time': total_work_time,
-        'total_work_over_time': total_work_over_time,
-        }
-    return render(request, 'user_work.html', context)
+    work_objects = WorkObject.objects.filter(user__id=pk).only('name')
+    return render(request, 'user_work.html',
+                  context={'work_objects': work_objects})
 
 
 #**********************************************************************************************************************#
@@ -1145,7 +1137,10 @@ def workObjectRaport(request, user_pk, object_pk):
     totals = {}
     for field_name, field in total_fields.items():
         total = work_by_date.aggregate(total=Sum(field))['total']
-        totals[field_name] = round(total, 2)
+        if total:
+            totals[field_name] = round(total, 2)
+        else:
+            totals[field_name] = 0.00
     
     if request.method == 'POST':
 
@@ -1268,6 +1263,7 @@ def raports(request):
         try:
             works = Work.objects.prefetch_related(Prefetch('user')).order_by('-date')
             work_objects = WorkObject.objects.all()
+            print('WORKS', works)
         except Exception as e:
             error = f'Nie można wyświetlić raport z powodu błędu: {e}'
             return render(request, 'error.html', context=error)
@@ -1275,6 +1271,7 @@ def raports(request):
         try:
             works = Work.objects.prefetch_related(Prefetch('user')).filter(user=request.user).order_by('-date')
             work_objects = WorkObject.objects.filter(user=request.user)
+            print('WORKS', works)
         except Exception as e:
             error = f'Nie można wyświetlić raport z powodu błędu: {e}'
             return render(request, 'error.html', context=error)
@@ -1283,9 +1280,11 @@ def raports(request):
         
     # Totals without filters
     totals = {}
+    total = 0
     for field_name, field in total_fields.items():
-        total = works.aggregate(total=Sum(field))['total']
+        total = works.aggregate(total=Sum(F(field)))['total']
         totals[field_name] = round(total, 2)
+        print(f'totals of {field_name}', totals[field_name])
 
     # Filters
     if request.method == 'POST':
@@ -1500,25 +1499,26 @@ def raports(request):
                 total = works.aggregate(total=Sum(field))['total']
                 totals[field_name] = round(total, 2)
     
-    if totals['total_sum_time_sec']: 
-        ### total_sum_time_sec => hours:minutes ###
-        total_hours = totals['total_sum_time_sec'] // 3600
-        total_sec = totals['total_sum_time_sec'] % 3600
-        total_min = total_sec // 60
-        total_work_time = f'{int(total_hours)}:{int(total_min)}'
-    else:
-        total_work_time = '0:00'
-    if totals['total_sum_over_time_sec']:
-        ### total_sum_over_time_sec => hours:minutes ###
-        total_hours = totals['total_sum_over_time_sec'] // 3600
-        total_sec = totals['total_sum_over_time_sec'] % 3600
-        total_min = total_sec // 60
-        if total_min < 10 or total_min == 0.0:
-            total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
+    if totals:
+        if totals['total_sum_time_sec']: 
+            ### total_sum_time_sec => hours:minutes ###
+            total_hours = totals['total_sum_time_sec'] // 3600
+            total_sec = totals['total_sum_time_sec'] % 3600
+            total_min = total_sec // 60
+            total_work_time = f'{int(total_hours)}:{int(total_min)}'
         else:
-            total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
-    else:
-        total_work_over_time = '0:00'
+            total_work_time = '0:00'
+        if totals['total_sum_over_time_sec']:
+            ### total_sum_over_time_sec => hours:minutes ###
+            total_hours = totals['total_sum_over_time_sec'] // 3600
+            total_sec = totals['total_sum_over_time_sec'] % 3600
+            total_min = total_sec // 60
+            if total_min < 10 or total_min == 0.0:
+                total_work_over_time = f'{int(total_hours)}:0{int(total_min)}'
+            else:
+                total_work_over_time = f'{int(total_hours)}:{int(total_min)}'
+        else:
+            total_work_over_time = '0:00'
 
     paginator = Paginator(works, 35)
     page_number = request.GET.get('page')
@@ -1765,12 +1765,15 @@ def raportsToExcel(request):
             }
     works = request.session.get('works')
     ids = [w['id'] for w in works]
+    print('WORKS!!!!!!!!!!', works)
 
     if request.method == 'POST' or works:
         visible_values = request.POST.getlist('visible_values[]')
         raports = Work.objects.filter(id__in=visible_values)
+        print('RAPORTS - visible_values !!!!!!!!!!', works)
         if works:
             raports = Work.objects.filter(id__in=ids)
+            print('RAPORTS - if works !!!!!!!!!!', works)
 
         # Totals 
     #     totals = {}
@@ -1816,13 +1819,13 @@ def raportsToExcel(request):
     #     totals['total_fuel'] = '0:00'
     #     totals['total_coffee_food'] = '0:00'
 
-        total_coffee_food = raports.aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food']
-        total_fuel = raports.aggregate(total_fuel=Sum('fuel'))['total_fuel']
-        total_prepayment = raports.aggregate(total_prepayment=Sum('prepayment'))['total_prepayment']
-        total_phone_costs = raports.aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs']
-        total_payment = raports.aggregate(total_payment=Sum('payment'))['total_payment']
-        total_sum_time_sec = raports.aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec']
-        total_sum_over_time_sec = raports.aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec']
+        total_coffee_food = float(raports.aggregate(total_coffee_food=Sum('coffee_food'))['total_coffee_food'])
+        total_fuel = float(raports.aggregate(total_fuel=Sum('fuel'))['total_fuel'])
+        total_prepayment = float(raports.aggregate(total_prepayment=Sum('prepayment'))['total_prepayment'])
+        total_phone_costs = float(raports.aggregate(total_phone_costs=Sum('phone_costs'))['total_phone_costs'])
+        total_payment = float(raports.aggregate(total_payment=Sum('payment'))['total_payment'])
+        total_sum_time_sec = float(raports.aggregate(total_sum_time_sec=Sum('sum_time_sec'))['total_sum_time_sec'])
+        total_sum_over_time_sec = float(raports.aggregate(total_sum_over_time_sec=Sum('sum_over_time_sec'))['total_sum_over_time_sec'])
 
         if total_sum_time_sec:
             ### total_sum_time_sec => hours:minutes ###
@@ -2353,11 +2356,12 @@ def allVacationRequests(request):
 
 
 def vacationRequest(request, pk):
+
     req = VacationRequest.objects.filter(
         v_request__id=pk
         ).select_related(
         'v_request'
-        ).values(
+        ).only(
         'v_request__username', 
         'v_request__type', 
         'v_request__date', 
@@ -2366,6 +2370,7 @@ def vacationRequest(request, pk):
         'v_request__days_planned'
         ).first()
   
+    print('VACATIONREQUEST', req.v_request.days_planned)
     vacation = Vacations.objects.get(id=pk)
     type = vacation.type
 

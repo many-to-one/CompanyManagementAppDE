@@ -12,6 +12,7 @@
     </div>
   </div>
   <div id="scheduleCont">
+    {{ no_tasks }}
     {% for task in tasks %}
     <div class="before">
         <div class="label_img_sch">
@@ -24,8 +25,11 @@
             <div id="taskDateImg">
               <div id="taskDateBg">
                 <div id="taskDate">
+                  {% load l10n %}
+                  {% localize on %}
                   <p>{{ task.date|slice:":2" }}</p>
-                  <p>{{ task.date|slice:"2:-4" }}</p>
+                  <p>{{ task.abbreviated_month }}</p>
+                  {% endlocalize %}
                 </div>
                 <p id="taskYear">{{ task.date|slice:"-4:" }}</p>
               </div>

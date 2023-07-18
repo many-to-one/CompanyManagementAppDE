@@ -11,7 +11,7 @@ class Work(models.Model):
     date = models.CharField(
         null=False,
         default='00-00-00',
-        max_length=8,
+        max_length=20,
         verbose_name='Data',
     )
     username = models.CharField(
@@ -37,10 +37,9 @@ class Work(models.Model):
         max_length=5,
         verbose_name='Czas pracy',
     )
-    over_time = models.CharField(
+    over_time = models.FloatField(
         null=True,
-        default='00:00',
-        max_length=5,
+        default=0.00,
         verbose_name='Nadgodziny',
     )
     sum_time_sec = models.FloatField(
@@ -48,10 +47,9 @@ class Work(models.Model):
         default=0.00,
         verbose_name='Czas pracy razem',
     )
-    sum_over_time_sec = models.CharField(
+    sum_over_time_sec = models.FloatField(
         null=True,
-        default='00:00',
-        max_length=5,
+        default=0.00,
         verbose_name='Nadgodziny',
     )
     work_object = models.CharField(
@@ -64,38 +62,38 @@ class Work(models.Model):
         max_length=100,
         verbose_name='Czynność',
     )
-    coffee_food = models.CharField(
-        null=True,
-        # default=0.00,
-        max_length=100,
+    coffee_food = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00,
         verbose_name='Kawa/Posiłki',
     )
-    fuel = models.CharField(
-        null=True,
-        # default=0.00,
-        max_length=100,
+    fuel = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00,
         verbose_name='Paliwo',
     )
-    prepayment = models.CharField(
-        null=True, 
-        # default=0.00,  
-        max_length=100,   
+    prepayment = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00,
         verbose_name='Zaliczka',
     )
-    phone_costs = models.CharField(
-        null=True,
-        # default=0.00,
-        max_length=100,
+    phone_costs = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00,
         verbose_name='Telefon',
     )
-    payment = models.CharField(
-        null=True, 
-        default=0.00,  
-        max_length=100,   
+    payment = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00,
         verbose_name='Kwota',
     )
     payment_hour = models.FloatField(
-        default=0,
+        default=0.00,
         verbose_name='Stawka za godzinę',
     )
     user = models.ManyToManyField(
@@ -143,6 +141,11 @@ class Task(models.Model):
         max_length=15,
         verbose_name='Data',
     )
+    abbreviated_month = models.CharField(
+        null=True,
+        max_length=5,
+        verbose_name='Miesiąc',
+    )
     user = models.ForeignKey(
         CustomUser, 
         related_name='wyconawca',
@@ -178,38 +181,38 @@ class Task(models.Model):
         return self.username
     
 
-# class TotalWorkObject(models.Model):
-#     name = models.CharField(
-#         null=True,
-#         max_length=150,
-#     )
-#     obj_coffee_food = models.CharField(
-#         null=True,
-#         default=0.00,
-#         max_length=100,
-#         verbose_name='Kawa/Posiłki',
-#     )
-#     obj_fuel = models.CharField(
-#         null=True,
-#         default=0.00,
-#         max_length=100,
-#         verbose_name='Paliwo',
-#     )
-#     obj_prepayment = models.CharField(
-#         null=True,   
-#         default=0.00,
-#         max_length=100,   
-#         verbose_name='Zaliczka',
-#     )
-#     obj_phone_costs = models.CharField(
-#         null=True,
-#         default=0.00,
-#         max_length=100,
-#         verbose_name='Telefon',
-#     ) 
-#     work_object = models.ManyToManyField(
-#         WorkObject,
-#     )
+class TotalWorkObject(models.Model):
+    name = models.CharField(
+        null=True,
+        max_length=150,
+    )
+    obj_coffee_food = models.CharField(
+        null=True,
+        default=0.00,
+        max_length=100,
+        verbose_name='Kawa/Posiłki',
+    )
+    obj_fuel = models.CharField(
+        null=True,
+        default=0.00,
+        max_length=100,
+        verbose_name='Paliwo',
+    )
+    obj_prepayment = models.CharField(
+        null=True,   
+        default=0.00,
+        max_length=100,   
+        verbose_name='Zaliczka',
+    )
+    obj_phone_costs = models.CharField(
+        null=True,
+        default=0.00,
+        max_length=100,
+        verbose_name='Telefon',
+    ) 
+    work_object = models.ManyToManyField(
+        WorkObject,
+    )
 
 
 class WorkType(models.Model):
