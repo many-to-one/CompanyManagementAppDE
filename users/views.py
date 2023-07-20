@@ -27,6 +27,9 @@ class Register(CreateView):
 
     def form_valid(self, form):
         user = form.save(commit=False)
+        if user.is_superuser:
+            user.acceptation = True
+            user.save()
         user.ip_address = {
             'ip': [self.request.META.get('REMOTE_ADDR')],
             'block': [],
@@ -55,9 +58,9 @@ class Login(LoginView):
 
     def form_valid(self, form):
         user = form.get_user()
-        if user.is_superuser:
-            user.acceptation = True
-            user.save()
+        # if user.is_superuser:
+        #     user.acceptation = True
+        #     user.save()
         if user.acceptation:
             # Get ip_address of request.user
             ip_address = self.request.META.get('REMOTE_ADDR')

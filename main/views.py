@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta, date
-import json
-from django.utils import timezone
-import locale
+# from decimal import Decimal
+# from django.utils import timezone
 import os
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+
+from .tasks import *
 from .models import (
     VacationRequest, 
     Vacations, 
@@ -17,21 +18,16 @@ from .models import (
     Task
     )
 from django.http import JsonResponse
-from django.db.models import Sum
-from django.db.models import F
+from django.db.models import Sum, F, Prefetch
 from django.contrib import messages
 from users.models import CustomUser
 from django.core.paginator import Paginator
 import openpyxl
 from openpyxl.utils import get_column_letter
 from django.http import HttpResponse
-import uuid
-from main.tasks import add
 
 
 def index(request):
-    # result = add.delay(4, 5)
-    # print('RESUL', result)
     return render(request, "home.html")
 
 
@@ -546,21 +542,24 @@ def chat(request, pk):
     if request.method == 'GET':
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         work_object = get_object_or_404(WorkObject, id=pk)
+        username = request.user.username
 
         # Update is_read flag for messages
         try:
-            read_messages = Message.objects.filter(work_object=work_object)
-            read_filter = Q(message__in=read_messages) & Q(username=request.user.username)
-            IsRead.objects.filter(read_filter).update(is_read=True)
+            messages_results = update_is_read_flag.delay(pk, username)
+            messages = messages_results.get()
         except Exception as e:
             error = f'Wystąpił błąd: {e}, nie można wyświetlić wiadomości'
             return render(request, 'error.html', {'error': error})
-
-        messages = read_messages.values()
+        
+        # Add 'is_read' field to each message dictionary
+        for message in messages:
+            is_read = IsRead.objects.filter(message_id=message['id'], username=username).first()
+            message['is_read'] = is_read.is_read if is_read else False
 
         response = {
             'user': request.user.username,
-            'messages': list(messages),
+            'messages': messages,
             'current_time': current_time,
         }
         return JsonResponse(response)
@@ -1246,7 +1245,7 @@ def workObjectRaport(request, user_pk, object_pk):
 #****************************************************** ALL RAPORTS ***************************************************#
 #**********************************************************************************************************************#
 
-from django.db.models import Prefetch
+
 def raports(request):
 
     total_fields = {
@@ -1261,30 +1260,34 @@ def raports(request):
     
     if request.user.is_superuser:
         try:
-            works = Work.objects.prefetch_related(Prefetch('user')).order_by('-date')
-            work_objects = WorkObject.objects.all()
-            print('WORKS', works)
+            works_result = raports_all_superuser.delay()
+            works = works_result.get()
+            work_objects = WorkObject.objects.all().only('name')
         except Exception as e:
             error = f'Nie można wyświetlić raport z powodu błędu: {e}'
-            return render(request, 'error.html', context=error)
+            return render(request, 'error.html', context={'error': error})
     else:
         try:
-            works = Work.objects.prefetch_related(Prefetch('user')).filter(user=request.user).order_by('-date')
-            work_objects = WorkObject.objects.filter(user=request.user)
-            print('WORKS', works)
+            works_result = raports_all.delay(request.user.id)
+            works = works_result.get()
+            work_objects = WorkObject.objects.filter(user=request.user).only('name')
         except Exception as e:
             error = f'Nie można wyświetlić raport z powodu błędu: {e}'
-            return render(request, 'error.html', context=error)
+            return render(request, 'error.html', context={'error': error})
         
     users = CustomUser.objects.all().values('id', 'username')
         
+    print('WORKS-VIEW-FIRST-OPEN', works)
     # Totals without filters
     totals = {}
-    total = 0
-    for field_name, field in total_fields.items():
-        total = works.aggregate(total=Sum(F(field)))['total']
-        totals[field_name] = round(total, 2)
-        print(f'totals of {field_name}', totals[field_name])
+    if works:
+        for field_name, field in total_fields.items():
+            # total = works.aggregate(total=Sum(F(field)))['total']
+            total = sum(work[field] for work in works)
+            totals[field_name] = round(total, 2)
+    else:
+        for field_name, field in total_fields.items():
+            totals[field_name] = 0.00
 
     # Filters
     if request.method == 'POST':
@@ -1300,6 +1303,37 @@ def raports(request):
         work_object = request.POST.get('work_object')
 
         #####################################################################################
+        #######################################  ALL  #######################################
+        #####################################################################################
+
+        # if sorted_from and user and work_object == '':
+        #     try:
+        #         works = Work.objects.all().order_by('-date')
+        #         # Convert Decimal values to float using dictionary comprehension
+        #         works_dict = [work.__dict__ for work in works]
+        #         works = [
+        #             {key: float(value) if isinstance(value, Decimal) 
+        #              else value for key, value in work.items() 
+        #              if key != '_state'} 
+        #              for work in works_dict
+        #             ]
+        #     except Exception as e:
+        #         error = f'Nie można wyświetlić raport z powodu błędu: {e}'
+        #         return render(request, 'error.html', context=error)
+        #     ### Making the excel file of raports ###
+        #     if user == '' and work_object == '' and sorted_from == '':
+        #         filterRaport = request.POST.get('filterRaport')
+        #         if filterRaport == 'download':
+        #             request.session['works'] = list(works)
+        #             return redirect('raportsToExcel')
+            
+        #     # Totals 
+        #     totals = {}
+        #     for field_name, field in total_fields.items():
+        #         total = works.aggregate(total=Sum(field))['total']
+        #         totals[field_name] = round(total, 2)
+
+        #####################################################################################
         ###################################  SORTED FROM  ###################################
         #####################################################################################
 
@@ -1309,24 +1343,27 @@ def raports(request):
             year_, month_, day_ = sorted_to.split('-')
             start = datetime(int(year), int(month), int(day))
             end = datetime(int(year_), int(month_), int(day_))
+
+            # Call task from task.py
             try:
-                works = Work.objects.prefetch_related('user').filter(
-                    date__range=(start, end),
-                ).order_by('-date')
+                works_task = raports_sorted_from.delay(start, end)
+                works = works_task.get()
             except Exception as e:
                 error = f'Nie można wyświetlić raport z powodu błędu: {e}'
-                return render(request, 'error.html', context=error)
+                return render(request, 'error.html', context={'error': error})
+
             ### Making the excel file of raports ###
             if user == '' and work_object == '':
                 filterRaport = request.POST.get('filterRaport')
                 if filterRaport == 'download':
-                    request.session['works'] = list(works.values())
+                    request.session['works'] = list(works)
                     return redirect('raportsToExcel')
             
             # Totals 
             totals = {}
             for field_name, field in total_fields.items():
-                total = works.aggregate(total=Sum(field))['total']
+                # total = works.aggregate(total=Sum(field))['total']
+                total = sum(work[field] for work in works)
                 totals[field_name] = round(total, 2)
 
 
@@ -1335,22 +1372,25 @@ def raports(request):
         #####################################################################################
 
         if user:
+            # Call task from task.py
             try:
-                works = Work.objects.filter(username=user).order_by('-date')
+                works_result = raports_user.delay(user)
+                works = works_result.get()
             except Exception as e:
                 error = f'Nie można wyświetlić raport z powodu błędu: {e}'
-                return render(request, 'error.html', context=error)
+                return render(request, 'error.html', context={'error': error})
             if sorted_from == '' and work_object == '':
                 ### Making the excel file of raports ###
                 filterRaport = request.POST.get('filterRaport')
                 if filterRaport == 'download':
-                    request.session['works'] = list(works.values())
+                    request.session['works'] = list(works)
                     return redirect('raportsToExcel')
             
             # Totals 
             totals = {}
             for field_name, field in total_fields.items():
-                total = works.aggregate(total=Sum(field))['total']
+                # total = works.aggregate(total=Sum(field))['total']
+                total = sum(work[field] for work in works)
                 totals[field_name] = round(total, 2)
 
 
@@ -1359,23 +1399,26 @@ def raports(request):
         #####################################################################################
 
         if work_object: 
-            wo = get_object_or_404(WorkObject, id=work_object)
+
+            # Call task from task.py
             try:
-                works = Work.objects.filter(work_object=wo.name).order_by('-date')
+                works_result = raports_work_object.delay(work_object)
+                works = works_result.get()
             except Exception as e:
                 error = f'Nie można wyświetlić raport z powodu błędu: {e}'
-                return render(request, 'error.html', context=error)
+                return render(request, 'error.html', context={'error': error})
             if sorted_from == '' and user == '':
                 ### Making the excel file of raports ###
                 filterRaport = request.POST.get('filterRaport')
                 if filterRaport == 'download':
-                    request.session['works'] = list(works.values())
+                    request.session['works'] = list(works)
                     return redirect('raportsToExcel')
             
             # Totals 
             totals = {}
             for field_name, field in total_fields.items():
-                total = works.aggregate(total=Sum(field))['total']
+                # total = works.aggregate(total=Sum(field))['total']
+                total = sum(work[field] for work in works)
                 totals[field_name] = round(total, 2)
 
 
@@ -1389,27 +1432,27 @@ def raports(request):
             year_, month_, day_ = sorted_to.split('-')
             start = datetime(int(year), int(month), int(day))
             end = datetime(int(year_), int(month_), int(day_))
-            wo = get_object_or_404(WorkObject, id=work_object)
+
+            # Call task from task.py
             try:
-                works = Work.objects.prefetch_related('user').filter(
-                    date__range=(start, end),
-                    work_object=wo.name,
-                ).order_by('-date')
+                works_result = raports_sorted_from_work_object.delay(start, end, work_object)
+                works = works_result.get()
+                print('WORKS-VIEW', works)
             except Exception as e:
                 error = f'Nie można wyświetlić raport z powodu błędu: {e}'
-                return render(request, 'error.html', context=error)
+                return render(request, 'error.html', context={'error': error})
             if user == '':
                 ### Making the excel file of raports ###
                 filterRaport = request.POST.get('filterRaport')
                 if filterRaport == 'download':
-                    request.session['works'] = list(works.values())
+                    request.session['works'] = list(works)
                     return redirect('raportsToExcel')
             
 
             # Totals 
             totals = {}
             for field_name, field in total_fields.items():
-                total = works.aggregate(total=Sum(field))['total']
+                total = sum(work[field] for work in works)
                 totals[field_name] = round(total, 2)
 
 
@@ -1423,25 +1466,25 @@ def raports(request):
             year_, month_, day_ = sorted_to.split('-')
             start = datetime(int(year), int(month), int(day))
             end = datetime(int(year_), int(month_), int(day_))
+
+            # Call task from task.py
             try:
-                works = Work.objects.filter(
-                    date__range=(start, end),
-                    username=user,
-                ).order_by('-date')
+                works_result = raports_sorted_from_user.delay(start, end, user)
+                works = works_result.get()
             except Exception as e:
                 error = f'Nie można wyświetlić raport z powodu błędu: {e}'
-                return render(request, 'error.html', context=error)
+                return render(request, 'error.html', context={'error': error})
             if work_object == '':
                 ### Making the excel file of raports ###
                 filterRaport = request.POST.get('filterRaport')
                 if filterRaport == 'download':
-                    request.session['works'] = list(works.values())
+                    request.session['works'] = list(works)
                     return redirect('raportsToExcel')
 
             # Totals 
             totals = {}
             for field_name, field in total_fields.items():
-                total = works.aggregate(total=Sum(field))['total']
+                total = sum(work[field] for work in works)
                 totals[field_name] = round(total, 2)
 
 
@@ -1450,26 +1493,25 @@ def raports(request):
         #####################################################################################
 
         if work_object and user:
-            wo = get_object_or_404(WorkObject, id=work_object)
+
+            # Call task from task.py
             try:
-                works = Work.objects.filter(
-                    work_object=wo.name,
-                    username=user
-                    ).order_by('-date')
+                works_result = raports_work_object_user.delay(work_object, user)
+                works = works_result.get()
             except Exception as e:
                 error = f'Nie można wyświetlić raport z powodu błędu: {e}'
-                return render(request, 'error.html', context=error)
+                return render(request, 'error.html', context={'error': error})
             if sorted_from == '':
                 ### Making the excel file of raports ###
                 filterRaport = request.POST.get('filterRaport')
                 if filterRaport == 'download':
-                    request.session['works'] = list(works.values())
+                    request.session['works'] = list(works)
                     return redirect('raportsToExcel')
 
             # Totals 
             totals = {}
             for field_name, field in total_fields.items():
-                total = works.aggregate(total=Sum(field))['total']
+                total = sum(work[field] for work in works)
                 totals[field_name] = round(total, 2)
 
 
@@ -1478,25 +1520,23 @@ def raports(request):
         #####################################################################################  
 
         if sorted_from and user and work_object:
-            wo = get_object_or_404(WorkObject, id=work_object)
+
+            # Call task from task.py
             try:
-                works = Work.objects.filter(
-                    date__range=(start, end),
-                    work_object=wo.name,
-                    username=user,
-                ).order_by('-date')
+                works_result = raports_sorted_from_work_object_user.delay(start, end, work_object, user)
+                works = works_result.get()
             except Exception as e:
                 error = f'Nie można wyświetlić raport z powodu błędu: {e}'
-                return render(request, 'error.html', context=error)
+                return render(request, 'error.html', context={'error': error})
             ### Making the excel file of raports ###
             filterRaport = request.POST.get('filterRaport')
             if filterRaport == 'download':
-                request.session['works'] = list(works.values())
+                request.session['works'] = list(works)
                 return redirect('raportsToExcel')
             # Totals 
             totals = {}
             for field_name, field in total_fields.items():
-                total = works.aggregate(total=Sum(field))['total']
+                total = sum(work[field] for work in works)
                 totals[field_name] = round(total, 2)
     
     if totals:
@@ -1533,7 +1573,7 @@ def raports(request):
         totals['total_payment'],
         totals['total_phone_costs'],
         totals['total_fuel'],
-        totals['total_coffee_food']
+        totals['total_coffee_food'],
     ]
 
     if any(element is not None for element in total_lists):
@@ -1765,15 +1805,12 @@ def raportsToExcel(request):
             }
     works = request.session.get('works')
     ids = [w['id'] for w in works]
-    print('WORKS!!!!!!!!!!', works)
 
     if request.method == 'POST' or works:
         visible_values = request.POST.getlist('visible_values[]')
         raports = Work.objects.filter(id__in=visible_values)
-        print('RAPORTS - visible_values !!!!!!!!!!', works)
         if works:
             raports = Work.objects.filter(id__in=ids)
-            print('RAPORTS - if works !!!!!!!!!!', works)
 
         # Totals 
     #     totals = {}
@@ -1848,8 +1885,6 @@ def raportsToExcel(request):
             total_work_over_time = '0:00'
 
         total = total_coffee_food + total_fuel + total_phone_costs + total_payment
-
-
 
         wb = openpyxl.Workbook()
 

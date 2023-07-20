@@ -39,10 +39,8 @@ COPY . /projects/Adest
 # Run database migrations and collect static files
 WORKDIR /projects/Adest
 
-# RUN python manage.py migrate
-# RUN python manage.py migrate
-
-# RUN python manage.py collectstatic --no-input
+# Set the environment variable for Celery broker URL
+ENV CELERY_BROKER_URL redis://redis:6379/0
 
 # Expose the Django development server port
 EXPOSE 8000

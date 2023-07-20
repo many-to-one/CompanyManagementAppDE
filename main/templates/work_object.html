@@ -309,17 +309,22 @@
                 success: function(response){
                     $('#chato').empty();
                     for (var key in response.messages){
+                        if(response.messages[key].is_read == true){
+                            var isRead = '<img src="{% static "images/is_read.png" %}" width="20" height="15">'
+                        }else{
+                            var isRead = '<img src="{% static "images/un_read.png" %}" width="20" height="15">'
+                        }
                        if(response.user === response.messages[key].name){
                             var data= '<p class="r">'+Ty+'</p>'+
                                     '<div class="chat_label_r">'+
                                         '<p class="chat_content">'+response.messages[key].content+'</p>'+
-                                        '<p class="chat_time">'+response.messages[key].day+response.messages[key].time+'</p>'+
+                                        '<p class="chat_time">'+response.messages[key].day+response.messages[key].time+" "+isRead+'</p>'+
                                     '</div>'
                         }else{
                             var data='<p class="l">'+response.messages[key].name+'</p>'+
                                     '<div class="chat_label_l">'+
                                         '<p class="chat_content">'+response.messages[key].content+'</p>'+
-                                        '<p class="chat_time">'+response.messages[key].day+response.messages[key].time+'</p>'+
+                                        '<p class="chat_time">'+response.messages[key].day+response.messages[key].time+" "+isRead+'</p>'+
                                     '</div>'
                         }
                                 

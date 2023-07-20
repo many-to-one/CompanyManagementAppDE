@@ -118,16 +118,16 @@
                         <td class="nch" data-label="Paliwo">{{work.fuel}}</td>
                         <td class="ch" data-label="Telefon">{{work.phone_costs}}</td>
                         <td class="nch" data-label="Opłata">{{work.payment}}</td>
-                            <td class="ch">
-                                <a class="label_img" href="{% url 'update_user_work' work.pk %}" >
-                                    <img src="{% static 'images/edit.png' %}" width="20" height="20">
-                                </a>
-                            </td>
-                            <td class="nch">
-                                <a class="label_img" href="{% url 'deleteUserWorkQuastion' work.pk %}">
-                                    <img src="{% static 'images/delete.png' %}" width="20" height="20">
-                                </a>
-                            </td>
+                        <td class="ch">
+                            <a class="label_img" href="{% url 'update_user_work' work.id %}" >
+                                <img src="{% static 'images/edit.png' %}" width="20" height="20">
+                            </a>
+                        </td>
+                        <td class="nch">
+                            <a class="label_img" href="{% url 'deleteUserWorkQuastion' work.id %}">
+                                <img src="{% static 'images/delete.png' %}" width="20" height="20">
+                            </a>
+                        </td>
                     </tr>
                 {% endfor %}
                     <tr>
