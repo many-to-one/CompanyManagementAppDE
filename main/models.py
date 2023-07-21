@@ -37,9 +37,10 @@ class Work(models.Model):
         max_length=5,
         verbose_name='Czas pracy',
     )
-    over_time = models.FloatField(
+    over_time = models.CharField(
         null=True,
-        default=0.00,
+        default='00:00',
+        max_length=5,
         verbose_name='Nadgodziny',
     )
     sum_time_sec = models.FloatField(

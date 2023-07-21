@@ -1,0 +1,64 @@
+h2 {
+    margin-top: 20px;
+}
+
+.add_vacations_grafic_container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+    width: 60vw;
+    height: auto;
+    background-color: var(--input-bg-color);
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.field {
+    background-color: var(--main-bg-color);
+    width: 220px;
+    height: 20px;
+    padding: 10px;
+    margin: 10px;
+    border-radius: 10px;
+}
+
+@media screen and (max-width: 1180px) {
+    .add_vacations_grafic_container {
+        margin-top: 30px;
+        width: 64vw;
+        height: auto;
+        background-color: var(--input-bg-color);
+        padding: 10px;
+        border-radius: 10px;
+    }
+
+    .field {
+        background: transparent;
+        width: 220px;
+        height: 0px;
+        padding: 0px;
+        margin: 0px;
+        border-radius: 0px;
+    }
+}
+
+/* add_vacations_grafic_container p */
+
+.vacations_btn {
+    padding: 5px;
+    margin-top: 20px;
+    background-color: var(--btn-bg-color);
+    border: var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    width: 220px;
+    height: 40px;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+
+.btn_cont {
+    display: flex;
+    justify-content: center;
+}

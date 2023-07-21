@@ -46,4 +46,5 @@ ENV CELERY_BROKER_URL redis://redis:6379/0
 EXPOSE 8000
 
 # Run the Django development server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD gunicorn Adest.wsgi:application --bind 0.0.0.0:8000

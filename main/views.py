@@ -700,6 +700,7 @@ def userWork(request, pk):
                 ot = f'{over_hours}:0{over_min}'
             else:
                 ot = f'{over_hours}:{over_min}'
+                ot = float
             ### To calculate only 8:00 hours###
             # dif_hours = 28800 // 3600       #
             # dif_sec = 28800 % 3600          #
@@ -743,7 +744,7 @@ def userWork(request, pk):
             work.timestart = timestart
             work.timefinish = timefinish
             work.diff_time = wt 
-            work.over_time = float(ot)
+            work.over_time = ot
             #############################################
             ### For calculation time without overtime ###
             # if diff.seconds > 28800:                  #
@@ -761,7 +762,12 @@ def userWork(request, pk):
             work.phone_costs = float(phone_costs)
             work.payment = round(payment, 2)
             work.user.add(user)
-            work.save()
+            try:
+                work.save()
+            except Exception as e:
+                error = f'Nie można zaraportować pracę z powodu błędu: {e}'
+                return render(request, 'error.html',
+                              context={'error': error})
             return redirect('raports')
         except Exception as e:
             error = f'Nie można zaraportować pracę z powodu błędu: {e}'

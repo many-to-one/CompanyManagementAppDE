@@ -28,7 +28,7 @@ services:
     command: >
       bash -c "python manage.py migrate &&
                python manage.py collectstatic --noinput &&
-               python manage.py runserver 0.0.0.0:8000"
+               gunicorn Adest.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - ./projects:/app/Adest
     ports:

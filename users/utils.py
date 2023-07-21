@@ -31,16 +31,15 @@ def blacklist_token(token):
     token_to_blacklist = BlacklistToken(
         token=token
     )
+    if token_to_blacklist.token == token:
+        BlacklistToken.objects.filter(
+            token=token
+        ).update(
+            token=token
+        )
     token_to_blacklist.save()
 
 def forgot_password_mail(email, user):
-    # now = datetime.now()
-    # year = now.year
-    # month = now.strftime("%m")
-    # day = now.strftime("%d")
-    # hour = now.strftime("%H")
-    # minute = now.strftime("%M")
-    # token=f'{str(uuid.uuid4())}{year}{str(uuid.uuid4())}{month}{str(uuid.uuid4())}{day}{str(uuid.uuid4())}{hour}{str(uuid.uuid4())}{minute}'
     token = create_token()
     uidb64=urlsafe_base64_encode(force_bytes(user.pk))
     absurl = f'http://127.0.0.1/8000/users/change_password/{token}/{uidb64}/'

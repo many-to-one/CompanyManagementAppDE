@@ -160,15 +160,51 @@ def raports_sorted_from_work_object_user(start, end, work_object_id, user):
 def update_is_read_flag(work_object_id, username):
     work_object = get_object_or_404(WorkObject, id=work_object_id)
     try:
+        # All messages in current work object
         read_messages = Message.objects.filter(work_object=work_object)
+        # All messages in current object for user who open the chat
         read_filter = Q(message__in=read_messages) & Q(username=username)
-        read_for_others = IsRead.objects.filter(
-                work_object=work_object,
-                is_read=False,
-            ).exclude(username=username)
-        if read_for_others.count() > 0:
-            IsRead.objects.filter(read_filter).exclude(message__sender__username=username).update(is_read=True)
+
+        # Count of unread messages only for recipients
+        unread_messages = Message.objects.filter(
+            work_object=work_object, 
+            isread__is_read=False
+            )
+        sender = ''
+        for um in unread_messages:
+            sender = um.sender.username
+        
+        print('SENDER', sender)
+
+        unread_messages_count = IsRead.objects.filter(
+            work_object=work_object,
+            is_read=False,
+        ).exclude(
+            username=sender
+        ).count()
+        print('UNREAD MESSAGES', unread_messages_count)
+
+        if unread_messages_count > 0:
+
+            if username != sender:
+                read_by_someone = IsRead.objects.filter(
+                    work_object=work_object, 
+                    message__in=unread_messages,
+                    username=username,
+                    ).exclude(
+                    username=sender
+                    ).update(
+                    is_read=True
+                    )
+                if read_by_someone:
+                    print('READ BY SOMEONE')
+                    # If even one person have read the message, 
+                    # all messages marks is_read also for sender
+                    IsRead.objects.filter(read_filter).update(is_read=True)
+                    print('READ BY SOMEONE UPDATE IS READ FOR ALL?')
         else:
+            print('UPDATE IS READ FOR ALL?')
+            # All messages in current work object marks like is_read
             IsRead.objects.filter(read_filter).update(is_read=True)
         messages = read_messages.values()
     except WorkObject.DoesNotExist:

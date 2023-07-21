@@ -1,0 +1,28 @@
+.row-container {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    /* gap: 10%; */
+    margin: 50px;
+    margin-left: 15%;
+    justify-content: center;
+    width: 70%;
+}
+
+.home_part {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    background: transparent;
+    border-radius: 10px;
+    width: 200px;
+    height: 300px;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+    cursor: pointer;
+    margin: 5%;
+}
+
+.home_part p {
+    color: black;
+}
