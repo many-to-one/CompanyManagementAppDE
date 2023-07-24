@@ -28,9 +28,10 @@ services:
     command: >
       bash -c "python manage.py migrate &&
                python manage.py collectstatic --noinput &&
-               gunicorn Adest.wsgi:application --bind 0.0.0.0:8000"
+               gunicorn Adest.wsgi:application --bind 0.0.0.0:8000 --workers 3 --error-logfile ${GUNICORN_ERROR_LOGFILE}"
     volumes:
       - ./projects:/app/Adest
+      - ./logs:/app
     ports:
       - "8000:8000"
     depends_on:
@@ -51,7 +52,7 @@ services:
       dockerfile: Dockerfile
     container_name: celery
     hostname: celery
-    command: celery -A Adest worker -l info --concurrency 4 --uid=nobody
+    command: celery -A Adest worker -l info --concurrency 1 --uid=nobody
     volumes:
       - ./projects:/app/Adest
     env_file:

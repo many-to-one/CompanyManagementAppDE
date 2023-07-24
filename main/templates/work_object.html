@@ -106,7 +106,18 @@
             <!-- ##################### END OF LABEL FOR EACH USER ##################### -->
 
             <!-- ##################### CHAT ##################### -->
-            <h1>Czat</h1>
+            <div class="row_cont_in_label">
+                <h1>Czat</h1>
+                {% if request.user.is_superuser %}
+                    <img 
+                        src="{% static 'images/delete.png' %}"
+                        width="20"
+                        height="20"
+                        onclick="deleteQuestionMessages('{{work_object}}')"
+                    >
+                {% endif %}
+            </div>
+
             <h1 id="currentDate"></h1>
 
             <div class="chat_container">
@@ -384,8 +395,6 @@
     var pageCont = document.getElementById('pageCont')
     var deleteTaskBtn = document.getElementById('deleteTaskBtn')
     function showTasks(user, work_object){
-        console.log('user', user)
-        console.log('work_object', work_object)
         //GET
         $.ajax({
             type: 'GET',
@@ -482,10 +491,7 @@
         event.preventDefault();
         var datetimepickerValue = document.getElementById("datetimepickerTask").value;
         var content = document.getElementById("content").value;
-        console.log('newuser', user)
-        console.log('new_work_object', work_object)
         //POST
-        console.log('content', content)
         $.ajax({
             type: 'POST',
             url: "{% url 'new_task'  %}",
@@ -497,12 +503,11 @@
                   'csrfmiddlewaretoken': '{{ csrf_token }}'
               },
               success: (data) => {
-                console.log('TASKS', data)
                 content.value = '';
                 showTasks(user, work_object)
               },
               error: (data) => {
-                  console.log('error', data)
+                  alert('error', data)
               }     
         })
     }
@@ -515,7 +520,6 @@
 
     // Finish the task
     function doneTask(pk, user, work_object){
-        console.log('pk', pk)
         $.ajax({
             type: 'POST',
             url: "{% url 'doneTask' %}",
@@ -533,6 +537,80 @@
             error: function(response) {
                   alert('Błąd:', response.message)
             }  
+        })
+    }
+
+
+    // Question for deleting all messages
+    function deleteQuestionMessages(work_object){
+
+        $.ajax({
+            type: 'GET',
+            url: "{% url 'deleteQuestionMessages' %}",
+            success: function(response){
+                if(response.message === 'ok'){
+                    console.log('response.message', response.message)
+                    var deleteQuestion = document.getElementById('deleteQuestion')
+                    deleteQuestion.style.display = 'flex';
+                    var data = '<div id="questCont">'+
+                                    '<p>'+"Usunąć wszystkie wiadomości?"+'</p>'+
+                                    '<div class="row_cont_in_label">'+
+                                        '<button class="btn" onclick="deleteAllMessagesWO('+work_object+')">'+
+                                            '<a>'+"Tak"+'</a>'+
+                                        '</button>'+
+                                        '<button class="btn" onclick="closeQuestionDelete()">'+
+                                            '<a>'+"Nie"+'</a>'+
+                                        '</button>'+
+                                    '</div>'+
+                                '</div>';
+                        $('#deleteQuestion').html(data)
+                }else{
+                    alert(response.message)
+                }
+
+            },
+            error: function(response){
+                  alert('Wystąpił błąd')
+            } 
+        })
+
+    }
+
+
+    // Delete all messages in chat
+    function deleteAllMessagesWO(work_object){
+        console.log('work_object', work_object)
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'deleteAllMessagesWO' %}",
+            data: {
+                'work_object': work_object
+            },
+            headers: {
+              'X-CSRFToken': '{{ csrf_token }}'
+            },
+            success: function(response){
+                if(response.message === 'ok'){
+                    var deleteQuestion = document.getElementById('deleteQuestion')
+                    deleteQuestion.style.display = 'flex';
+                    var data = '<div id="questCont">'+
+                                    '<p>'+response.content+'</p>'+
+                                    // '<div class="row_cont_in_label">'+
+                                    //     '<button class="btn" onclick="closeQuestionDelete()">'+
+                                    //         '<a>'+"Ok"+'</a>'+
+                                    //     '</button>'+
+                                    // '</div>'+
+                                '</div>';
+                        $('#deleteQuestion').html(data)
+                        location.reload();
+                }else{
+                    alert(response.message)
+                }
+
+            },
+            error: function(response){
+                  alert('Błąd:', + response.responseJSON.message)
+            } 
         })
     }
 
@@ -594,6 +672,7 @@
     function closeQuestionDelete(){
         deleteQuestion.style.display = 'none';
         tasks_container.style.display = 'flex';
+        location.reload();
     }
         
     </script>  

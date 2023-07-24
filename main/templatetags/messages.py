@@ -4,9 +4,9 @@ from ..models import IsRead, Message
 register = template.Library()
 
 @register.simple_tag
-def messages_quantity(username, work_object):
+def messages_quantity(user, work_object):
     quantity = IsRead.objects.filter(
-        username=username,
+        username=user.username,
         work_object=work_object,
         is_read=False,
     )
@@ -14,10 +14,11 @@ def messages_quantity(username, work_object):
     # According to the logic in test.py: update_is_read_flag()
     # sending's message for sender also marks unread, here we
     # need to find this(thouse) message(s)
-    sender_message = Message.objects.filter(
+    sender_message = IsRead.objects.filter(
         work_object=work_object,
-        isread__is_read=False,
-        sender__username=username
+        is_read=False,
+        username=user.username,
+        message__sender=user,
     )
     # And gere we need to set count for unread messages
     # for sender 0, because his message is also marked 
@@ -29,18 +30,19 @@ def messages_quantity(username, work_object):
 
 
 @register.simple_tag
-def all_messages_quantity(username):
+def all_messages_quantity(user):
     quantity = IsRead.objects.filter(
-        username=username,
+        username=user.username,
         is_read=False,
     )
 
     # According to the logic in test.py: update_is_read_flag()
     # sending's message for sender also marks unread, here we
     # need to find this(thouse) message(s)
-    sender_message = Message.objects.filter(
-        isread__is_read=False,
-        sender__username=username
+    sender_message = IsRead.objects.filter(
+        is_read=False,
+        username=user.username,
+        message__sender=user,
     )
     # And gere we need to set count for unread messages
     # for sender 0, because his message is also marked 

@@ -1,7 +1,9 @@
+import ast
 from datetime import datetime, timedelta, date
-# from decimal import Decimal
-# from django.utils import timezone
+import json
+from django.core import serializers
 import os
+import re
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -333,24 +335,68 @@ def doneTask(request):
     return JsonResponse(response)
 
 
-def deleteTaskQuestion(request):
+def deleteQuestionMessages(request):
+    if request.method == 'GET':
+        response = {'message': 'ok',}    
+    return JsonResponse(response)    
+
+
+def deleteAllMessagesWO(request):
     if request.method == 'POST':
-        pk = request.POST.get('pk')
+        work_object = request.POST.get('work_object')
+        print('work_object', work_object)
         try:
-            task = Task.objects.get(id=int(pk))
-            if task is not None:
+            messages = Message.objects.filter(work_object=work_object)
+            if messages is not None:
+                messages.delete()
                 response = {
-                    'message': 'ok'
+                    'message': 'ok',
+                    'content': 'Wiadomości zostały usunięte'
                 }
             else:
                 response = {
-                    'message': 'Zadania nie istnieje'
+                    'message': 'Nie ma żadnych wiadomości do usunięcia'
                 }
         except Exception as e:
             response = {
                 'message': e
             }
     return JsonResponse(response)
+
+
+def deleteTaskQuestion(request):
+    if request.method == 'POST':
+        pk = request.POST.get('pk')
+        try:
+            if pk.startswith('['):
+                # Extract the task IDs with ast
+                ids = ast.literal_eval(pk)
+                tasks = Task.objects.filter(id__in=ids)
+                if tasks.exists():
+                    response = {
+                        'message': 'ok'
+                    }
+                else:
+                    response = {
+                        'message': 'Zadania nie istnieje'
+                    }
+            else:
+                # Assume pk is a single id (when it's not a JSON-encoded array)
+                task = Task.objects.get(id=int(pk))
+                if task is not None:
+                    response = {
+                        'message': 'ok'
+                    }
+                else:
+                    response = {
+                        'message': 'Zadania nie istnieje'
+                    }
+        except Exception as e:
+            response = {
+                'message': str(e) 
+            }
+    return JsonResponse(response)
+
 
 
 def deleteTask(request):
@@ -403,6 +449,10 @@ def schedule(request):
     if user.is_superuser:
         try:
             tasks = Task.objects.all().prefetch_related('work_object')
+            done_tasks = Task.objects.filter(done=True).only('id')
+            task_ids = list(done_tasks.values_list('id', flat=True))
+            print('done_tasks!!!!!!!!!', task_ids)
+            # done_tasks_json = serializers.serialize('json', done_tasks)
         except Exception as e:
             return render(request,
                           'error.html',
@@ -417,7 +467,7 @@ def schedule(request):
                           'error.html',
                           context={'error': f'Wystąpił błąd (Grafik): {e}'})
 
-    # Stoped work in Docker:
+    # This code stoped work in Docker:
     # try:
     #     locale.setlocale(locale.LC_TIME, 'pl_PL')
     # except locale.Error as e:
@@ -452,11 +502,32 @@ def schedule(request):
         context = {
             'tasks': tasks.order_by('date_obj'),
         }
+        if done_tasks:
+            context = {
+                'tasks': tasks.order_by('date_obj'),
+                'done_tasks': task_ids,
+            }
     else:
         context = {
                 'no_tasks': 'Na razie nie ma żadnych zadań',
             }
+
     return render(request, 'shedule.html', context)
+
+
+def deleteAllDoneTasksQuestion(request):
+    if request.method == 'GET':
+        try:
+            Task.objects.filter(done=True).delete()
+            response = {
+                'message': 'ok',
+                'content': 'Wszystkie zakończone zadania zostały usunięte'
+            }
+        except Exception as e:
+            response = {
+                'message': e
+            }
+    return JsonResponse(response)
 
 
 def deleteUserFromObjectQuestion(request, user_pk, work_object_pk):

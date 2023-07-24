@@ -30,7 +30,7 @@
         {% endif %}
         <div class="block"><a href="">Logo</a></div>
         {% if request.user.is_authenticated %}
-            <div class="block"><a>Witaj, {{ request.user.username }}</a></div>
+            <div class="block"><a>Witaj, {{ request.user }}</a></div>
         {% endif %}
         <div class="block">
             <ul class="navbar">

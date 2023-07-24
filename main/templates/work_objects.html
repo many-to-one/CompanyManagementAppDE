@@ -49,7 +49,7 @@
                             <img src="{% static 'images/letters.png' %}" width="30" height="25">
                         </a>
                                 
-                            {% messages_quantity request.user.username wo as count %}
+                            {% messages_quantity request.user wo as count %}
                             {% if count > 0 %}
                                 <span class="rotate_quantity">
                                     {{ count }}
