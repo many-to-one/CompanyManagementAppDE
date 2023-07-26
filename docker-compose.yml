@@ -9,7 +9,7 @@ services:
       POSTGRES_DB: ${NAME}
       POSTGRES_PASSWORD: ${PASSWORD}
     ports:
-      - "5432:5432"
+      - 5432:5432
     volumes:
       - dbdata:/var/lib/postgresql/data
     
@@ -24,16 +24,18 @@ services:
     container_name: AdestContainer
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     command: >
       bash -c "python manage.py migrate &&
-               python manage.py collectstatic --noinput &&
-               gunicorn Adest.wsgi:application --bind 0.0.0.0:8000 --workers 3 --error-logfile ${GUNICORN_ERROR_LOGFILE}"
+               gunicorn Adest.wsgi:application --bind 0.0.0.0:8000 --workers 5 --error-logfile ${GUNICORN_ERROR_LOGFILE}"
+               
     volumes:
       - ./projects:/app/Adest
       - ./logs:/app
-    ports:
-      - "8000:8000"
+      - static:/home/user/django/static:ro  # Mount the STATIC_ROOT directory 
+      - media:/home/user/django/media/:ro 
+    expose:
+      - 8000
     depends_on:
       - db
       - redis
@@ -77,5 +79,23 @@ services:
     ports:
     - "5555:5555"
   
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+      # - "443:443"  # Expose port 443 for SSL
+    volumes:
+      # - ./nginx-config/nginx.conf:/etc/nginx/nginx.conf:ro #.d
+      # - ./certs:/etc/nginx/certs:ro  # SSL certificates directory (read-only)
+
+      # - ./static:/usr/share/nginx/html/static:ro  # Static files directory (read-only)
+      - ./nginx/prod.conf:/etc/nginx/conf.d/prod.conf
+      - static:/home/user/django/static:ro # Mount the STATIC_ROOT directory 
+      - media:/home/user/django/media:ro  # Mount the MEDIA_ROOT directory
+    depends_on:
+      - django
+  
 volumes:
   dbdata:
+  static:
+  media:

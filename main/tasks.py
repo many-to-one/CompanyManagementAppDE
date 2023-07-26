@@ -191,7 +191,6 @@ def update_is_read_flag(work_object_id, username):
         # if count of unread messages > 0 the message will be
         # marked - unread - for sender after he will sent it
         if unread_messages_count > 0:
-
             # Marke message - is_read - for first user who
             # has read the message, exlude sender
             read_by_someone = IsRead.objects.filter(

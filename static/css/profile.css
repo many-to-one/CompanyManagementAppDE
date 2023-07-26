@@ -1,0 +1,15 @@
+.profile-cont {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+.allworks div {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+}
+
+.btnn {
+    background-color: blue;
+}

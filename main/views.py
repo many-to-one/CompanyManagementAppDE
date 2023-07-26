@@ -7,7 +7,6 @@ import re
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-
 from .tasks import *
 from .models import (
     VacationRequest, 
@@ -1339,6 +1338,17 @@ def raports(request):
         try:
             works_result = raports_all_superuser.delay()
             works = works_result.get()
+            # works = Work.objects.prefetch_related(
+            #     Prefetch('user')
+            #     ).order_by('-date')
+            # # Convert Decimal values to float using dictionary comprehension
+            # works_dict = [work.__dict__ for work in works]
+            # works = [
+            #     {key: float(value) if isinstance(value, Decimal) 
+            #      else value for key, value in work.items() 
+            #      if key != '_state' and key != '_prefetched_objects_cache'} 
+            #      for work in works_dict
+            #     ]
             work_objects = WorkObject.objects.all().only('name')
         except Exception as e:
             error = f'Nie można wyświetlić raport z powodu błędu: {e}'

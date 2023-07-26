@@ -318,6 +318,7 @@
                 type: 'GET',
                 url: "{% url 'chat' work_object.pk %}",
                 success: function(response){
+                    console.log('chat', response.messages)
                     $('#chato').empty();
                     for (var key in response.messages){
                         if(response.messages[key].is_read == true){
