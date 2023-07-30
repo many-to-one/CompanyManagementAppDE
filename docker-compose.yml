@@ -35,7 +35,7 @@ services:
       - static:/home/user/django/static:ro  # Mount the STATIC_ROOT directory 
       - media:/home/user/django/media/:ro   # Mount the MEDIA_ROOT directory
     ports:
-      - "187.44.420.11:8000:8000"
+      - "193.56.240.1:8000:8000"
     depends_on:
       - db
       - redis
