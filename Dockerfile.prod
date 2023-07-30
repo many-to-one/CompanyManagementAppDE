@@ -8,7 +8,7 @@ ENV PYTHONUNBUFFERED 1
 
 # Install system dependencies
 RUN sudo apt-get update \
-    sudo apt-get upgrate -y \
+    sudo apt-get upgrade -y \
     && sudo apt-get install -y --no-install-recommends \
         postgresql \
         python3 -dev \
@@ -56,11 +56,10 @@ RUN mkdir $APP_HOME/static
 RUN mkdir $APP_HOME/media
 WORKDIR $APP_HOME
 
-# RUN apt-get update \
-#     && apt-get install -y netcat
 
+# netcat-traditional for Debian 12
 RUN apt-get update && \
-    apt-get install -y netcat-traditional && \
+    apt-get install -y netcat-traditional && \ 
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*  # apt?
 
