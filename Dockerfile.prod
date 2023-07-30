@@ -28,7 +28,7 @@ WORKDIR /usr/src/app
 COPY requirements.txt /usr/src/app/
 
 # Create the "wheels" directory
-RUN mkdir /usr/src/app/wheels
+# RUN mkdir /usr/src/app/wheels
 
 # Install Python dependencies to a temporary directory
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -71,10 +71,10 @@ RUN apt-get update && \
 
 # Copy Python dependencies from the builder stage
 # COPY --from=builder /wheels /wheels
-COPY --from=builder /usr/src/app/wheels /wheels
-COPY --from=builder /usr/src/app/requirements.txt .
+# COPY --from=builder /usr/src/app/wheels /wheels
+# COPY --from=builder /usr/src/app/requirements.txt .
 # Install Python dependencies from wheels
-RUN pip install --no-cache /wheels/*
+# RUN pip install --no-cache /wheels/*
 
 # Copy entrypoint and Django application code to the container
 COPY ./entrypoint.sh $APP_HOME
