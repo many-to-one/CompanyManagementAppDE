@@ -27,6 +27,9 @@ WORKDIR /usr/src/app
 # Copy requirements file to the container
 COPY requirements.txt /usr/src/app/
 
+# Create the "wheels" directory
+RUN mkdir /usr/src/app/wheels
+
 # Install Python dependencies to a temporary directory
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev    # Install the PostgreSQL library \
