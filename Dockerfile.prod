@@ -47,7 +47,7 @@ RUN mkdir -p /home/user
 # create a new group named "app" 
 RUN groupadd app
 RUN useradd -m -g app user -p djangoadmin
-RUN usermod aG app user
+RUN usermod -aG app user
 
 ENV HOME=/home/user
 ENV APP_HOME=/home/user/app
