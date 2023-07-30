@@ -82,7 +82,7 @@ RUN chmod +x  $APP_HOME/entrypoint.sh
 COPY . $APP_HOME
 
 # Collect static files
-RUN python manage.py collectstatic --noinput
+# RUN python manage.py collectstatic --noinput
 
 # Change ownership of $APP_HOME to the non-root user
 RUN chown -R app:user $APP_HOME
