@@ -62,7 +62,6 @@ WORKDIR $APP_HOME
 
 # netcat-traditional for Debian 12
 RUN apt-get update && \
-    apt-get install libpq-dev \
     apt-get install -y netcat-traditional && \ 
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*  
