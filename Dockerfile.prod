@@ -10,6 +10,7 @@ ENV PYTHONUNBUFFERED 1
 RUN apt-get update \
     # apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
+        # psycopg2 \
         postgresql \
         python3-dev \
         musl-dev \
@@ -27,7 +28,9 @@ WORKDIR /usr/src/app
 COPY requirements.txt /usr/src/app/
 
 # Install Python dependencies to a temporary directory
-RUN pip install --upgrade pip \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq-dev    # Install the PostgreSQL library \
+    pip install --upgrade pip \
     && pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 
     
@@ -59,6 +62,7 @@ WORKDIR $APP_HOME
 
 # netcat-traditional for Debian 12
 RUN apt-get update && \
+    libpq5 \
     apt-get install -y netcat-traditional && \ 
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*  
