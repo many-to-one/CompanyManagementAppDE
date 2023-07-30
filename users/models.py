@@ -203,7 +203,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     objects = CustomUserManager()
 
     def __str__(self):
-        return self.username
+        if self.username:
+            return self.username
+        else:
+            return self.email
+        
     
     def get_absolute_url(self):
         return reverse(

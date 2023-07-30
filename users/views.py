@@ -106,7 +106,7 @@ class Login(LoginView):
             return render(self.request, 'error.html', context)
     
     def form_invalid(self, form):
-        messages.error(self.request,'Invalid username or password')
+        messages.error(self.request,'Login lub hasło nie są prawidłowe, spróbuj ponownie')
         return self.render_to_response(self.get_context_data(form=form))
     
 

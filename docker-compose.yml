@@ -33,7 +33,7 @@ services:
       - ./projects:/app/Adest
       - ./logs:/app
       - static:/home/user/django/static:ro  # Mount the STATIC_ROOT directory 
-      - media:/home/user/django/media/:ro 
+      - media:/home/user/django/media/:ro   # Mount the MEDIA_ROOT directory
     expose:
       - 8000
     depends_on:
@@ -42,10 +42,12 @@ services:
       - celery
     env_file:
       - .env
-    environment:          
+    environment:   
+      # - DOMAIN=domain.com       
       - LANG=pl_PL.UTF-8
       - LANGUAGE=pl_PL.UTF-8
       - LC_ALL=pl_PL.UTF-8
+    hostname: django
 
   celery:
     restart: always

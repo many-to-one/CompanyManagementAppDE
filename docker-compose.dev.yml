@@ -33,6 +33,7 @@ services:
       - ./projects:/app/Adest
       - ./logs:/app
       - static:/static
+      - media:/media
     ports:
       - "8000:8000"
     depends_on:
@@ -45,6 +46,7 @@ services:
       - LANG=pl_PL.UTF-8
       - LANGUAGE=pl_PL.UTF-8
       - LC_ALL=pl_PL.UTF-8
+    hostname: django
 
   celery:
     restart: always
@@ -89,8 +91,8 @@ services:
 
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       # - ./static:/usr/share/nginx/html/static:ro  # Static files directory (read-only)
-      - ./static:/app/static:ro  # Mount the STATIC_ROOT directory
-      - ./media:/app/media:ro  # Mount the MEDIA_ROOT directory
+      - static:/app/static:ro  # Mount the STATIC_ROOT directory
+      - media:/app/media:ro  # Mount the MEDIA_ROOT directory
     depends_on:
       - django
   
