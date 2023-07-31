@@ -55,11 +55,11 @@ ENV PYTHONUNBUFFERED 1
 # create the app user
 # RUN addgroup -S app && adduser -S app -G app
 
-RUN mkdir /home/admin
-RUN mkdir /home/admin/app
+# RUN mkdir /home/admin
+# RUN mkdir /home/admin/app
 
 ENV HOME=/home/admin
-ENV APP_HOME=/home/admin/app
+ENV APP_HOME=/home/admin/CompanyManagementAppDE
 RUN mkdir $APP_HOME/static
 RUN mkdir $APP_HOME/media
 WORKDIR $APP_HOME
@@ -98,4 +98,4 @@ RUN chown -R app:app $APP_HOME
 USER app
 
 # Set the entrypoint for the container
-ENTRYPOINT [ "/home/admin/app/entrypoint.sh" ]
+ENTRYPOINT [ "/home/admin/app/CompanyManagementAppDE.sh" ]
