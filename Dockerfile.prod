@@ -64,10 +64,6 @@ ENV APP_HOME=/home/admin/CompanyManagementAppDE
 # RUN mkdir $APP_HOME/media
 WORKDIR $APP_HOME
 
-COPY requirements.txt .
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
-
 # create a new group named "app" 
 RUN groupadd app
 RUN useradd -m -g app app -p adestadmin
@@ -78,15 +74,16 @@ RUN usermod -aG app app
 RUN apt-get update && \
     apt-get install -y netcat-traditional && \ 
     apt-get clean && \
-    apt-get install libpq-dev \
+    # apt-get install libpq-dev \
     rm -rf /var/lib/apt/lists/*  
+
 
 # Copy Python dependencies from the builder stage
 # COPY --from=builder /wheels /wheels
-# COPY --from=builder /usr/src/app/wheels /wheels
-# COPY --from=builder /usr/src/app/requirements.txt .
+COPY --from=builder /usr/src/app/wheels /wheels
+COPY --from=builder /usr/src/app/requirements.txt .
 # Install Python dependencies from wheels
-# RUN pip install --no-cache /wheels/*
+RUN pip install --no-cache /wheels/*
 
 # Copy entrypoint and Django application code to the container
 COPY ./entrypoint.sh $APP_HOME
