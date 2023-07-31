@@ -56,6 +56,7 @@ ENV PYTHONUNBUFFERED 1
 # RUN addgroup -S app && adduser -S app -G app
 
 RUN mkdir /home/admin
+RUN mkdir /home/admin/app
 
 ENV HOME=/home/admin
 ENV APP_HOME=/home/admin/app
