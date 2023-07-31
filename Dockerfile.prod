@@ -49,15 +49,6 @@ FROM python:3.9-slim
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# new
-# RUN mkdir -p /home/user
-
-
-# create the app user
-# RUN addgroup -S app && adduser -S app -G app
-
-# RUN mkdir /home/admin
-# RUN mkdir /home/admin/app
 
 ENV HOME=/home/admin
 ENV APP_HOME=/home/admin/CompanyManagementAppDE
@@ -75,16 +66,19 @@ RUN usermod -aG app app
 RUN apt-get update && \
     apt-get install -y netcat-traditional && \ 
     apt-get clean && \
-    # apt-get install libpq-dev \
+    apt-get install libpq-dev \
     rm -rf /var/lib/apt/lists/*  
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
 
 # Copy Python dependencies from the builder stage
 # COPY --from=builder /wheels /wheels
-COPY --from=builder /usr/src/app/wheels /wheels
-COPY --from=builder /usr/src/app/requirements.txt .
+# COPY --from=builder /usr/src/app/wheels /wheels
+# COPY --from=builder /usr/src/app/requirements.txt .
 # Install Python dependencies from wheels
-RUN pip install --no-cache /wheels/*
+# RUN pip install --no-cache /wheels/*
 
 # Copy entrypoint and Django application code to the container
 COPY ./entrypoint.sh $APP_HOME
