@@ -22,6 +22,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* 
 
 # Create and set the working directory
+RUN mkdir /usr/src/app
 WORKDIR /usr/src/app
 
 # Copy requirements file to the container
@@ -48,22 +49,23 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # new
-RUN mkdir -p /home/user
+# RUN mkdir -p /home/user
 
-# create a new group named "app" 
-RUN groupadd app
-RUN useradd -m -g app app -p djangoadmin
-RUN usermod -aG app app
 
 # create the app user
 # RUN addgroup -S app && adduser -S app -G app
 
-ENV HOME=/home/user
-ENV APP_HOME=/home/user/app
+ENV HOME=/home/admin
+ENV APP_HOME=/home/admin/app
 RUN mkdir $APP_HOME
 RUN mkdir $APP_HOME/static
 RUN mkdir $APP_HOME/media
 WORKDIR $APP_HOME
+
+# create a new group named "app" 
+RUN groupadd app
+RUN useradd -m -g app app -p adestadmin
+RUN usermod -aG app app
 
 
 # netcat-traditional for Debian 12
@@ -94,4 +96,4 @@ RUN chown -R app:app $APP_HOME
 USER app
 
 # Set the entrypoint for the container
-ENTRYPOINT [ "/home/user/app/entrypoint.sh" ]
+ENTRYPOINT [ "/home/admin/app/entrypoint.sh" ]
