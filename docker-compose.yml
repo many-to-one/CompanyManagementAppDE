@@ -32,7 +32,7 @@ services:
     volumes:
       - ./projects:/app/Adest
       - ./logs:/app
-      - static:/home/admin/app/static:ro  # Mount the STATIC_ROOT directory 
+      - static:/home/admin/app/staticfiles:ro  # Mount the STATIC_ROOT directory 
       - media:/home/admin/app/media/:ro   # Mount the MEDIA_ROOT directory
     ports:
       - "193.56.240.15:8000:8000"
@@ -92,7 +92,7 @@ services:
 
       # - ./static:/usr/share/nginx/html/static:ro  # Static files directory (read-only)
       - ./nginx/prod.conf:/etc/nginx/conf.d/prod.conf
-      - static:/home/admin/app/static:ro # Mount the STATIC_ROOT directory 
+      - static:/home/admin/app/staticfiles:ro # Mount the STATIC_ROOT directory 
       - media:/home/admin/app/media:ro  # Mount the MEDIA_ROOT directory
     depends_on:
       - django
