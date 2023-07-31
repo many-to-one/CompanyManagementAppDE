@@ -23,6 +23,7 @@ RUN apt-get update \
 
 # Create and set the working directory
 RUN mkdir /usr/src/app
+RUN mkdir /usr/src/app/wheels
 WORKDIR /usr/src/app
 
 # Copy requirements file to the container
