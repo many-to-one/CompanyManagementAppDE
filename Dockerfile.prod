@@ -98,4 +98,4 @@ RUN chown -R app:app $APP_HOME
 USER app
 
 # Set the entrypoint for the container
-ENTRYPOINT [ "/home/admin/CompanyManagementAppDE.entrypoint.sh" ]
+ENTRYPOINT [ "/home/admin/CompanyManagementAppDE/.entrypoint.sh" ]
