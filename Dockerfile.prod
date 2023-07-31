@@ -94,7 +94,7 @@ RUN chown -R app:app $APP_HOME
 USER app
 
 # Set the entrypoint for the container
-ENTRYPOINT [ "/home/app/django/entrypoint.sh" ]
+ENTRYPOINT [ "/home/user/django/entrypoint.sh" ]
 
 
 # Create a non-root user
