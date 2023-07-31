@@ -3,6 +3,7 @@ version: '3.8'
 services:
   db:
     image: postgres:15
+    container_name: postgres_container
     restart: always
     environment:
       POSTGRES_USER: ${USER}
@@ -12,6 +13,16 @@ services:
       - 193.56.240.15:5432:5432
     volumes:
       - dbdata:/var/lib/postgresql/data
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${EMAIL_HOST_USER}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin:/var/lib/pgadmin
     
   redis:
     image: redis:latest
@@ -82,6 +93,7 @@ services:
   
   nginx:
     image: nginx:latest
+    container_name: nginx_container
     ports:
       - 80:80
       # - "443:443"  # Expose port 443 for SSL
@@ -98,5 +110,6 @@ services:
   
 volumes:
   dbdata:
+  pgadmin:
   static:
   media:
