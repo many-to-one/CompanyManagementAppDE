@@ -86,7 +86,7 @@ RUN apt-get update && \
 # Copy entrypoint and Django application code to the container
 COPY ./entrypoint.sh $APP_HOME
 RUN chmod +x  $APP_HOME/entrypoint.sh
-# COPY . $APP_HOME
+COPY . $APP_HOME
 
 # Collect static files
 # RUN python manage.py collectstatic --noinput
