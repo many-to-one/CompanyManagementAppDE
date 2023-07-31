@@ -48,9 +48,6 @@ FROM python:3.9-slim
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
-
 # new
 # RUN mkdir -p /home/user
 
@@ -66,6 +63,9 @@ ENV APP_HOME=/home/admin/CompanyManagementAppDE
 # RUN mkdir $APP_HOME/staticfiles
 # RUN mkdir $APP_HOME/media
 WORKDIR $APP_HOME
+
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
 
 # create a new group named "app" 
 RUN groupadd app
