@@ -30,7 +30,7 @@ services:
                gunicorn Adest.wsgi:application --bind 193.56.240.15:8000 --workers 3 --error-logfile ${GUNICORN_ERROR_LOGFILE}"
                
     volumes:
-      - ./projects:/app/Adest
+      - ./Adest
       - ./logs:/app
       - static:/home/admin/CompanyManagementAppDE/staticfiles:ro  # Mount the STATIC_ROOT directory 
       - media:/home/admin/CompanyManagementAppDE/media/:ro   # Mount the MEDIA_ROOT directory
@@ -58,7 +58,7 @@ services:
     hostname: celery
     command: celery -A Adest worker -l info --concurrency 1 --uid=nobody
     volumes:
-      - ./projects:/app/Adest
+      - ./Adest
     env_file:
       - .env
     environment:
@@ -75,7 +75,7 @@ services:
     hostname: flower
     command: "celery -A Adest flower"
     volumes:
-      - ./home/admin/CompanyManagementAppDE/Adest
+      - ./Adest
     depends_on:
       - redis
     ports:
