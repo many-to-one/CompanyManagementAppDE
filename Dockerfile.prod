@@ -84,9 +84,9 @@ RUN apt-get update && \
 # RUN pip install --no-cache /wheels/*
 
 # Copy entrypoint and Django application code to the container
-COPY ./entrypoint.sh $APP_HOME
+# COPY ./entrypoint.sh $APP_HOME
 RUN chmod +x  $APP_HOME/entrypoint.sh
-COPY . $APP_HOME
+# COPY . $APP_HOME
 
 # Collect static files
 # RUN python manage.py collectstatic --noinput
