@@ -23,6 +23,11 @@ services:
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     volumes:
       - pgadmin:/var/lib/pgadmin
+    ports:
+      - 8888:80
+    networks:
+      - postgres
+    restart: unless-stopped
     
   redis:
     image: redis:latest
@@ -107,6 +112,10 @@ services:
       - media:/home/admin/CompanyManagementAppDE/media:ro  # Mount the MEDIA_ROOT directory
     depends_on:
       - django
+
+networks:
+  postgres:
+    driver: bridge
   
 volumes:
   dbdata:
