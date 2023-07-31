@@ -60,8 +60,8 @@ ENV PYTHONUNBUFFERED 1
 
 ENV HOME=/home/admin
 ENV APP_HOME=/home/admin/CompanyManagementAppDE
-RUN mkdir $APP_HOME/staticfiles
-RUN mkdir $APP_HOME/media
+# RUN mkdir $APP_HOME/staticfiles
+# RUN mkdir $APP_HOME/media
 WORKDIR $APP_HOME
 
 # create a new group named "app" 
@@ -98,4 +98,4 @@ RUN chown -R app:app $APP_HOME
 USER app
 
 # Set the entrypoint for the container
-ENTRYPOINT [ "/home/admin/app/CompanyManagementAppDE.sh" ]
+ENTRYPOINT [ "/home/admin/app/CompanyManagementAppDE.entrypoint.sh" ]
