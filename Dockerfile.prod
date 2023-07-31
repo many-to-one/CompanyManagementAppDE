@@ -67,7 +67,12 @@ RUN apt-get update && \
     apt-get install -y netcat-traditional && \ 
     apt-get clean && \
     apt-get install -y --no-install-recommends libpq-dev \
-    gcc 
+    gcc \
+    postgresql-client \
+    postgresql \
+    python3-dev \
+    musl-dev \
+    build-essential 
     # && rm -rf /var/lib/apt/lists/*  
 
 COPY requirements.txt .
