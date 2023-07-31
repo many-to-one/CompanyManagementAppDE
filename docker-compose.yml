@@ -30,7 +30,7 @@ services:
                gunicorn Adest.wsgi:application --bind 193.56.240.15:8000 --workers 3 --error-logfile ${GUNICORN_ERROR_LOGFILE}"
                
     volumes:
-      - logs:/home/admin/CompanyManagementAppDE/
+      # - logs:/home/admin/CompanyManagementAppDE/
       - static:/home/admin/CompanyManagementAppDE/staticfiles:ro  # Mount the STATIC_ROOT directory 
       - media:/home/admin/CompanyManagementAppDE/media/:ro   # Mount the MEDIA_ROOT directory
     ports:
