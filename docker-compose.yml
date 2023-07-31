@@ -75,7 +75,7 @@ services:
     hostname: flower
     command: "celery -A Adest flower"
     volumes:
-      - ./projects:/app/Adest
+      - ./home/admin/CompanyManagementAppDE/Adest
     depends_on:
       - redis
     ports:
