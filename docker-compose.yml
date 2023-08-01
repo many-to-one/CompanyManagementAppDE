@@ -1,33 +1,33 @@
 version: '3.8'
 
 services:
-  db:
-    image: postgres:15
-    container_name: postgres_container
-    restart: always
-    environment:
-      POSTGRES_USER: ${USER}
-      POSTGRES_DB: ${NAME}
-      POSTGRES_PASSWORD: ${PASSWORD}
-    # ports:
-    #   - 193.56.240.15:5432:5432
-    volumes:
-      - dbdata:/var/lib/postgresql/data
+#   db:
+#     image: postgres:15
+#     container_name: postgres_container
+#     restart: always
+#     environment:
+#       POSTGRES_USER: ${USER}
+#       POSTGRES_DB: ${NAME}
+#       POSTGRES_PASSWORD: ${PASSWORD}
+#     # ports:
+#     #   - 193.56.240.15:5432:5432
+#     volumes:
+#       - dbdata:/var/lib/postgresql/data
 
-  pgadmin:
-    container_name: pgadmin_container
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${EMAIL_HOST_USER}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    volumes:
-      - pgadmin:/var/lib/pgadmin
-    ports:
-      - 8888:80
-    networks:
-      - postgres
-    restart: unless-stopped
+  # pgadmin:
+  #   container_name: pgadmin_container
+  #   image: dpage/pgadmin4
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: ${EMAIL_HOST_USER}
+  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+  #     PGADMIN_CONFIG_SERVER_MODE: 'False'
+  #   volumes:
+  #     - pgadmin:/var/lib/pgadmin
+  #   ports:
+  #     - 8888:80
+  #   networks:
+  #     - postgres
+  #   restart: unless-stopped
     
   redis:
     image: redis:latest
@@ -52,7 +52,7 @@ services:
     ports:
       - "193.56.240.15:8000:8000"
     depends_on:
-      - db
+      # - db
       - redis
       - celery
     env_file:
@@ -81,7 +81,7 @@ services:
       POSTGRES_DB: ${NAME}
       POSTGRES_PASSWORD: ${PASSWORD}
     depends_on:
-      - db
+      # - db
       - redis
   
   flower:
@@ -113,12 +113,12 @@ services:
     depends_on:
       - django
 
-networks:
-  postgres:
-    driver: bridge
+# networks:
+#   postgres:
+#     driver: bridge
   
 volumes:
-  dbdata:
+  # dbdata:
   pgadmin:
   static:
   media:
