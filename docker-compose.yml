@@ -9,8 +9,8 @@ services:
       POSTGRES_USER: ${USER}
       POSTGRES_DB: ${NAME}
       POSTGRES_PASSWORD: ${PASSWORD}
-    # ports:
-    #   - 193.56.240.15:5432:5432
+    ports:
+      - 193.56.240.15:5436:5432
     volumes:
       - dbdata:/var/lib/postgresql/data
 
@@ -42,7 +42,8 @@ services:
       context: .
       dockerfile: Dockerfile.prod
     command: >
-      bash -c "python manage.py migrate &&
+      bash -c "emtrypoin.sh &&
+               python manage.py migrate &&
                gunicorn Adest.wsgi:application --bind 193.56.240.15:8000 --workers 3 --error-logfile ${GUNICORN_ERROR_LOGFILE}"
                
     volumes:
