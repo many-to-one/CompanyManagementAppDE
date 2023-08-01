@@ -42,7 +42,7 @@ services:
       context: .
       dockerfile: Dockerfile.prod
     command: >
-      bash -c "emtrypoin.sh &&
+      bash -c "
                python manage.py migrate &&
                gunicorn Adest.wsgi:application --bind 193.56.240.15:8000 --workers 3 --error-logfile ${GUNICORN_ERROR_LOGFILE}"
                
