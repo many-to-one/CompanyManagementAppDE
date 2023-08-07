@@ -48,7 +48,7 @@ def forgot_password_mail(email, user):
     email_from=settings.EMAIL_HOST_USER
     recipient_list = [email]
     send_mail(subject, message, email_from, recipient_list)
-    return True
+    # return True
 
 
 def check_user_ip_mail(user):

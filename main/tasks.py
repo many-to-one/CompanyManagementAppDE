@@ -1,20 +1,29 @@
+from datetime import datetime
 from decimal import Decimal
 from time import sleep
 from celery import shared_task
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
+
+from users.models import CustomUser
 from .models import IsRead, Message, Work, WorkObject
 from django.db.models import Q, Prefetch
 from django.template import Template, Context
 
 
+@shared_task
+def test():
+    a = 'Celery works'
+    return a
 
 @shared_task
 def raports_all_superuser():
-    works = Work.objects.prefetch_related(
+    works_ = Work.objects.prefetch_related(
         Prefetch('user')
         ).order_by('-date')
+    # works_ = Work.objects.all()
     # Convert Decimal values to float using dictionary comprehension
-    works_dict = [work.__dict__ for work in works]
+    works_dict = [work.__dict__ for work in works_]
     works = [
         {key: float(value) if isinstance(value, Decimal) 
          else value for key, value in work.items() 
@@ -160,8 +169,8 @@ def raports_sorted_from_work_object_user(start, end, work_object_id, user):
 
 
 @shared_task
-def update_is_read_flag(work_object_id, username):
-    work_object = get_object_or_404(WorkObject, id=work_object_id)
+def update_is_read_flag(pk, username):
+    work_object = get_object_or_404(WorkObject, id=pk)
     try:
         # All messages in current work object
         read_messages = Message.objects.filter(work_object=work_object)
@@ -217,6 +226,52 @@ def update_is_read_flag(work_object_id, username):
             IsRead.objects.filter(read_filter).update(is_read=True)
         messages = read_messages.values()
     except WorkObject.DoesNotExist:
-        raise ValueError (f"WorkObject with ID {work_object_id} does not exist.")
+        raise ValueError (f"WorkObject with ID {pk} does not exist.")
     
     return list(messages)
+
+
+@shared_task
+def create_message(pk, users, r_user, content, user):
+    work_object = get_object_or_404(WorkObject, id=pk)
+
+    # Create the new message
+    new_message = Message.objects.create(
+        name=user,
+        sender=r_user,
+        content=content,
+        day=f"{datetime.now().strftime('%d %B %Y')}  ",
+        time=f'{datetime.now().hour}:{datetime.now().minute}',
+        work_object=work_object,
+        for_sender_is_read=True,
+    )
+
+    # Create IsRead instances for all users
+    is_read_list = [
+        IsRead(
+            message=new_message,
+            username=user,
+            work_object=work_object,
+        )
+        for user in users
+    ]
+    IsRead.objects.bulk_create(is_read_list)
+    
+    response = {
+        'new_message_id': new_message.id
+    }
+    return JsonResponse(response)
+
+
+@shared_task
+def get_messages(messages, username, current_time):
+    for message in messages:
+            is_read = IsRead.objects.filter(message_id=message['id'], username=username).first()
+            message['is_read'] = is_read.is_read if is_read else False
+
+    response = {
+        'user': username,
+        'messages': messages,
+        'current_time': current_time,
+    }
+    return JsonResponse(response)

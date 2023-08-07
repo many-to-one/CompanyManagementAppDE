@@ -171,7 +171,9 @@ def forgotPassword(request):
     try:
         if request.method == 'POST':
             email = request.POST.get('email')
+            print('EMAIL', email)
             user = CustomUser.objects.get(email=email)
+            print('USER', user)
             now = datetime.now()
             forgot_password_mail(email, user)
     except Exception as e:
@@ -215,20 +217,12 @@ def changePassword(request, token, uidb64):
 
 def Profile(request, pk):
     user = get_object_or_404(CustomUser, id=pk)
-    # user = CustomUser.objects.get(id=pk)
     if request.method == 'POST':
-        prof_list = [
-            'username', 'email', 'birthday', 'workplace', 'religion',
-            'insurance_number', 'tax_number', 'adress_pl', 'adress_de',
-            'profession', 'position', 'internal_tax_number', 'nfz_name',
-            'nfz_adress', 'phone_number', 'bank', 'bic_swift', 'bank_account',
-            'health_insurance_de', 'health_insurance_de_number', 'shoe_size',
-            'growth', 'work_clothes', 'rights', 'vacations_days_quantity_de',
-            'last_year_vacations_days_quantity_de', 'days_to_use_in_current_year_de',
-            'acceptation',
-        ]
 
-        for field in prof_list:
+        user_dict = user.__dict__
+        user_list = list(user_dict.keys())
+
+        for field in user_list:
             if field == 'acceptation':
                 value = request.POST.get(field)
                 if value == 'Tak':

@@ -11,6 +11,17 @@ def messages_quantity(user, work_object):
         is_read=False,
     )
 
+    # quantity = 0
+    # messages = Message.objects.filter(work_object=work_object).exclude(sender=user)
+    # for m in messages:
+    #     quantity = IsRead.objects.filter(
+    #         message=m,
+    #         username=user.username,
+    #         work_object=work_object,
+    #         is_read=False,
+    #     )
+    print('USERNAME !!!!!!!!!!!!!!!!!!', user.username)
+
     # According to the logic in test.py: update_is_read_flag()
     # sending's message for sender also marks unread, here we
     # need to find this(thouse) message(s)
@@ -25,7 +36,8 @@ def messages_quantity(user, work_object):
     # unread
     if sender_message:
         return 0
-    
+    print('QUANTITY !!!!!!!!!!!!!!', quantity.count()) 
+
     return quantity.count()
 
 

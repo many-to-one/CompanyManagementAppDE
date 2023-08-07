@@ -23,7 +23,20 @@
       {% endfor %}
     {% endif %}
 
+    <!-- ##################### QUESTION ##################### -->
+    <div id="deleteQuestion"></div>
+    <!-- ##################### END OF QUESTION ##################### -->
+
     <div class="filter-container">
+
+        <div class="label_img">
+            <input 
+                type="image" 
+                src="{% static 'images/delete.png' %}" 
+                width="20" height="20"
+                onclick="deleteVacationRequestQuestion()"
+            >
+        </div>
 
         <form method="POST">
             {% csrf_token %}
@@ -59,11 +72,12 @@
     </div>
 
         {% for r in reqs %}
-            <div class="cwo_cont">
+            <div class="cwo_cont"> 
 
                 <div class="req_vacations_container">
 
                     <div class="vacations_mini">
+                        <input type="checkbox"  value="{{ r.id }}">
                         {% if r.v_request.consideration is True %}           
                             <img src="{% static 'images/question.png' %}" width="50" height="50">
                         {% elif r.v_request.accepted is True %} 
@@ -109,7 +123,76 @@
                 </span>
             </div>
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+
+        // Question for deleting the task
+        function deleteVacationRequestQuestion(event){
+            // event.preventDefault()
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            const checkedValues = Array.from(checkboxes).map((checkbox) => checkbox.value);
+            console.log(checkedValues);
+            $.ajax({
+                type: 'GET',
+                url: "{% url 'deleteVacationRequestQuestion'%}",
+                success: function(response){
+                    if(response.message === 'ok'){
+                        var deleteQuestion = document.getElementById('deleteQuestion')
+                        deleteQuestion.style.display = 'flex';
+                        var data = '<div id="questCont">'+
+                                        '<p>'+'Usunąć wniosek?'+'</p>'+
+                                        '<div class="row_cont_in_label">'+
+                                            '<button class="btn" onclick="'+test+'('+checkedValues+')">'+
+                                                '<a>'+"Tak"+'</a>'+
+                                            '</button>'+
+                                            '<button class="btn" onclick="closeQuestionDelete()">'+
+                                                '<a>'+"Nie"+'</a>'+
+                                            '</button>'+
+                                        '</div>'+
+                                    '</div>';
+                            $('#deleteQuestion').html(data)
+                    }else{
+                        alert(response.message)
+                    }
+                },
+                error: function(response){
+                      alert('Błąd:', + response.responseJSON.message)
+                } 
+            })
+            
+        }
+
+
+        function test(checkedValues){
+            console.log('checkedValues++', checkedValues)
+        }
+        function deleteVacationRequest(checkedValues){
+            console.log('checkedValues++', checkedValues)
+            $.ajax({
+            type: 'POST',
+            url: "{% url 'deleteVacationRequest' %}",
+            data: {
+                'pk': checkedValues,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response){
+                deleteQuestion.style.display = 'none';
+                location.reload();
+            },
+            error: function(response){
+                  alert('Błąd:', + response.responseJSON.message)
+            } 
+        })
+
+        }
+
+        function closeQuestionDelete(){
+            deleteQuestion.style.display = 'none';
+            // location.reload();
+        }
+
+
+    </script>
     {% endblock %}
-    
 </body>
 </html>

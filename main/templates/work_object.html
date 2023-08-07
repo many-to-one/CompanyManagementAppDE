@@ -129,7 +129,6 @@
                         id="chat_down"
                         onclick="lastMessage()"
                         >
-                        <span id="chat_down_quantity"></span>
                     </div>
             </div>
             
@@ -199,7 +198,7 @@
 
     // Button to up down of the chat window
     var chatDown = document.getElementById('chat_down')
-    var chatDownQuantity = document.getElementById('chat_down_quantity')
+    var chatDownQuantity = document.getElementById('chat_down_quantity') // it was a <span id='chat_down_quantity' /> it deleted for now
 
     // Check if the user is scrolling
     chatWindow.addEventListener('scroll', handleScroll);
@@ -233,20 +232,22 @@
 
 
     // The online unread messages count
-    setInterval(function(){
+    function showCount(){
         $.ajax({
         type: 'GET',
-        url: "{% url 'showCount' request.user.username work_object.pk %}",
+        url: "{% url 'showCount' work_object.pk %}",
         success: (response) => {
             var data = response.count
+            console.log('showCount', data)
             if (data > 0){
+                console.log('showCount > 0', data)
                 chat_down_quantity.textContent = data
             }else{
                 chat_down_quantity.textContent = 0
             }
         }
         })
-    },1000)
+    }
 
 
     // The chat window will shows the last message on the bottom 
@@ -308,18 +309,16 @@
           })             
         }
     
-    
-    // GET
-    $(document).ready(function(){
+        function showMessages(){
         var Ty = 'Ty:'
-
-        setInterval(function(){
-            $.ajax({
+        $.ajax({
                 type: 'GET',
                 url: "{% url 'chat' work_object.pk %}",
                 success: function(response){
                     console.log('chat', response.messages)
                     $('#chato').empty();
+                    
+
                     for (var key in response.messages){
                         if(response.messages[key].is_read == true){
                             var isRead = '<img src="{% static "images/is_read.png" %}" width="20" height="15">'
@@ -340,17 +339,97 @@
                                     '</div>'
                         }
                                 
-                    $('#chato').append(data)
-                    // chat_down_quantity.textContent = response.count
+                        $('#chato').append(data)
+                        // chat_down_quantity.textContent = response.count
                     }
                     scrollBottom()
-                },
+                    },
                 error: function(response){
-                    // alert('Error')
+                    alert('Error')
                 }
             })
-        },1000)
+        }
+
+        
+    $(document).ready(function(){
+
+        showMessages()
+
+        function getMessages(){
+        var Ty = 'Ty:'
+        $.ajax({
+                type: 'GET',
+                url: "{% url 'chat' work_object.pk %}",
+                success: function(response){
+                    console.log('chat', response.messages)
+                    $('#chato').empty();
+                    
+
+                    for (var key in response.messages){
+                        if(response.messages[key].is_read == true){
+                            var isRead = '<img src="{% static "images/is_read.png" %}" width="20" height="15">'
+                        }else{
+                            var isRead = '<img src="{% static "images/un_read.png" %}" width="20" height="15">'
+                        }
+                       if(response.user === response.messages[key].name){
+                            var data= '<p class="r">'+Ty+'</p>'+
+                                    '<div class="chat_label_r">'+
+                                        '<p class="chat_content">'+response.messages[key].content+'</p>'+
+                                        '<p class="chat_time">'+response.messages[key].day+response.messages[key].time+" "+isRead+'</p>'+
+                                    '</div>'
+                        }else{
+                            var data='<p class="l">'+response.messages[key].name+'</p>'+
+                                    '<div class="chat_label_l">'+
+                                        '<p class="chat_content">'+response.messages[key].content+'</p>'+
+                                        '<p class="chat_time">'+response.messages[key].day+response.messages[key].time+" "+isRead+'</p>'+
+                                    '</div>'
+                        }
+                                
+                        $('#chato').append(data)
+                        // chat_down_quantity.textContent = response.count
+                    }
+                    scrollBottom()
+                    if(response.messages){
+                        intervalID = setInterval(checkMessages, 1000);
+                    }else{
+                            alert('Error')
+                            clearInterval(intervalID); // Stop the interval
+                        }
+                    },
+                error: function(response){
+                    alert('Error')
+                }
+            })
+        }
+
+
+    //  sudo systemctl restart gunicorn
+    //  celery -A Adest worker -l info
+
+
+        let intervalID;
+
+        // Function to send the AJAX request and handle the response
+        function checkMessages() {
+            $.ajax({
+                type: 'GET',
+                url: "{% url 'chek_messages' work_object.pk %}",
+                success: function(response) {
+                    if (response.message === true) {
+                        console.log('response.message', response.message);
+                        clearInterval(intervalID); // Stop the interval
+                        getMessages(); // Call getMessages_() function
+                    } else {
+                        console.log('response.message', response.message);
+                    }
+                }
+            });
+        }
+
+        // Start the interval and store the ID in the intervalID variable
+        intervalID = setInterval(checkMessages, 1000);
     })
+
 
     // CHART
 

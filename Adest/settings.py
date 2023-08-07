@@ -168,11 +168,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
+# Static settings for production (nginx on VPS)
 STATIC_URL = '/staticfiles/'
 STATIC_ROOT= os.path.join(BASE_DIR, 'staticfiles')
-# STATICFILES_DIRS =[
-#     os.path.join(BASE_DIR, 'staticfiles'),
-# ]
+
+# Static settings for django development server (on local machine)
+# Why here I use 'static' and not 'staticfiles':
+# The STATICFILES_DIRS setting should not contain the STATIC_ROOT setting.
+STATICFILES_DIRS =[
+    os.path.join(BASE_DIR, 'static'), 
+]
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
@@ -185,7 +190,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'smtp-mail.outlook.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
