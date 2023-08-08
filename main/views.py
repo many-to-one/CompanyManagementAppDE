@@ -367,6 +367,7 @@ def deleteAllMessagesWO(request):
 def deleteTaskQuestion(request):
     if request.method == 'POST':
         pk = request.POST.get('pk')
+        print('PK !!!!!!!!!', pk)
         try:
             if pk.startswith('['):
                 # Extract the task IDs with ast
@@ -2390,13 +2391,19 @@ def deleteVacationRequestQuestion(request):
 
 def deleteVacationRequest(request):
     if request.method == 'POST':
-        req = request.POST.get()
-        print('req !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', req)
-    # try:
-    #     VacationRequest.objects.get(id=pk).delete()
-    # except Exception as e:
-    #     return render(request, 'error.html', 
-    #                   context={f'Wystąpił błąd: {e}'})
+        data = json.loads(request.body)
+        req_ids = data.get('req', [])
+    try:
+        for req_id in req_ids:
+            vacation_request = VacationRequest.objects.get(id=req_id)
+            vacation_request.delete()
+    except Exception as e:
+        return render(request, 'error.html', 
+                      context={f'Wystąpił błąd:': {e}})
+    response = {
+        'message': 'ok'
+    }
+    return JsonResponse(response) 
 
 
 def allVacationRequests(request):

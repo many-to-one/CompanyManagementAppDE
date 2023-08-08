@@ -48,7 +48,7 @@
                     <a href="{% url 'work_objects' %}" class="tags_cont_mini">
                         MIEJSCA PRACY 
                         {% if request.user.is_authenticated %}
-                            <span class="header_quantity" id="chat_down_all_quantity"></span>
+                        <span class="header_quantity">{% all_messages_quantity request.user %}</span> 
                         {% endif %}
                     </a>
                 </li>

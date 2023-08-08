@@ -28,16 +28,9 @@ def create_token():
     return token
 
 def blacklist_token(token):
-    token_to_blacklist = BlacklistToken(
-        token=token
-    )
-    if token_to_blacklist.token == token:
-        BlacklistToken.objects.filter(
-            token=token
-        ).update(
-            token=token
-        )
-    token_to_blacklist.save()
+    if not BlacklistToken.objects.filter(token=token).exists():  # Check if token doesn't exist
+        token_to_blacklist = BlacklistToken(token=token)
+        token_to_blacklist.save()
 
 def forgot_password_mail(email, user):
     token = create_token()

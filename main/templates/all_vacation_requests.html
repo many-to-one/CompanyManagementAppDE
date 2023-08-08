@@ -127,14 +127,12 @@
     <script>
 
         // Question for deleting the task
-        function deleteVacationRequestQuestion(event){
-            // event.preventDefault()
+    function deleteVacationRequestQuestion(){
             const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
             const checkedValues = Array.from(checkboxes).map((checkbox) => checkbox.value);
-            console.log(checkedValues);
             $.ajax({
                 type: 'GET',
-                url: "{% url 'deleteVacationRequestQuestion'%}",
+                url: "{% url 'deleteVacationRequestQuestion' %}",
                 success: function(response){
                     if(response.message === 'ok'){
                         var deleteQuestion = document.getElementById('deleteQuestion')
@@ -142,7 +140,7 @@
                         var data = '<div id="questCont">'+
                                         '<p>'+'Usunąć wniosek?'+'</p>'+
                                         '<div class="row_cont_in_label">'+
-                                            '<button class="btn" onclick="'+test+'('+checkedValues+')">'+
+                                            '<button class="btn" onclick="deleteVacationRequest()">'+
                                                 '<a>'+"Tak"+'</a>'+
                                             '</button>'+
                                             '<button class="btn" onclick="closeQuestionDelete()">'+
@@ -162,19 +160,16 @@
             
         }
 
-
-        function test(checkedValues){
-            console.log('checkedValues++', checkedValues)
-        }
-        function deleteVacationRequest(checkedValues){
-            console.log('checkedValues++', checkedValues)
+        function deleteVacationRequest(){
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            const checkedValues = Array.from(checkboxes).map((checkbox) => checkbox.value);
+            console.log('checkedValues', checkedValues)
             $.ajax({
             type: 'POST',
             url: "{% url 'deleteVacationRequest' %}",
-            data: {
-                'pk': checkedValues,
-                'csrfmiddlewaretoken': '{{ csrf_token }}'
-            },
+            data: JSON.stringify({ 'req': checkedValues }),
+            contentType: 'application/json',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
             success: function(response){
                 deleteQuestion.style.display = 'none';
                 location.reload();
