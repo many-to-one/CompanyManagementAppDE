@@ -38,11 +38,11 @@ def index(request):
 
 def WorkObjects(request):
     if request.user.is_superuser:
-        work_objects = WorkObject.objects.all()
+        work_objects = WorkObject.objects.all().order_by('id')
     else:
         work_objects = WorkObject.objects.filter(
             user=request.user
-        )
+        ).order_by('id')
     work_objects_list = work_objects.values_list('name', flat=True)
 
     if request.method == 'POST':
@@ -52,7 +52,6 @@ def WorkObjects(request):
         else:
             work_objects = WorkObject.objects.filter(name=select)
 
-    print('WORK_OBJECTS !!!!!!!!!', work_objects)
     paginator = Paginator(work_objects, 10) 
     page_number = request.GET.get('page')
     work_objects = paginator.get_page(page_number)
@@ -754,36 +753,6 @@ def chat(request, pk):
 
 def chek_messages(request, pk):
     if request.method == 'GET':
-        # work_object = get_object_or_404(WorkObject, id=pk)
-        # count_result = chek_messages_task.delay(pk)
-        # count = count_result.get()
-        # print('COUNT !!!!!!!!!!', work_object)
-        # if count == True:
-        #     response = {
-        #             'message': True
-        #         }
-        # else:
-        #     response = {
-        #             'message': False
-        #         }
-        # work_object = get_object_or_404(WorkObject, id=pk)
-        # print('WORK_OBJECT --------------', work_object)
-        # count_mess = work_object.objekt.count()
-        # print('COUNT_MESS --------------', count_mess)
-        # if not hasattr(chek_messages, 'prev_count'):
-        #     chek_messages.prev_count = count_mess
-        # if count_mess > chek_messages.prev_count:
-        #     print('CHECK_MESS_COUNT BOLSZE ---------------------', chek_messages.prev_count, count_mess) 
-        #     chek_messages.prev_count = count_mess
-        #     response = {
-        #             'message': True
-        #         }
-        # else:
-        #     print('CHECK_MESS_COUNT ROWNO --------------------', chek_messages.prev_count, count_mess) 
-        #     response = {
-        #             'message': False
-        #         }
-
         work_object = get_object_or_404(WorkObject, id=pk)
         print('WORK_OBJECT --------------', work_object)
         count_mess = work_object.objekt.count()
@@ -869,6 +838,8 @@ def userWork(request, pk):
         date = request.POST.get('date')
         timestart = request.POST.get('timestart')
         timefinish = request.POST.get('timefinish')
+        timestart_break = request.POST.get('timestart_break')
+        timefinish_break = request.POST.get('timefinish_break')
 
         if date == '':
             messages.warning(request, 'Wybierz date!')
@@ -879,6 +850,12 @@ def userWork(request, pk):
         if timefinish == '':
             messages.warning(request, 'Zaznacz koniec czasu pracy!')
             return redirect(reverse('user_work', kwargs={'pk': pk}))
+        if timestart_break == '':
+            messages.warning(request, 'Zaznacz początek przerwy!')
+            return redirect(reverse('user_work', kwargs={'pk': pk}))
+        if timefinish_break == '':
+            messages.warning(request, 'Zaznacz koniec przerwy!')
+            return redirect(reverse('user_work', kwargs={'pk': pk}))
 
         ### Here we need to make str(date) => int(date) to sum it ###
         year, month, day = date.split('-')
@@ -886,7 +863,32 @@ def userWork(request, pk):
         finish_hr, finish_min = timefinish.split(':') 
         start = datetime(int(year), int(month), int(day), int(start_hr), int(start_min))
         end = datetime(int(year), int(month), int(day), int(finish_hr), int(finish_min))
-        diff = end - start
+        # diff = end - start
+        #BREAK
+        start_hr_break, start_min_break = timestart_break.split(':') 
+        finish_hr_break, finish_min_break = timefinish_break.split(':') 
+        start_break = datetime(int(year), int(month), int(day), int(start_hr_break), int(start_min_break))
+        end_break = datetime(int(year), int(month), int(day), int(finish_hr_break), int(finish_min_break))
+        dif_break = end_break - start_break 
+
+        dif_hours_break = dif_break.seconds // 3600
+        dif_sec_break = dif_break.seconds % 3600
+        dif_min_break = dif_sec_break // 60
+        if dif_min_break < 10 or dif_min_break == 0:
+            bt = f'{dif_hours_break}:0{dif_min_break}'
+        else:
+            bt = f'{dif_hours_break}:{dif_min_break}'
+        print('start_break ------------------', start_break)
+        print('end_break ------------------', end_break)
+        print('dif_break.seconds ------------------', dif_break.seconds)
+        print('dif_hours_break ------------------', dif_hours_break)
+        print('dif_sec_break ------------------', dif_sec_break)
+        print('dif_min_break ------------------', dif_min_break)
+        print('BREAK ------------------', bt)
+
+        # Work time in seconds without break
+        diff = end - start -dif_break
+        print('BREAK ------------------', diff)
         ### Overtime/day ###
         if diff.seconds > 28800:
             over_time = diff.seconds - 28800
@@ -2677,7 +2679,7 @@ def vacationRequest(request, pk):
         'v_request__days_planned'
         ).first()
   
-    print('VACATIONREQUEST', req.v_request.days_planned)
+    print('VACATIONREQUEST', req.v_request.days_planned, req)
     vacation = Vacations.objects.get(id=pk)
     type = vacation.type
 
@@ -2731,7 +2733,7 @@ def vacationRequest(request, pk):
             vacation.save()
             return redirect('allVacationRequests')
     context = {
-        'req': req,
+        'req': vacation,
         'pk': pk,
     }
     return render(request, 'vacation_request.html', context)

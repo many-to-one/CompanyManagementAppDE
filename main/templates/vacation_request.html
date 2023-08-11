@@ -11,7 +11,7 @@
 <body>
 
     {% block content %}
-            <div class="cwo_cont">
+            <div class="page-container">
                 <h2>Wniosek o urlop #{{ pk }}</h2>
 
                 <div class="add_vacations_grafic_container">
@@ -20,37 +20,37 @@
                         {% csrf_token %}
                     
                         <div class="vacations_mini_cont">
-                            <p>Imię i nazwisko:</p>
-                            <p>{{ req.v_request__username }}</p>
+                            <p class="field">Imię i nazwisko:</p>
+                            <input class="vacations_input" value="{{ req.username }}">
                         </div>
                     
                         <div class="vacations_mini_cont">
-                            <p>Data wniosku:</p>
-                            <p>{{ req.v_request__date }}</p>
+                            <p class="field">Data wniosku:</p>
+                            <input class="vacations_input" value="{{ req.date }}">
                         </div>
                     
                         <div class="vacations_mini_cont" name="type">
-                            <p>Typ urlopu:</p>
-                            <p>{{ req.v_request__type }}</p>
+                            <p class="field">Typ urlopu:</p>
+                            <input class="vacations_input" value="{{ req.type }}">
                         </div>
                     
                         <div class="vacations_mini_cont">
-                            <p>Od:</p>
-                            <p>{{ req.v_request__v_from }}</p>
+                            <p class="field">Od:</p>
+                            <input class="vacations_input" value="{{ req.v_from }}">
                         </div>
                     
                         <div class="vacations_mini_cont">
-                            <p>Do:</p>
-                            <p>{{ req.v_request__v_to }}</p>
+                            <p class="field">Do:</p>
+                            <input class="vacations_input" value="{{ req.v_to }}">
                         </div>
                     
                         <div class="vacations_mini_cont">
-                            {% if req.v_request.type == 'z powodu siły wyższej' %}
-                                <p>Liczba godzin urlopu:</p>
-                                <p>{{ req.v_request__days_planned }}</p>
+                            {% if req.type == 'z powodu siły wyższej' %}
+                                <p class="field">Liczba godzin urlopu:</p>
+                                <input class="vacations_input" value="{{ req.days_planned }}">
                             {% else %}
-                                <p>Liczba dni urlopu:</p>
-                                <p>{{ req.v_request__days_planned }}</p>
+                                <p class="field">Liczba dni urlopu:</p>
+                                <input class="vacations_input" value="{{ req.days_planned }}">
                             {% endif %}
                         </div>
 

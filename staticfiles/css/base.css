@@ -20,7 +20,7 @@
 .container {
     display: flex;
     flex-direction: column;
-    /* margin-left: 4vw; */
+    /* margin-top: 4vw; */
     padding: 8px;
     /* height: 100vh; */
     overflow-y: scroll;
@@ -196,8 +196,6 @@ tr:nth-child(even) td {
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* justify-content: center; */
-    height: 100%;
     background-color: var(--main-bg-color);
 }
 
@@ -208,7 +206,6 @@ tr:nth-child(even) td {
 }
 
 .hc {
-  max-height: 600px; 
   overflow: auto;
 }
 
