@@ -12,7 +12,7 @@
 </head>
 <body>
 
-    <div id="header-container">
+    <div class="hc" id="header-container">
         {% if request.user.is_authenticated %}
             <img 
                 src="{% static 'images/menu.png' %}" 
@@ -28,7 +28,7 @@
                 onclick="toggleMenu()"
             >
         {% endif %}
-        <div class="block"><a href="">Adest Meneger</a></div>
+        <div class="block"><a href="">Adest GmbH ERP</a></div>
         {% if request.user.is_authenticated %}
             <div class="block"><a>Witaj, {{ request.user }}</a></div>
         {% endif %}

@@ -623,62 +623,62 @@ def chat(request, pk):
 
         # Update is_read flag for messages
         try:
-            messages_results = update_is_read_flag.delay(pk, username)
-            messages = messages_results.get()
+            # messages_results = update_is_read_flag.delay(pk, username)
+            # messages = messages_results.get()
 
-            #  # All messages in current work object
-            # read_messages = Message.objects.filter(work_object=work_object)
+             # All messages in current work object
+            read_messages = Message.objects.filter(work_object=work_object).order_by('id')
 
-            # # All messages in current object for user who open the chat
-            # read_filter = Q(message__in=read_messages) & Q(username=username)
+            # All messages in current object for user who open the chat
+            read_filter = Q(message__in=read_messages) & Q(username=username)
 
-            # # Count of unread messages only for recipients
-            # unread_messages = Message.objects.filter(
-            #     work_object=work_object, 
-            #     isread__is_read=False # Calling the child model - IsRead
-            #     )
+            # Count of unread messages only for recipients
+            unread_messages = Message.objects.filter(
+                work_object=work_object, 
+                isread__is_read=False # Calling the child model - IsRead
+                )
 
-            # # Finding the sender username of unread messages
-            # sender = ''
-            # for um in unread_messages:
-            #     sender = um.sender.username
+            # Finding the sender username of unread messages
+            sender = ''
+            for um in unread_messages:
+                sender = um.sender.username
 
-            # # Count of unread messages
-            # unread_messages_count = IsRead.objects.filter(
-            #     work_object=work_object,
-            #     is_read=False,
-            # ).exclude(
-            #     username=sender
-            # ).count()
+            # Count of unread messages
+            unread_messages_count = IsRead.objects.filter(
+                work_object=work_object,
+                is_read=False,
+            ).exclude(
+                username=sender
+            ).count()
 
-            # # if count of unread messages > 0 the message will be
-            # # marked - unread - for sender after he will sent it
-            # if unread_messages_count > 0:
-            #     # Marke message - is_read - for first user who
-            #     # has read the message, exlude sender
-            #     read_by_someone = IsRead.objects.filter(
-            #             work_object=work_object, 
-            #             message__in=unread_messages,
-            #             username=username,
-            #         ).exclude(
-            #             username=sender
-            #         ).update(
-            #             is_read=True
-            #         )
+            # if count of unread messages > 0 the message will be
+            # marked - unread - for sender after he will sent it
+            if unread_messages_count > 0:
+                # Marke message - is_read - for first user who
+                # has read the message, exlude sender
+                read_by_someone = IsRead.objects.filter(
+                        work_object=work_object, 
+                        message__in=unread_messages,
+                        username=username,
+                    ).exclude(
+                        username=sender
+                    ).update(
+                        is_read=True
+                    )
 
-            #     # If somebody has read the message, the message
-            #     # will be marked - is_read - for sender
-            #     if read_by_someone:
-            #         IsRead.objects.filter(
-            #                 work_object=work_object, 
-            #                 username=sender
-            #             ).update(
-            #                 is_read=True
-            #             )
-            # else:
-            #     # All messages in current work object marks like is_read
-            #     IsRead.objects.filter(read_filter).update(is_read=True)
-            # messages = list(read_messages.values())
+                # If somebody has read the message, the message
+                # will be marked - is_read - for sender
+                if read_by_someone:
+                    IsRead.objects.filter(
+                            work_object=work_object, 
+                            username=sender
+                        ).update(
+                            is_read=True
+                        )
+            else:
+                # All messages in current work object marks like is_read
+                IsRead.objects.filter(read_filter).update(is_read=True)
+            messages = list(read_messages.values())
 
         except Exception as e:
             error = f'Wystąpił błąd: {e}, nie można wyświetlić wiadomości'
@@ -686,13 +686,13 @@ def chat(request, pk):
         
         # Add 'is_read' field to each message dictionary
         # try:
-        #     messages_results = get_messages.delay(pk, username, current_time)
-        #     messages = messages_results.get()
+        #     # messages_results = get_messages.delay(pk, username, current_time)
+        #     # messages = messages_results.get()
         #     print('MESSAGES !!!!!!!!!!!!!!!', messages)
         # except Exception as e:
         #     error = f'Wystąpił błąd: {e}, nie można wyświetlić wiadomości'
         #     return render(request, 'error.html', {'error': error})
-        print('MESSAGES !!!!!!!!!!!!!!!', messages)
+        # print('MESSAGES !!!!!!!!!!!!!!!', messages)
         for message in messages:
             is_read = IsRead.objects.filter(message_id=message['id'], username=username).first()
             message['is_read'] = is_read.is_read if is_read else False
@@ -701,6 +701,7 @@ def chat(request, pk):
             'user': username,
             'messages': messages,
             'current_time': current_time,
+            'status': 'ok',
         }
 
         return JsonResponse(response)
@@ -727,7 +728,8 @@ def chat(request, pk):
                 work_object=work_object,
                 for_sender_is_read=True,
             )
-            # new_message_results = create_message.delay(pk, users, r_user, content, user)
+            print('NEW_MESSAGE !!!!!!!!!!!!!!!', new_message)
+            # new_message_results = create_message.delay(pk, r_user, content, user)
             # new_message = new_message_results.get()
         except Exception as e:
             error = f'Wystąpił błąd: {e}, nie można wysłać wiadomości'
@@ -745,28 +747,59 @@ def chat(request, pk):
         IsRead.objects.bulk_create(is_read_list)
 
         response = {
-            'new_message_id': new_message.id
+            'new_message_id': new_message.id,
         }
         return JsonResponse(response)
     
 
 def chek_messages(request, pk):
     if request.method == 'GET':
+        # work_object = get_object_or_404(WorkObject, id=pk)
+        # count_result = chek_messages_task.delay(pk)
+        # count = count_result.get()
+        # print('COUNT !!!!!!!!!!', work_object)
+        # if count == True:
+        #     response = {
+        #             'message': True
+        #         }
+        # else:
+        #     response = {
+        #             'message': False
+        #         }
+        # work_object = get_object_or_404(WorkObject, id=pk)
+        # print('WORK_OBJECT --------------', work_object)
+        # count_mess = work_object.objekt.count()
+        # print('COUNT_MESS --------------', count_mess)
+        # if not hasattr(chek_messages, 'prev_count'):
+        #     chek_messages.prev_count = count_mess
+        # if count_mess > chek_messages.prev_count:
+        #     print('CHECK_MESS_COUNT BOLSZE ---------------------', chek_messages.prev_count, count_mess) 
+        #     chek_messages.prev_count = count_mess
+        #     response = {
+        #             'message': True
+        #         }
+        # else:
+        #     print('CHECK_MESS_COUNT ROWNO --------------------', chek_messages.prev_count, count_mess) 
+        #     response = {
+        #             'message': False
+        #         }
+
         work_object = get_object_or_404(WorkObject, id=pk)
+        print('WORK_OBJECT --------------', work_object)
         count_mess = work_object.objekt.count()
-        if not hasattr(chek_messages, 'prev_count'):
-            chek_messages.prev_count = count_mess
-        if count_mess > chek_messages.prev_count:
-            print('CHECK_MESS_COUNT !!!!!!!!!', chek_messages.prev_count) 
-            chek_messages.prev_count = count_mess
+        print('COUNT_MESS --------------', count_mess)
+        if count_mess > work_object.message_count:
+            work_object.message_count = count_mess
+            work_object.save()
+            print('CHECK_MESS_COUNT BOLSZE ---------------------', work_object.message_count, count_mess) 
             response = {
-                'message': True
-            }
+                    'message': True
+                }
         else:
-            print('CHECK_MESS_COUNT !!!!!!!!!', chek_messages.prev_count) 
+            print('CHECK_MESS_COUNT ROWNO --------------------', work_object.message_count, count_mess) 
             response = {
-                'message': False
-            }
+                    'message': False
+                }
 
     return JsonResponse(response)
 

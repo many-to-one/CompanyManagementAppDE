@@ -81,7 +81,9 @@
                         <th>Początek</th>
                         <th>Koniec</th>
                         <th>Czas pracy</th>
-                        <th>Nadgodziny</th>
+                        {% if request.user.is_superuser %}
+                            <th>Nadgodziny</th>
+                        {% endif %}
                         <th>Czynność</th>
                         <th>Kawa/Posiłki</th>
                         <th>Zaliczka</th>
@@ -107,7 +109,9 @@
                         <td class="nch" data-label="Początek">{{work.timestart}}</td>
                         <td class="ch" data-label="Koniec">{{work.timefinish}}</td>
                         <td class="nch" data-label="Czas pracy">{{work.diff_time}}</td>
-                        <td class="ch" data-label="Nadgodziny">{{work.over_time}}</td>
+                        {% if request.user.is_superuser %}
+                            <td class="ch" data-label="Nadgodziny">{{work.over_time}}</td>
+                        {% endif %}
                         {% if work.work_type %}
                             <td class="odd" data-label="Czynność">{{work.work_type}}</td>
                         {% else %}
@@ -142,9 +146,11 @@
                         <td data-label="Czas pracy">
                             <b>{{total_work_time}}</b>
                         </td>
-                        <td data-label="Nadgodziny">
-                            <b>{{total_work_over_time}}</b>
-                        </td>
+                        {% if request.user.is_superuser %}
+                            <td data-label="Nadgodziny">
+                                <b>{{total_work_over_time}}</b>
+                            </td>
+                        {% endif %}
                         <td class="total"></td>
                         <td data-label="Kawa/Posiłki">
                             <b>{{total_coffee_food}}</b>

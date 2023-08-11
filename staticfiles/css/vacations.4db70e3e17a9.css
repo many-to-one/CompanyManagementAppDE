@@ -1,0 +1,272 @@
+h2 {
+    margin-top: 20px;
+}
+
+.vacations_top_cont {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--title-bg-color);
+}
+
+.vacations_filter_cont {
+    position: fixed;
+    top: 0;
+    left: 40px;
+    width: 95%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px; 
+    background-color: var(--title-bg-color);
+  }
+
+.vacations_filter_cont p {
+  background-color: var(--main-bg-color);
+  width: 220px;
+  height: 20px;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 10px;
+}
+
+.delete {
+    display: none;
+}
+
+.vacations_grafic_container {
+    margin-left: 50px;
+    margin-top: 125px;
+    width: 93vw;
+    height: auto;
+    background-color: var(--input-bg-color);
+    padding: 10px; 
+    border-radius: 10px; 
+}
+
+@media screen and (max-width: 1180px) {
+    .vacations_grafic_container {
+        margin-left: 50px;
+        margin-top: 125px;
+        width: 92vw;
+        height: auto;
+        background-color: var(--input-bg-color);
+        padding: 10px;
+        border-radius: 10px;
+    }
+
+    .delete {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+    }
+}
+
+@media screen and (max-width: 844px) {
+    .vacations_grafic_container {
+        margin-top: 125px;
+        width: 88vw;
+        height: auto;
+        background-color: var(--input-bg-color);
+        padding: 10px;
+        border-radius: 10px;
+    }
+}
+
+@media screen and (max-width: 450px) {
+    .vacations_grafic_container {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 200px;
+        width: 76vw;
+        height: auto;
+        background-color: var(--input-bg-color);
+        padding: 10px;
+        border-radius: 10px;
+    }
+
+    .vacations_filter_cont {
+        position: fixed;
+        top: 0;
+        left: 9px;
+        width: 85%;
+        display: flex;
+        flex-wrap: wrap;
+        padding: 10px; 
+        margin-left: 30px;
+        background-color: var(--title-bg-color);
+      }
+}
+
+.vacations_mini {
+    display: flex;
+    flex-direction: row;
+    padding: 20px;
+}
+
+.vacations_vert {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.req_vacations_container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+    width: 50vw;
+    height: auto;
+    background-color: var(--input-bg-color);
+    padding: 10px;
+    border-radius: 10px;
+}
+
+@media screen and (max-width: 1180px) {
+    .req_vacations_container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+        width: 85vw;
+        height: auto;
+        background-color: var(--input-bg-color);
+        padding: 10px;
+        border-radius: 10px;
+    }
+}
+
+@media screen and (max-width: 450px) {
+    .req_vacations_container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+        width: 80vw;
+        height: auto;
+        background-color: var(--input-bg-color);
+        padding: 10px;
+        border-radius: 10px;
+    }
+}
+
+.vacations_mini_cont {
+    display: flex;
+    /* align-items: center; */
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 5vw;
+    margin-bottom: 20px;
+}
+
+.vacations_mini_cont form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 5vw;
+    margin-bottom: 20px;
+}
+
+.vacations_grafic_container p {
+    background-color: var(--main-bg-color);
+    width: 220px;
+    height: 20px;
+    padding: 10px;
+    margin: 10px;
+    border-radius: 10px;
+}
+
+.vacations_input {
+    background-color: var(--main-bg-color);
+    color: #2a2a2a;
+    border-radius: 10px;
+    border: transparent;
+    width: 240px;
+    height: 40px;
+    font-size: 14px;
+    margin: 10px;
+    padding-left: 10px;
+    cursor: pointer;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+
+.vacations_input:hover {
+    background-color: #c0d2f0;
+    transition: background-color 0.3s ease;
+}
+
+.vacations_btn_cont {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    transition: width 0.8s ease-in-out;
+}
+
+.vacations_btn_cont:hover {
+    justify-content: space-between;
+}
+
+.btn_accept {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 5px;
+    margin: 10px;
+    background-color: green;
+    border: var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    width: 100px;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+    transition: width 0.8s ease;
+}
+
+.btn_accept:hover {
+    background-color: rgb(79, 150, 79);
+    width: 120px;
+    justify-content: space-between;
+}
+
+.btn_accept img:hover {
+    animation: rotate 2s infinite linear;
+}
+
+@keyframes rotate {
+    0% {
+      transform: rotateY(0deg);
+    }
+    100% {
+      transform: rotateY(360deg);
+    }
+  }
+  
+.btn_reject {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 5px;
+    margin: 10px;
+    background-color: rgb(213, 24, 24);
+    border: var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    width: 100px;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+    transition: width 0.8s ease;
+}
+
+.btn_reject:hover {
+    background-color: rgb(242, 105, 105);
+    width: 120px;
+    justify-content: space-between;
+}
+
+.btn_reject img:hover {
+    animation: rotate 2s infinite linear;
+}

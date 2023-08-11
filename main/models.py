@@ -130,6 +130,9 @@ class WorkObject(models.Model):
     user = models.ManyToManyField(
         CustomUser,
     )
+    message_count = models.IntegerField(
+        default=0
+    )
 
     def __str__(self):
         return str(self.id)

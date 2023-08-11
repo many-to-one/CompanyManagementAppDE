@@ -227,7 +227,7 @@ def update_is_read_flag(pk, username):
         messages = read_messages.values()
     except WorkObject.DoesNotExist:
         raise ValueError (f"WorkObject with ID {pk} does not exist.")
-    
+    print('DELAY !!!!!!!!!!!!!!!!!!!')
     return list(messages)
 
 
@@ -245,6 +245,8 @@ def create_message(pk, users, r_user, content, user):
         work_object=work_object,
         for_sender_is_read=True,
     )
+    print('NEW_MESSAGE !!!!!!!!!', new_message)
+
 
     # Create IsRead instances for all users
     is_read_list = [
@@ -257,10 +259,7 @@ def create_message(pk, users, r_user, content, user):
     ]
     IsRead.objects.bulk_create(is_read_list)
     
-    response = {
-        'new_message_id': new_message.id
-    }
-    return JsonResponse(response)
+    return new_message
 
 
 @shared_task
@@ -275,3 +274,18 @@ def get_messages(messages, username, current_time):
         'current_time': current_time,
     }
     return JsonResponse(response)
+
+
+@shared_task
+def chek_messages_task(pk):
+    work_object = get_object_or_404(WorkObject, id=pk)
+    count_mess = work_object.objekt.count()
+    if not hasattr(chek_messages_task, 'prev_count'):
+        chek_messages_task.prev_count = count_mess
+    if count_mess > chek_messages_task.prev_count:
+        print('CHECK_MESS_COUNT !!!!!!!!!', chek_messages_task.prev_count) 
+        chek_messages_task.prev_count = count_mess
+        return True
+    else:
+        print('CHECK_MESS_COUNT !!!!!!!!!', chek_messages_task.prev_count) 
+        return False
