@@ -54,11 +54,16 @@ def WorkObjects(request):
     formatted_date = months_pl_shorts(current_date.strftime('%d %b %Y'))
 
     for wo in work_objects:
-        if int(wo.timefinish[:2]) - int(formatted_date[:2]) == 1:
-            print('FINISH ----------------', int(wo.timefinish[:2]) - int(formatted_date[:2]))
+        if int(wo.timefinish[:2]) - int(formatted_date[:2]) <= 1 and wo.status == 'Aktywne':
+            wo.deadline = True
+            
         if wo.timefinish == formatted_date and wo.status == 'Aktywne':
             wo.status = 'Spóźnione'
             wo.save()
+            wo.deadline = True
+
+        if wo.status == 'Zakończone':
+            wo.finished = True
 
     if request.method == 'POST':
         select = request.POST.get('object')

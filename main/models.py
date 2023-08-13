@@ -146,6 +146,12 @@ class WorkObject(models.Model):
         default='Aktywne',
         max_length=150,
     )
+    deadline = models.BooleanField(
+        default=False
+    )
+    finished = models.BooleanField(
+        default=False
+    )
 
     def __str__(self):
         return str(self.id)

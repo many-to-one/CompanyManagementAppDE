@@ -281,6 +281,38 @@ tr:nth-child(even) td {
     overflow-x: auto;
 }
 
+.label_red {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: rgb(253, 104, 104);
+  color: #2a2a2a;
+  border-radius: 5px;
+  border: transparent;
+  width: 60vw;
+  height: 40px;
+  font-size: 20px;
+  padding: 10px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  overflow-x: auto;
+}
+
+.label_green {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: rgb(172, 250, 165);
+  color: #2a2a2a;
+  border-radius: 5px;
+  border: transparent;
+  width: 60vw;
+  height: 40px;
+  font-size: 20px;
+  padding: 10px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  overflow-x: auto;
+}
+
 .label a {
   color: var(--header-bg-color);
 }
