@@ -25,14 +25,14 @@
 
             <a class="home_part" href="{% url 'user_work' request.user.pk %}">
                 <img src="{% static 'images/addwork.png' %}" width="150" height="150">
-                <p>DODAJ PRACĘ</p>
+                <p>DODAJ CZAS PRACY</p>
             </a>
 
             <a class="home_part" href="{% url 'work_objects' %}">
                 <img src="{% static 'images/workobject.png' %}" width="150" height="150">
                 <div class="tags_cont_mini">
                     <p>MIEJSCA PRACY </p>
-                    <span class="header_quantity"><{% all_messages_quantity request.user %}/span> 
+                    <span class="header_quantity">{% all_messages_quantity request.user %}</span> 
                 </div>
             </a>
 

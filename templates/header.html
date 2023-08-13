@@ -75,7 +75,7 @@
         </div>
         <div class="block">
             {% if request.user.is_active %}
-                <div class="btn"><a class="btn-title" href="{% url 'user_work' request.user.pk %}">Dodaj pracę</a></div>
+                <div class="btn"><a class="btn-title" href="{% url 'user_work' request.user.pk %}">Dodaj czas pracy</a></div>
                 <div class="btn"><a class="btn-title" href="{% url 'logout' %}">Wyloguj się</a></div>
             {% else %}
                 <div class="btn"><a class="btn-title" href="{% url 'register' %}">Zarejestruj się</a></div>

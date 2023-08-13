@@ -179,6 +179,18 @@
             </div>
             <br>
 
+            <div class="work">
+                <button class="btn" id="work_object_status" onclick="changeStatus(event)">
+                    <p class="btn-title">
+                        {% if work_object.status == 'Aktywne' %}
+                            Zakończ
+                        {% else %}
+                            Aktywuj
+                        {% endif %}
+                    </p>
+                </button>
+            </div>
+
             <div class="chart">
                 <canvas id="myChart" width="400" height="400"></canvas>
             </div>
@@ -279,6 +291,38 @@
             chatInput.value = ''; // Clear the chat input field after sending
         }
       }
+    }
+
+
+    // WORK OBJECT STATUS CHANGE
+    function changeStatus(event){
+        event.preventDefault();
+        var btnTitle = event.currentTarget.querySelector('.btn-title');
+        var status = null
+        if (btnTitle.textContent === 'Zakończ') {
+                btnTitle.textContent = 'Aktywuj';
+                status = 'Zakonczone';
+            } else {
+                btnTitle.textContent = 'Zakończ';
+                status = 'Aktywne';
+            }
+        
+        $.ajax({
+          type: 'POST',
+          url: "{% url 'changeStatusWorkObject' work_object.pk %}",
+          data: {
+              'status': status,
+          },
+          headers: {
+              'X-CSRFToken': '{{ csrf_token }}'
+          },
+          success: (data) => {
+            console.log(data)
+          },
+          error: (data) => {
+              console.log('error')
+          }                
+        })        
     }
 
 

@@ -33,7 +33,28 @@
     <br>
 
     <div class="wo_container">
+
         {% for wo in work_objects %}
+        <div class="before">
+            <div class="label_img_sch">
+                <p class="init">Status:</p>
+                <p class="init">{{ wo.status }}</p>
+            </div>
+
+        <div class="row_simple">
+
+          <div id="taskDateCont">
+            <div id="taskDateImg">
+              <div id="taskDateBg">
+                <div id="taskDate">
+                  <p>{{ wo.timestart|slice:":2" }}</p>
+                  <p>{{ wo.timestart|slice:"2:-4" }}</p>
+                </div>
+                <p id="taskYear">{{ wo.timestart|slice:"-4:" }}</p>
+              </div>
+            </div>
+          </div>
+
             <div class="label">
 
                 <div class="row_cont_in_label">
@@ -41,6 +62,7 @@
                         <img src="{% static 'images/enter.png' %}" width="30" height="30">
                     </a>
                     {{wo.name}}
+
                 </div>
 
                 <div class="row_cont_in_label">
@@ -65,10 +87,27 @@
                     <a class="label_img" href="{% url 'deleteWorkObjectQuestion' wo.pk %}">
                       <img src="{% static 'images/delete.png' %}" width="30" height="30"> 
                     </a>
+
                 </div>
 
             </div>
-            <br>
+
+            <div id="taskDateCont">
+                <div id="taskDateImg">
+                  <div id="taskDateBg">
+                    <div id="taskDate">
+                      <p>{{ wo.timefinish|slice:":2" }}</p>
+                      <p>{{ wo.timefinish|slice:"2:-4" }}</p>
+                    </div>
+                    <p id="taskYear">{{ wo.timefinish|slice:"-4:" }}</p>
+                  </div>
+                </div>
+              </div>
+
+        </div>
+        </div>
+        <br>
+
         {% endfor %}
         <br>
 

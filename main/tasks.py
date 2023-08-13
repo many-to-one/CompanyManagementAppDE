@@ -277,15 +277,17 @@ def get_messages(messages, username, current_time):
 
 
 @shared_task
-def chek_messages_task(pk):
-    work_object = get_object_or_404(WorkObject, id=pk)
+def chek_messages_task(pk, user):
+    work_object = get_object_or_404(WorkObject, id=pk, user=user)
+    print('WORK_OBJECT --------------', work_object)
     count_mess = work_object.objekt.count()
-    if not hasattr(chek_messages_task, 'prev_count'):
-        chek_messages_task.prev_count = count_mess
-    if count_mess > chek_messages_task.prev_count:
-        print('CHECK_MESS_COUNT !!!!!!!!!', chek_messages_task.prev_count) 
-        chek_messages_task.prev_count = count_mess
-        return True
+    print('COUNT_MESS --------------', count_mess)
+    if count_mess > work_object.message_count:
+        work_object.message_count = count_mess
+        work_object.save()
+        print('CHECK_MESS_COUNT BOLSZE ---------------------', work_object.message_count, count_mess) 
+        count = True
     else:
-        print('CHECK_MESS_COUNT !!!!!!!!!', chek_messages_task.prev_count) 
-        return False
+        print('CHECK_MESS_COUNT ROWNO --------------------', work_object.message_count, count_mess) 
+        count = False
+    return count

@@ -7,8 +7,11 @@ import re
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+
+from .utils import months_pl_shorts
 from .tasks import *
 from .models import (
+    MessageCount,
     VacationRequest, 
     Vacations, 
     Work, 
@@ -36,6 +39,7 @@ def index(request):
 #*************************************************** ALL WORK OBJECTS *************************************************#
 #**********************************************************************************************************************#
 
+
 def WorkObjects(request):
     if request.user.is_superuser:
         work_objects = WorkObject.objects.all().order_by('id')
@@ -44,6 +48,17 @@ def WorkObjects(request):
             user=request.user
         ).order_by('id')
     work_objects_list = work_objects.values_list('name', flat=True)
+
+    # Get the current date
+    current_date = datetime.now().date()
+    formatted_date = months_pl_shorts(current_date.strftime('%d %b %Y'))
+
+    for wo in work_objects:
+        if int(wo.timefinish[:2]) - int(formatted_date[:2]) == 1:
+            print('FINISH ----------------', int(wo.timefinish[:2]) - int(formatted_date[:2]))
+        if wo.timefinish == formatted_date and wo.status == 'Aktywne':
+            wo.status = 'Spóźnione'
+            wo.save()
 
     if request.method == 'POST':
         select = request.POST.get('object')
@@ -61,6 +76,21 @@ def WorkObjects(request):
     }
 
     return render(request, 'work_objects.html', context)
+
+
+
+def changeStatusWorkObject(request, pk):
+    wo = get_object_or_404(WorkObject, id=pk)
+    if request.method == 'POST':
+        status = request.POST.get('status')
+        wo.status = status
+        wo.save()
+
+        response = {
+            'status': wo.status
+        }
+
+    return JsonResponse(response)
 
 
 
@@ -752,23 +782,37 @@ def chat(request, pk):
     
 
 def chek_messages(request, pk):
+    user = request.user
     if request.method == 'GET':
         work_object = get_object_or_404(WorkObject, id=pk)
-        print('WORK_OBJECT --------------', work_object)
         count_mess = work_object.objekt.count()
         print('COUNT_MESS --------------', count_mess)
-        if count_mess > work_object.message_count:
-            work_object.message_count = count_mess
-            work_object.save()
-            print('CHECK_MESS_COUNT BOLSZE ---------------------', work_object.message_count, count_mess) 
+        print('WORK_OBJECT --------------', work_object)
+        messageCount, created = MessageCount.objects.get_or_create(
+            user=user,
+            work_object=work_object,
+        )
+        if count_mess > messageCount.message_count:
+            messageCount.message_count = count_mess
+            messageCount.save()
+            print('CHECK_MESS_COUNT BOLSZE ---------------------', count_mess, messageCount.message_count) 
             response = {
                     'message': True
                 }
         else:
-            print('CHECK_MESS_COUNT ROWNO --------------------', work_object.message_count, count_mess) 
+            print('CHECK_MESS_COUNT ROWNO --------------------', count_mess, messageCount.message_count) 
             response = {
                     'message': False
                 }
+            
+
+
+        # get_count_res = chek_messages_task.delay(pk, user)
+        # get_count = get_count_res.get()
+        # response = {
+        #             'message': get_count
+        #         }
+
 
     return JsonResponse(response)
 
@@ -783,10 +827,24 @@ def createWorkObject(request):
     if request.method == 'POST':
         work = WorkObject.objects.create()
         workname = request.POST.get('workname')
+        timestart = request.POST.get('timestart')
+        timefinish = request.POST.get('timefinish')
         print('workname ---', workname)
+
+        # Parse the input dates
+        parsed_start = datetime.strptime(timestart, '%Y-%m-%d').date()
+        parsed_finish = datetime.strptime(timefinish, '%Y-%m-%d').date()
+
+        # Format the parsed date into "Day Month Year" format
+        formatted_start = parsed_start.strftime('%d %b %Y')
+        formatted_finish = parsed_finish.strftime('%d %b %Y')
+
+        # print('DATE ----------------', parsed_date, formatted_date)
         if workname != '':
             try:
                 work.name = workname
+                work.timestart = months_pl_shorts(formatted_start)
+                work.timefinish = months_pl_shorts(formatted_finish)
                 users_list = request.POST.getlist('users')
                 work.user.add(*users_list)
                 work.save()
@@ -838,8 +896,10 @@ def userWork(request, pk):
         date = request.POST.get('date')
         timestart = request.POST.get('timestart')
         timefinish = request.POST.get('timefinish')
-        timestart_break = request.POST.get('timestart_break')
-        timefinish_break = request.POST.get('timefinish_break')
+        timestart_break1 = request.POST.get('timestart_break1')
+        timefinish_break1 = request.POST.get('timefinish_break1')
+        timestart_break2 = request.POST.get('timestart_break2')
+        timefinish_break2 = request.POST.get('timefinish_break2')
 
         if date == '':
             messages.warning(request, 'Wybierz date!')
@@ -850,11 +910,17 @@ def userWork(request, pk):
         if timefinish == '':
             messages.warning(request, 'Zaznacz koniec czasu pracy!')
             return redirect(reverse('user_work', kwargs={'pk': pk}))
-        if timestart_break == '':
-            messages.warning(request, 'Zaznacz początek przerwy!')
+        if timestart_break1 == '':
+            messages.warning(request, 'Zaznacz początek przerwy na śniadanie!')
             return redirect(reverse('user_work', kwargs={'pk': pk}))
-        if timefinish_break == '':
-            messages.warning(request, 'Zaznacz koniec przerwy!')
+        if timefinish_break1 == '':
+            messages.warning(request, 'Zaznacz koniec przerwy na śniadanie!')
+            return redirect(reverse('user_work', kwargs={'pk': pk}))
+        if timestart_break2 == '':
+            messages.warning(request, 'Zaznacz początek przerwy na obiad!')
+            return redirect(reverse('user_work', kwargs={'pk': pk}))
+        if timefinish_break2 == '':
+            messages.warning(request, 'Zaznacz koniec przerwy na obiad!')
             return redirect(reverse('user_work', kwargs={'pk': pk}))
 
         ### Here we need to make str(date) => int(date) to sum it ###
@@ -863,31 +929,38 @@ def userWork(request, pk):
         finish_hr, finish_min = timefinish.split(':') 
         start = datetime(int(year), int(month), int(day), int(start_hr), int(start_min))
         end = datetime(int(year), int(month), int(day), int(finish_hr), int(finish_min))
-        # diff = end - start
-        #BREAK
-        start_hr_break, start_min_break = timestart_break.split(':') 
-        finish_hr_break, finish_min_break = timefinish_break.split(':') 
-        start_break = datetime(int(year), int(month), int(day), int(start_hr_break), int(start_min_break))
-        end_break = datetime(int(year), int(month), int(day), int(finish_hr_break), int(finish_min_break))
-        dif_break = end_break - start_break 
 
-        dif_hours_break = dif_break.seconds // 3600
-        dif_sec_break = dif_break.seconds % 3600
-        dif_min_break = dif_sec_break // 60
-        if dif_min_break < 10 or dif_min_break == 0:
-            bt = f'{dif_hours_break}:0{dif_min_break}'
+        #BREAKFAST
+        start_hr_break1, start_min_break1 = timestart_break1.split(':')  
+        finish_hr_break1, finish_min_break1 = timefinish_break1.split(':') 
+        start_break1 = datetime(int(year), int(month), int(day), int(start_hr_break1), int(start_min_break1))
+        end_break1 = datetime(int(year), int(month), int(day), int(finish_hr_break1), int(finish_min_break1))
+        dif_break1 = end_break1 - start_break1 
+
+        #LANCH
+        start_hr_break2, start_min_break2 = timestart_break2.split(':')  
+        finish_hr_break2, finish_min_break2 = timefinish_break2.split(':') 
+        start_break2 = datetime(int(year), int(month), int(day), int(start_hr_break2), int(start_min_break2))
+        end_break2 = datetime(int(year), int(month), int(day), int(finish_hr_break2), int(finish_min_break2))
+        dif_break2 = end_break2 - start_break2
+
+        dif_hours_break1 = dif_break1.seconds // 3600
+        dif_sec_break1 = dif_break1.seconds % 3600
+        dif_min_break1 = dif_sec_break1 // 60
+        if dif_min_break1 < 10 or dif_min_break1 == 0:
+            bt = f'{dif_hours_break1}:0{dif_min_break1}'
         else:
-            bt = f'{dif_hours_break}:{dif_min_break}'
-        print('start_break ------------------', start_break)
-        print('end_break ------------------', end_break)
-        print('dif_break.seconds ------------------', dif_break.seconds)
-        print('dif_hours_break ------------------', dif_hours_break)
-        print('dif_sec_break ------------------', dif_sec_break)
-        print('dif_min_break ------------------', dif_min_break)
+            bt = f'{dif_hours_break1}:{dif_min_break1}'
+        print('start_break ------------------', start_break1)
+        print('end_break ------------------', end_break1)
+        print('dif_break.seconds ------------------', dif_break1.seconds)
+        print('dif_hours_break ------------------', dif_hours_break1)
+        print('dif_sec_break ------------------', dif_sec_break1)
+        print('dif_min_break ------------------', dif_min_break1)
         print('BREAK ------------------', bt)
 
         # Work time in seconds without break
-        diff = end - start -dif_break
+        diff = end - start - dif_break1 - dif_break2
         print('BREAK ------------------', diff)
         ### Overtime/day ###
         if diff.seconds > 28800:

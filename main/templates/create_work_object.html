@@ -16,6 +16,14 @@
     <form method="POST" enctype="multipart/form-data" class="cwo_cont">
         {% csrf_token %}
         <input type="text" placeholder="Wpisz object" name="workname" class="cwo_input">
+        <div class="work">
+            <p>Początek:</p>
+            <input name="timestart" id="datetimepicker" type="date" class="add">
+        </div>
+        <div class="work">
+            <p>Koniec:</p>
+            <input name="timefinish" id="datetimepicker" type="date" class="add">
+        </div>
 
             <div class="cwo_checkbox_cont">
                 {% for user in users %}

@@ -273,7 +273,7 @@ tr:nth-child(even) td {
     color: #2a2a2a;
     border-radius: 5px;
     border: transparent;
-    width: 64vw;
+    width: 60vw;
     height: 40px;
     font-size: 20px;
     padding: 10px;
@@ -283,6 +283,11 @@ tr:nth-child(even) td {
 
 .label a {
   color: var(--header-bg-color);
+}
+
+.row_simple {
+  display: flex;
+  align-items: center;
 }
 
 .row_cont_in_label {

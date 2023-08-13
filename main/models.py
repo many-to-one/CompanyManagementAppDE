@@ -117,6 +117,18 @@ class Work(models.Model):
 
 
 class WorkObject(models.Model):
+    timestart = models.CharField(
+        null=False,
+        default='00:00',
+        max_length=25,
+        verbose_name='Początek',
+    )
+    timefinish = models.CharField(
+        null=False,
+        default='00:00',
+        max_length=25,
+        verbose_name='Koniec',
+    )
     name = models.CharField(
         null=True,
         max_length=150,
@@ -130,8 +142,9 @@ class WorkObject(models.Model):
     user = models.ManyToManyField(
         CustomUser,
     )
-    message_count = models.IntegerField(
-        default=0
+    status = models.CharField(
+        default='Aktywne',
+        max_length=150,
     )
 
     def __str__(self):
@@ -246,7 +259,8 @@ class Message(models.Model):
     work_object = models.ForeignKey(
         WorkObject,
         null=True, 
-        on_delete=models.PROTECT, 
+        # on_delete=models.PROTECT, 
+        on_delete=models.CASCADE,
         related_name='objekt'
         )
     content = models.TextField()
@@ -295,6 +309,26 @@ class IsRead(models.Model):
         default=False,
     )
     
+    def __str__(self):
+        return str(self.id)
+    
+
+class MessageCount(models.Model):
+    user = models.ForeignKey(
+        CustomUser, 
+        # on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True,
+        )
+    work_object = models.ForeignKey(
+        WorkObject,
+        null=True, 
+        on_delete=models.CASCADE, 
+        )
+    message_count = models.IntegerField(
+        default=0
+    )
+
     def __str__(self):
         return str(self.id)
     

@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import (
+    MessageCount,
     VacationRequest,
     Work,
     WorkObject,
@@ -14,6 +15,7 @@ admin.site.register(Work)
 admin.site.register(WorkObject)
 admin.site.register(WorkType)
 admin.site.register(Message)
+admin.site.register(MessageCount)
 admin.site.register(Vacations)
 admin.site.register(VacationRequest)
 admin.site.register(IsRead)

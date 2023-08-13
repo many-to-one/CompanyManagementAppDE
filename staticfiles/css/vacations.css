@@ -78,7 +78,7 @@ h2 {
     .vacations_grafic_container {
         display: flex;
         flex-wrap: wrap;
-        margin-top: 200px;
+        margin-top: 270px;
         width: 76vw;
         height: auto;
         background-color: var(--input-bg-color);
@@ -156,7 +156,7 @@ h2 {
 
 .vacations_mini_cont {
     display: flex;
-    /* align-items: center; */
+    align-items: center;
     justify-content: center;
     flex-wrap: wrap;
     gap: 5vw;
