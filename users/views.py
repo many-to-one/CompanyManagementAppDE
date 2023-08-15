@@ -229,6 +229,12 @@ def Profile(request, pk):
                     setattr(user, field, True)
                 else:
                     setattr(user, field, False)
+            elif field == 'administrator':
+                value = request.POST.get(field)
+                if value == 'Administrator':
+                    setattr(user, field, 'Administrator')
+                else:
+                    setattr(user, field, 'Nie')
             else:
                 value = request.POST.get(field)
             if value and value != request.POST.get('acceptation'):

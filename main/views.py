@@ -19,7 +19,8 @@ from .models import (
     WorkType, 
     Message, 
     IsRead, 
-    Task
+    Task,
+    Subcontractor,
     )
 from django.http import JsonResponse
 from django.db.models import Sum, F, Prefetch
@@ -59,11 +60,12 @@ def WorkObjects(request):
             
         if wo.timefinish == formatted_date and wo.status == 'Aktywne':
             wo.status = 'Spóźnione'
-            wo.save()
             wo.deadline = True
+            wo.save()
 
         if wo.status == 'Zakończone':
             wo.finished = True
+            wo.save()
 
     if request.method == 'POST':
         select = request.POST.get('object')
@@ -111,6 +113,8 @@ def workObjectView(request, **kwargs):
     messages = Message.objects.filter(
         work_object=work_object,
        )
+
+    subcontractors = work_object.subcontractor.all()
 
     ##############################
     ### Totals for work_object ###
@@ -188,13 +192,20 @@ def workObjectView(request, **kwargs):
     if any(element is not None for element in total_lists):
         total = sum(total_lists)
     else:
-        total = '0:00'
-        totals['total_payment'] = '0:00'
-        totals['total_prepayment'] = '0:00'
-        totals['total_phone_costs'] = '0:00'
-        totals['total_fuel'] = '0:00'
-        totals['total_coffee_food'] = '0:00'
-
+        total = '0.00'
+        totals['total_payment'] = '0.00'
+        totals['total_prepayment'] = '0.00'
+        totals['total_phone_costs'] = '0.00'
+        totals['total_fuel'] = '0.00'
+        totals['total_coffee_food'] = '0.00'
+    
+    sub_sum = subcontractors.aggregate(total=Sum('sum'))['total']
+    if sub_sum:
+        work_object.total = sub_sum + float(total)
+        work_object.save()
+    else:
+        work_object.total = float(total)
+        work_object.save()
 
     context = {
         'current_time': datetime.now().strftime('%Y-%m-%d'),
@@ -209,8 +220,48 @@ def workObjectView(request, **kwargs):
         'total_payment': totals['total_payment'],
         'total_work_time': total_work_time,
         'total': total,
+        'subcontractors': subcontractors,
     }
     return render(request, 'work_object.html', context)
+
+
+def addSubcontractor(request, pk):
+    work_object = get_object_or_404(WorkObject, id=pk)
+    if request.method == 'POST':
+        subcontractor = request.POST.get('subcontractor')
+        print('subcontractor --------------', subcontractor)
+        time = request.POST.get('time')
+        price = request.POST.get('price')
+        sub = Subcontractor(
+            name=subcontractor,
+            time=float(time),
+            price=float(price),
+            sum = float(time) * float(price),
+            work_object=work_object,
+        )
+        sub.save()
+        work_object.total += sub.sum
+        work_object.save()
+
+        response = {
+            'total': sub.sum
+        }
+    
+    return JsonResponse(response)
+
+
+def deleteSubcontractor(request):
+    if request.method == 'POST':
+        pk = request.POST.get('pk')
+        subcontractor = get_object_or_404(Subcontractor, id=int(pk))
+        print('SUB ----------------', subcontractor)
+        subcontractor.delete()
+        response = {
+            'status': f'{subcontractor.id} was deleted'
+        }
+
+    return JsonResponse(response)
+
 
 
 def task(request):

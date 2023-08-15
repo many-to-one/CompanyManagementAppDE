@@ -152,6 +152,38 @@ class WorkObject(models.Model):
     finished = models.BooleanField(
         default=False
     )
+    total = models.FloatField(
+        default=0,
+        verbose_name='Koszty projektu',
+    )
+
+    def __str__(self):
+        return str(self.id)
+
+
+class Subcontractor(models.Model):
+    name = models.CharField(
+        null=True,
+        max_length=50,
+        verbose_name='Pomocnik/Podwykonawca',
+    )
+    time = models.FloatField(
+        default=0,
+        verbose_name='Czas pracy',
+    )
+    price = models.FloatField(
+        default=0,
+        verbose_name='Kosz pracy za godzinę',
+    )
+    sum = models.FloatField(
+        default=0,
+        verbose_name='Kwota',
+    )
+    work_object = models.ForeignKey(
+        WorkObject,
+        related_name='subcontractor',
+        on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return str(self.id)

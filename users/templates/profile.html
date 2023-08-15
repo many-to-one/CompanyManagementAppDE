@@ -28,22 +28,40 @@
             <form method="POST">
                 {% csrf_token %}
 
-                <div class="vacations_mini_cont">
-                    {% if user.acceptation == False %}
-                        <p class="field">Zatwierdzono:</p>
-                        <select name="acceptation" class="vacations_input">
-                            <option value="Nie">Nie</option>
-                            <option value="Tak">Tak</option>
-                        </select>
-                    {% else %}
-                        <p class="field">Zatwierdzono:</p>
-                        <select name="acceptation" class="vacations_input">
-                            <option value="Tak">Tak</option>
-                            <option value="Nie">Nie</option>
-                        </select>
-                    {% endif %}
-                </div>
-
+                {% if request.user.is_superuser %}
+                    <div class="vacations_mini_cont">
+                        {% if user.acceptation == False %}
+                            <p class="field">Zatwierdzono:</p>
+                            <select name="acceptation" class="vacations_input">
+                                <option value="Nie">Nie</option>
+                                <option value="Tak">Tak</option>
+                            </select>
+                        {% else %}
+                            <p class="field">Zatwierdzono:</p>
+                            <select name="acceptation" class="vacations_input">
+                                <option value="Tak">Tak</option>
+                                <option value="Nie">Nie</option>
+                            </select>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {% if request.user.is_superuser %}
+                    <div class="vacations_mini_cont">
+                        {% if user.administrator == 'Nie' %}
+                            <p class="field">Administrator:</p>
+                            <select name="administrator" class="vacations_input">
+                                <option value="Nie">Nie</option>
+                                <option value="Administrator">Administrator</option>
+                            </select>
+                        {% else %}
+                            <p class="field">Administrator:</p>
+                            <select name="administrator" class="vacations_input">
+                                <option value="Administrator">Administrator</option>
+                                <option value="Nie">Nie</option>
+                            </select>
+                        {% endif %}
+                    </div>
+                {% endif %}
                 <div class="vacations_mini_cont">
                     <p class="field">Użytkownik:</p>
                     <input class="vacations_input" type="text" value="{{user.username}}" name="username">

@@ -152,7 +152,7 @@
 
             <!-- ##################### END CHAT ##################### -->
 
-            {% if request.user.is_superuser %}
+            {% if request.user.is_superuser or request.user.username == 'John' %}
             <div class="label">
                 <p>Pensje:</p>
                 <p id="total_payment">{{ total_payment }}</p>
@@ -173,9 +173,49 @@
                 <p id="total_phone_costs">{{ total_phone_costs }}</p>
             </div>
             <br>
+            {% for s in subcontractors %}
+                <div class="label">
+                    <p>{{ s.name }}:</p>
+                    <div class="row_simple">
+                        <p id="total_phone_costs">{{ s.sum }}</p>
+                        <a class="label_img">
+                            <img 
+                                src="{% static 'images/delete.png' %}" 
+                                width="30" height="30"
+                                onclick="deleteQuestionSubcontractor('{{ s.id }}')"
+                            >
+                        </a>
+                    </div>
+                </div>
+                <br>
+            {% endfor %}
+            <div class="row_simple_start">
+                <img 
+                    src="{% static 'images/addwork.png' %}" 
+                    width="40" height="40"
+                    style="cursor: pointer;"
+                    onclick="addSubcontractor(event)"
+                >
+                <p>Dodaj pomocnika/powykonawcę</p>
+            </div>
+            <br>
+            <div id="row_simple_sub">
+                <input class="input_sub"  type="text" placeholder="Pomocnik/Powykonawca" name="subcontractor" id="subcontractor">
+                <br>
+                <input class="input_sub" type="text" placeholder="Czas pracy" name="time" id="time">
+                <br>
+                <input class="input_sub" type="text" placeholder="Koszta za godzinę" name="price" id="price">
+                <br>
+                <img 
+                    src="{% static 'images/done.png' %}" 
+                    width="40" height="40"
+                    onclick="submitSubcontractor(event)"
+                >
+            </div>
+            <br>
             <div class="label">
                 <p>Koszty projektu:</p>
-                <p id="total_phone_costs">{{ total }}</p>
+                <p id="total_phone_costs">{{ work_object.total }}</p>
             </div>
             <br>
 
@@ -793,6 +833,94 @@
         deleteQuestion.style.display = 'none';
         tasks_container.style.display = 'flex';
         location.reload();
+    }
+
+
+    function addSubcontractor(event){
+        event.preventDefault();
+        var row_simple_sub = document.getElementById("row_simple_sub");
+        var subcontractor = document.getElementById("subcontractor");
+        var time = document.getElementById("time");
+        var price = document.getElementById("price");
+        var sum = document.getElementById("sum");
+        console.log()
+    
+        if(row_simple_sub.style.display === 'none'){
+            row_simple_sub.style.display = 'flex'
+        }else{
+            row_simple_sub.style.display = 'none'
+        }
+    }
+
+    function submitSubcontractor(event){
+        event.preventDefault();
+        var subcontractor = document.getElementById("subcontractor").value;
+        var time = parseFloat(document.getElementById("time").value);
+        var price = parseFloat(document.getElementById("price").value);
+
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'addSubcontractor' work_object.pk %}",
+            data: {
+                'subcontractor': subcontractor,
+                'time': time,
+                'price': price,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response){
+                row_simple_sub.style.display = 'none'
+                console.log('total', response)
+                window.location.reload()
+            },
+            error: function(response){
+                  alert('Błąd:', + response.responseJSON.message)
+            } 
+        })
+    }
+
+
+    function deleteQuestionSubcontractor(pk){
+        var deleteQuestion = document.getElementById('deleteQuestion')
+        deleteQuestion.style.display = 'flex';
+        var data = '<div id="questCont">'+
+                        '<p>'+"Usunąć Pomocnika/Podwykonawce?"+'</p>'+
+                        '<div class="row_cont_in_label">'+
+                            '<button class="btn" onclick="deleteSubcontractor('+pk+')">'+
+                                '<a>'+"Tak"+'</a>'+
+                            '</button>'+
+                            '<button class="btn" onclick="closeQuestionSubcontractorDelete()">'+
+                                '<a>'+"Nie"+'</a>'+
+                            '</button>'+
+                        '</div>'+
+                    '</div>';
+            $('#deleteQuestion').html(data)
+                
+    }
+
+
+    function closeQuestionSubcontractorDelete(){
+        deleteQuestion.style.display = 'none';
+    }
+
+
+    function deleteSubcontractor(pk){
+        console.log('pk', pk)
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'deleteSubcontractor' %}",
+
+            success: function(response){
+                window.location.reload()
+            },
+            data: {
+                'pk': pk,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            error: function(response){
+                  alert('Błąd:', + response)
+            } 
+        })
+
     }
         
     </script>  

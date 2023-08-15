@@ -11,6 +11,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         _('Zatwierdź'),
         default=False,
     )
+    administrator = models.CharField(
+        _('Administrator'),
+        null=True,
+        max_length= 255,
+    )
     username = models.CharField(
         _('Użytkownik'),
         null=True,

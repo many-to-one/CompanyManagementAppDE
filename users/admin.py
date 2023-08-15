@@ -17,6 +17,7 @@ class CustomUserAdmin(UserAdmin):
          
             "fields": (
                 "acceptation",
+                "administrator",
                 "username", 
                 "email", 
                 "ip_address",
