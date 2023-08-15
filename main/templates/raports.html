@@ -85,6 +85,9 @@
                             <th>Nadgodziny</th>
                         {% endif %}
                         <th>Czynność</th>
+                        {% if request.user.is_superuser or request.user.administrator == 'Administrator' %}
+                            <th>Koszty materiałów</th>
+                        {% endif %}
                         <th>Kawa/Posiłki</th>
                         <th>Zaliczka</th>
                         <th>Paliwo</th>
@@ -116,6 +119,9 @@
                             <td class="odd" data-label="Czynność">{{work.work_type}}</td>
                         {% else %}
                             <td class="odd" data-label="Czynność"> - </td>
+                        {% endif %}
+                        {% if request.user.is_superuser %}
+                            <td class="ch" data-label="Koszty materiałów">{{work.material_costs}}</td>
                         {% endif %}
                         <td class="nch" data-label="Kawa/Posiłki">{{work.coffee_food}}</td>
                         <td class="ch" data-label="Zaliczka">{{work.prepayment}}</td>
@@ -152,6 +158,11 @@
                             </td>
                         {% endif %}
                         <td class="total"></td>
+                        {% if request.user.is_superuser %}
+                            <td data-label="Koszty materiałów">
+                                <b>{{total_material_costs}}</b>
+                            </td>
+                        {% endif %}
                         <td data-label="Kawa/Posiłki">
                             <b>{{total_coffee_food}}</b>
                         </td>

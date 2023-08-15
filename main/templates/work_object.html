@@ -152,10 +152,15 @@
 
             <!-- ##################### END CHAT ##################### -->
 
-            {% if request.user.is_superuser or request.user.username == 'John' %}
+            {% if request.user.is_superuser or request.user.administrator == 'Administrator' %}
             <div class="label">
                 <p>Pensje:</p>
                 <p id="total_payment">{{ total_payment }}</p>
+            </div>
+            <br>
+            <div class="label">
+                <p>Koszty materiałów:</p>
+                <p id="total_payment">{{ total_material_costs }}</p>
             </div>
             <br>
             <div class="label">
@@ -196,7 +201,7 @@
                     style="cursor: pointer;"
                     onclick="addSubcontractor(event)"
                 >
-                <p>Dodaj pomocnika/powykonawcę</p>
+                <p>Dodaj pomocnika/podwykonawcę</p>
             </div>
             <br>
             <div id="row_simple_sub">

@@ -320,6 +320,14 @@ tr:nth-child(even) td {
 .row_simple {
   display: flex;
   align-items: center;
+  gap: 10px;
+}
+
+.row_simple_start {
+  display: flex;
+  align-items: center;
+  align-self: flex-start;
+  margin-left: 2vw;
 }
 
 .row_cont_in_label {
@@ -335,6 +343,12 @@ tr:nth-child(even) td {
     align-items: center;
     gap: 20px;
     font-size: 12px;
+  }
+  .row_simple_start {
+    display: flex;
+    align-items: center;
+    align-self: flex-start;
+    margin-left: 11vw;
   }
 }
 

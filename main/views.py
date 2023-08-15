@@ -120,6 +120,7 @@ def workObjectView(request, **kwargs):
     ### Totals for work_object ###
 
     total_fields = {
+        'total_material_costs': 'material_costs',
         'total_coffee_food': 'coffee_food',
         'total_fuel': 'fuel',
         'total_prepayment': 'prepayment',
@@ -186,7 +187,8 @@ def workObjectView(request, **kwargs):
         totals['total_payment'],
         totals['total_phone_costs'],
         totals['total_fuel'],
-        totals['total_coffee_food']
+        totals['total_coffee_food'],
+        totals['total_material_costs'],
     ]
 
     if any(element is not None for element in total_lists):
@@ -198,6 +200,7 @@ def workObjectView(request, **kwargs):
         totals['total_phone_costs'] = '0.00'
         totals['total_fuel'] = '0.00'
         totals['total_coffee_food'] = '0.00'
+        totals['total_material_costs'] = '0.00'
     
     sub_sum = subcontractors.aggregate(total=Sum('sum'))['total']
     if sub_sum:
@@ -213,6 +216,7 @@ def workObjectView(request, **kwargs):
         'work_object': work_object,
         'users': users,
         'allusers': allusers,
+        'total_material_costs': totals['total_material_costs'],
         'total_coffee_food': totals['total_coffee_food'],
         'total_fuel': totals['total_fuel'],
         'total_prepayment': totals['total_prepayment'],
@@ -1018,17 +1022,24 @@ def userWork(request, pk):
         # Work time in seconds without break
         diff = end - start - dif_break1 - dif_break2
         print('BREAK ------------------', diff)
+        print('diff.seconds ------------------', diff.seconds)
         ### Overtime/day ###
         if diff.seconds > 28800:
             over_time = diff.seconds - 28800
+            print('over_time ------------------', over_time)
             over_hours = over_time // 3600
+            print('over_hours ------------------', over_hours)
             over_sec = diff.seconds % 3600
+            print('over_sec ------------------', over_sec)
             over_min = over_sec // 60
+            print('over_min ------------------', over_min)
             if over_min < 10 or over_min == 0:
                 ot = f'{over_hours}:0{over_min}'
             else:
                 ot = f'{over_hours}:{over_min}'
-                ot = float
+                print('ot ------------------', ot)
+                # ot = float
+                # print('ot float ------------------', ot)
             ### To calculate only 8:00 hours###
             # dif_hours = 28800 // 3600       #
             # dif_sec = 28800 % 3600          #
@@ -1057,6 +1068,7 @@ def userWork(request, pk):
 
         work_object = request.POST.get('work_object')
         work_type = request.POST.get('work_type')
+        material_costs = request.POST.get('material_costs')
         coffee_food = request.POST.get('coffee_food')
         fuel = request.POST.get('fuel')
         prepayment = request.POST.get('prepayment')
@@ -1084,6 +1096,7 @@ def userWork(request, pk):
             work.sum_over_time_sec = over_time
             work.work_object = work_object
             work.work_type = work_type
+            work.material_costs = float(material_costs)
             work.coffee_food = float(coffee_food)
             work.prepayment = float(prepayment)
             work.fuel = float(fuel)
@@ -1284,14 +1297,15 @@ def getUserRaport(request, user_pk):
     ### Totals for all ###
 
     total_fields = {
-            'total_coffee_food': 'coffee_food',
-            'total_fuel': 'fuel',
-            'total_prepayment': 'prepayment',
-            'total_phone_costs': 'phone_costs',
-            'total_payment': 'payment',
-            'total_sum_time_sec': 'sum_time_sec',
-            'total_sum_over_time_sec': 'sum_over_time_sec'
-        }
+        'total_material_costs': 'material_costs',
+        'total_coffee_food': 'coffee_food',
+        'total_fuel': 'fuel',
+        'total_prepayment': 'prepayment',
+        'total_phone_costs': 'phone_costs',
+        'total_payment': 'payment',
+        'total_sum_time_sec': 'sum_time_sec',
+        'total_sum_over_time_sec': 'sum_over_time_sec'
+    }
 
     totals = {}
     for field_name, field in total_fields.items():
@@ -1424,6 +1438,7 @@ def getUserRaport(request, user_pk):
         'user': user,
         'works': works,
         'work_objects': work_objects,
+        'total_material_costs': totals['total_material_costs'],
         'total_coffee_food': totals['total_coffee_food'],
         'total_fuel': totals['total_fuel'],
         'total_prepayment': totals['total_prepayment'],
@@ -1608,6 +1623,7 @@ def testo(request):
 def raports(request):
 
     total_fields = {
+                'total_material_costs': 'material_costs',
                 'total_coffee_food': 'coffee_food',
                 'total_fuel': 'fuel',
                 'total_prepayment': 'prepayment',
@@ -1953,7 +1969,9 @@ def raports(request):
         totals['total_payment'],
         totals['total_phone_costs'],
         totals['total_fuel'],
+        totals['total_material_costs'],
         totals['total_coffee_food'],
+        totals['total_material_costs'],
     ]
 
     if any(element is not None for element in total_lists):
@@ -1965,11 +1983,13 @@ def raports(request):
         totals['total_phone_costs'] = '0:00'
         totals['total_fuel'] = '0:00'
         totals['total_coffee_food'] = '0:00'
+        totals['total_material_costs'] = '0.00'
 
     context = {
         'works': works,
         'users': users, 
         'work_objects': work_objects,
+        'total_material_costs': totals['total_material_costs'],
         'total_coffee_food': totals['total_coffee_food'],
         'total_fuel': totals['total_fuel'],
         'total_prepayment': totals['total_prepayment'],

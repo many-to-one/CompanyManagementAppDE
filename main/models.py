@@ -63,6 +63,12 @@ class Work(models.Model):
         max_length=100,
         verbose_name='Czynność',
     )
+    material_costs = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00,
+        verbose_name='Koszty materiałów',
+    )
     coffee_food = models.DecimalField(
         max_digits=10,
         decimal_places=2,

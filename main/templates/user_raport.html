@@ -51,8 +51,13 @@
                         <th>Początek</th>
                         <th>Koniec</th>
                         <th>Czas pracy</th>
-                        <th>Nadgodziny</th>
+                        {% if request.user.is_superuser %}
+                            <th>Nadgodziny</th>
+                        {% endif %}
                         <th>Czynność</th>
+                        {% if request.user.is_superuser or request.user.administrator == 'Administrator' %}
+                            <th>Koszty materiałów</th>
+                        {% endif %}
                         <th>Kawa/Posiłki</th>
                         <th>Zaliczka</th>
                         <th>Paliwo</th>
@@ -70,11 +75,16 @@
                         <td data-label="Początek">{{work.timestart}}</td>
                         <td data-label="Koniec">{{work.timefinish}}</td>
                         <td data-label="Czas pracy">{{work.diff_time}}</td>
-                        <td data-label="Nadgodziny">{{work.over_time}}</td>
+                        {% if request.user.is_superuser %}
+                            <td class="ch" data-label="Nadgodziny">{{work.over_time}}</td>
+                        {% endif %}
                         {% if work.work_type %}
                             <td class="odd" data-label="Czynność">{{work.work_type}}</td>
                         {% else %}
                             <td class="odd" data-label="Czynność"> - </td>
+                        {% endif %}
+                        {% if request.user.is_superuser or request.user.administrator == 'Administrator' %}
+                            <td class="ch" data-label="Koszty materiałów">{{work.material_costs}}</td>
                         {% endif %}
                         <td data-label="Kawa/Posiłki">{{work.coffee_food}}</td>
                         <td data-label="Zaliczka">{{work.prepayment}}</td>
@@ -100,8 +110,17 @@
                         <td></td>
                         <td></td>
                         <td data-label="Czas pracy">{{total_work_time}}</td>
-                        <td data-label="Nadgodziny">{{total_work_over_time}}</td>
+                        {% if request.user.is_superuser %}
+                            <td data-label="Nadgodziny">
+                                <b>{{total_work_over_time}}</b>
+                            </td>
+                        {% endif %}
                         <td ></td>
+                        {% if request.user.is_superuser or request.user.administrator == 'Administrator' %}
+                            <td data-label="Koszty materiałów">
+                                <b>{{total_material_costs}}</b>
+                            </td>
+                        {% endif %}
                         <td data-label="Kawa/Posiłki">{{total_coffee_food}}</td>
                         <td data-label="Zaliczka">{{total_fuel}}</td>
                         <td data-label="Paliwo">{{total_prepayment}}</td>
