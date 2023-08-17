@@ -160,7 +160,7 @@
             <br>
             <div class="label">
                 <p>Koszty materiałów:</p>
-                <p id="total_payment">{{ total_material_costs }}</p>
+                <p id="total_material_costs">{{ total_material_costs }}</p>
             </div>
             <br>
             <div class="label">
@@ -182,7 +182,8 @@
                 <div class="label">
                     <p>{{ s.name }}:</p>
                     <div class="row_simple">
-                        <p id="total_phone_costs">{{ s.sum }}</p>
+                        <p id="subcontractors_{{ s.name }}">{{ s.sum }}</p>
+                        <p style="display: none;" id="subcontractors_sum">{{ subcontractors_sum }}</p>
                         <a class="label_img">
                             <img 
                                 src="{% static 'images/delete.png' %}" 
@@ -209,7 +210,7 @@
                 <br>
                 <input class="input_sub" type="text" placeholder="Czas pracy" name="time" id="time">
                 <br>
-                <input class="input_sub" type="text" placeholder="Koszta za godzinę" name="price" id="price">
+                <input class="input_sub" type="text" placeholder="Koszt za godzinę" name="price" id="price">
                 <br>
                 <img 
                     src="{% static 'images/done.png' %}" 
@@ -525,17 +526,24 @@
         var total_fuel = JSON.parse(document.getElementById('total_fuel').textContent);
         var total_coffee_food = JSON.parse(document.getElementById('total_coffee_food').textContent);
         var total_phone_costs = JSON.parse(document.getElementById('total_phone_costs').textContent);
+        var total_material_costs = JSON.parse(document.getElementById('total_material_costs').textContent);
+        var subcontractors_sum = JSON.parse(document.getElementById('subcontractors_sum').textContent);
+
         var values = [
             total_payment,
             total_fuel,
             total_coffee_food,
             total_phone_costs,
+            total_material_costs,
+            subcontractors_sum,
         ]
         var labels = [
             'Pensje',
             'Paliwo',
             'Kawa/Posiłki',
             'Telefon',
+            'Koszty materiałów',
+            'Pomocnik/Podwykonawca',
         ]
         // Create the pie chart using Chart.js
         var ctx = document.getElementById('myChart').getContext('2d');
@@ -549,7 +557,9 @@
                         '#9fadcc',
                         '#212A3E',
                         '#394867',
-                        '#485268'
+                        '#485268',
+                        '#697b8c',
+                        '#697b9c',
                     ]
                 }]
             },

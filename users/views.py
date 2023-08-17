@@ -13,6 +13,8 @@ from django.contrib import messages
 from django.utils.http import urlsafe_base64_decode
 from datetime import datetime, timedelta
 from django.utils import timezone
+
+from main.models import Documents
 from .utils import blacklist_token, check_user_ip_mail, create_token, forgot_password_mail
 from .forms import CustomUserChangeForm, CustomUserCreationForm, \
                    AuthenticationForm
@@ -217,6 +219,10 @@ def changePassword(request, token, uidb64):
 
 def Profile(request, pk):
     user = get_object_or_404(CustomUser, id=pk)
+    try:
+        documents = Documents.objects.filter(user=user)
+    except Exception as e:
+        return render(request, 'error.html', context={'Błąd:': e})
     if request.method == 'POST':
 
         user_dict = user.__dict__
@@ -247,6 +253,7 @@ def Profile(request, pk):
     
     context = {
         'user': user,
+        'documents': documents,
     }
 
     return render(request, 'profile.html', context)

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    {% block content %}
+
+    <div class="page-container">
+
+        <div class="filter-container">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label for="title">Title:</label>
+                <input class="doc_input" type="text" name="title">            
+                <select name="user">
+                    {% for user in users %}
+                        <option value="{{ user }}">{{ user }}</option>
+                    {% endfor %}
+                </select>
+
+                <input style="display: none;" type="file" id="customFile" name="document">
+                <label class="btn btn-title" for="customFile">Wybierz plik</label>
+                <button class="btn" type="submit">
+                    <p class="btn-title">Wgraj</p>
+                </button>
+            </form>
+        </div>
+    
+        {% for user in users_ %}
+    
+        <div class="wo_container">
+            <div class="label">
+                <div class="row_cont_in_label">
+                    <a class="label_img" href="{% url 'getDocuments' user.id %}">
+                        <img src="{% static 'images/documents.png' %}" width="30" height="30">
+                    </a>
+                    {{ user.username }}
+                    <br>
+                </div>
+            </div>
+        </div>
+    
+        {% endfor %}
+
+    </div>
+    
+    
+    {% endblock %}
+
+</body>
+</html>

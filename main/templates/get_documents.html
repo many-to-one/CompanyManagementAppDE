@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    {% block content %}
+
+    <div class="doc_container">
+
+        <!-- ##################### QUESTION ##################### -->
+        <div id="deleteQuestion"></div>
+        <!-- ##################### END OF QUESTION ##################### -->
+
+        {% for d in documents%}
+            <div>
+                <h3>Document: {{ d.title }}</h3>
+                <p class="topic">{{ d.user.username }}</p>
+                <img src="{{ d.document.url }}" alt="{{ d.title }}" width="200" height="200" onclick="openImage(this)">
+                <a class="btn btn-title" href="{{ d.document.url }}" download="{{ d.title }}">Pobierz</a>
+                {% if request.user.is_superuser %}
+                    <button class="btn btn-title" onclick="deleteQuestion('{{d.pk}}')">Usuń</button>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+<script>
+
+    function openImage(image) {
+        if (image.requestFullscreen) {
+            image.requestFullscreen();
+        } else if (image.mozRequestFullScreen) { // Firefox
+            image.mozRequestFullScreen();
+        } else if (image.webkitRequestFullscreen) { // Chrome, Safari and Opera
+            image.webkitRequestFullscreen();
+        } else if (image.msRequestFullscreen) { // IE/Edge
+            image.msRequestFullscreen();
+        }
+    }
+
+
+    function deleteQuestion(pk){
+        var deleteQuestion = document.getElementById('deleteQuestion')
+        deleteQuestion.style.display = 'flex';
+        var data = '<div id="questCont">'+
+                        '<p>'+"Usunąć dokument"+'</p>'+
+                        '<div class="row_cont_in_label">'+
+                            '<button class="btn" onclick="deleteImage('+pk+')">'+
+                                '<a>'+"Tak"+'</a>'+
+                            '</button>'+
+                            '<button class="btn" onclick="closeQuestion()">'+
+                                '<a>'+"Nie"+'</a>'+
+                            '</button>'+
+                        '</div>'+
+                    '</div>';
+            $('#deleteQuestion').html(data)
+                
+    }
+
+    function closeQuestion(){
+        var deleteQuestion = document.getElementById('deleteQuestion')
+        deleteQuestion.style.display = 'none';
+    }
+
+
+    function deleteImage(pk){
+        console.log('doc', pk)
+
+        $.ajax({
+            type: "POST",
+            url: "{% url 'deleteDocument' %}",
+            data: {
+                'pk': pk,
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+            },
+            success: function(response) {
+                console.log('success', response)
+                closeQuestion()
+                window.location.reload()
+            },
+            error: function(response){
+                  alert('Błąd:', + response)
+            } 
+        })
+    }
+
+
+</script>
+    
+    {% endblock %}
+
+</body>
+</html>

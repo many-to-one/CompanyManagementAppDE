@@ -35,8 +35,12 @@
         <div class="block">
             <ul class="navbar">
                 <li class="nav-el"><a href="{% url 'home' %}">GŁÓWNA</a></li>
-                <li class="nav-el"><a href="{% url 'user' request.user.pk %}">PROFIL</a></li>
-                <li class="nav-el">
+                <li class="nav-el row_simple">
+                    <img src="{% static 'images/profil.png' %}" width="20" height="20">
+                    <a href="{% url 'user' request.user.pk %}">PROFIL</a>
+                </li>
+                <li class="nav-el row_simple">
+                    <img src="{% static 'images/schedule.png' %}" width="20" height="20">
                     <a href="{% url 'schedule' %}" class="tags_cont_mini">
                         GRAFIK
                         {% if request.user.is_authenticated %}
@@ -44,7 +48,8 @@
                         {% endif %}
                     </a>
                 </li>
-                <li class="nav-el">
+                <li class="nav-el row_simple">
+                    <img src="{% static 'images/workobject.png' %}" width="20" height="20">
                     <a href="{% url 'work_objects' %}" class="tags_cont_mini">
                         MIEJSCA PRACY 
                         {% if request.user.is_authenticated %}
@@ -53,8 +58,16 @@
                     </a>
                 </li>
                 {% if request.user.is_superuser %}
-                    <li class="nav-el"><a href="{% url 'all_users' %}">PRACOWNICY</a></li>
-                    <li class="dropdown nav-el">
+                    <li class="nav-el row_simple">
+                        <img src="{% static 'images/workers.png' %}" width="20" height="20">
+                        <a href="{% url 'all_users' %}">PRACOWNICY</a>
+                    </li>
+                    <li class="nav-el row_simple">
+                        <img src="{% static 'images/documents.png' %}" width="20" height="20">
+                        <a href="{% url 'upload_document' %}">DOKUMENTY</a>
+                    </li>
+                    <li class="dropdown nav-el row_simple">
+                        <img src="{% static 'images/vacations.png' %}" width="20" height="20">
                         <a class="tags_cont_mini" onclick="toggleDropdown(event)">
                             URLOPY <span class="header_quantity">{% request_quantity %}</span>   
                         </a>
@@ -68,9 +81,15 @@
                         </ul>
                     </li>
                 {% else %}
-                    <li class="nav-el"><a href="{% url 'vacations' request.user.pk %}">URLOPY</a></li>
+                    <li class="nav-el row_simple">
+                        <img src="{% static 'images/vacations.png' %}" width="20" height="20">
+                        <a href="{% url 'vacations' request.user.pk %}">URLOPY</a>
+                    </li>
                 {% endif %}
-                <li class="nav-el" id="raports"><a href="{% url 'raports' %}">RAPORTY</a></li>
+                <li class="nav-el row_simple" id="raports">
+                    <img src="{% static 'images/raports.png' %}" width="20" height="20">
+                    <a href="{% url 'raports' %}">RAPORTY</a>
+                </li>
             </ul>
         </div>
         <div class="block">

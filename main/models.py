@@ -135,6 +135,11 @@ class WorkObject(models.Model):
         max_length=25,
         verbose_name='Koniec',
     )
+    # remaining_time = models.IntegerField(
+    #     null=False,
+    #     default=0,
+    #     verbose_name='Pozostały czas',
+    # )
     name = models.CharField(
         null=True,
         max_length=150,
@@ -456,3 +461,19 @@ class VacationRequest(models.Model):
 
     def __str__(self) -> str: 
         return self.v_request.date
+    
+
+class Documents(models.Model):
+    title = models.CharField(max_length=100)
+    document = models.FileField(upload_to='documents/')
+    upload_date = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(
+        CustomUser, 
+        related_name='user_documents',
+        # on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True,
+        )
+
+    def __str__(self):
+        return self.title

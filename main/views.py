@@ -11,6 +11,7 @@ from django.urls import reverse
 from .utils import months_pl_shorts
 from .tasks import *
 from .models import (
+    Documents,
     MessageCount,
     VacationRequest, 
     Vacations, 
@@ -43,21 +44,31 @@ def index(request):
 
 def WorkObjects(request):
     if request.user.is_superuser:
-        work_objects = WorkObject.objects.all().order_by('id')
-    else:
+        all_work_objects = WorkObject.objects.all().order_by('timefinish')
         work_objects = WorkObject.objects.filter(
+            ).order_by('timefinish').exclude(status='Zakończone')
+    else:
+        all_work_objects = WorkObject.objects.filter(
             user=request.user
-        ).order_by('id')
-    work_objects_list = work_objects.values_list('name', flat=True)
+        ).order_by('id').exclude(status='Zakończone')
+        work_objects = WorkObject.objects.filter(
+            user=request.user,
+        ).order_by('id').exclude(status='Zakończone')
+    work_objects_list = all_work_objects.values_list('name', flat=True)
+    work_objects_status_list = all_work_objects.values_list('status', flat=True)
+    work_objects_status = set(work_objects_status_list)
 
     # Get the current date
     current_date = datetime.now().date()
     formatted_date = months_pl_shorts(current_date.strftime('%d %b %Y'))
 
-    for wo in work_objects:
+    for wo in all_work_objects:
         if int(wo.timefinish[:2]) - int(formatted_date[:2]) <= 1 and wo.status == 'Aktywne':
             wo.deadline = True
-            
+        elif int(wo.timefinish[:2]) - int(formatted_date[:2]) >= 0:
+            wo.remaining_time = int(wo.timefinish[:2]) - int(formatted_date[:2])
+            wo.save()
+                  
         if wo.timefinish == formatted_date and wo.status == 'Aktywne':
             wo.status = 'Spóźnione'
             wo.deadline = True
@@ -69,10 +80,21 @@ def WorkObjects(request):
 
     if request.method == 'POST':
         select = request.POST.get('object')
-        if select == 'Wszystkie objekty':
+        status = request.POST.get('status')
+        fromEnd = request.POST.get('fromEnd')
+        if select == 'Wszystkie objekty' and status == None or status == 'Wszystkie objekty' and select == None:
             work_objects = WorkObject.objects.all()
-        else:
+        elif status == None:
             work_objects = WorkObject.objects.filter(name=select)
+        elif select == None:
+            work_objects = WorkObject.objects.filter(status=status)
+        if fromEnd:
+            work_objects = work_objects.order_by('-remaining_time')
+            print('remain ------------------', fromEnd)
+    
+    # if request.method == 'GET':
+    # if 'remain' in request.GET:
+    #     work_objects = WorkObject.objects.all().order_by('-remaining_time')
 
     paginator = Paginator(work_objects, 10) 
     page_number = request.GET.get('page')
@@ -80,6 +102,7 @@ def WorkObjects(request):
     context = {
         'work_objects': work_objects,
         'work_objects_list': work_objects_list,
+        'work_objects_status': work_objects_status,
     }
 
     return render(request, 'work_objects.html', context)
@@ -100,7 +123,6 @@ def changeStatusWorkObject(request, pk):
     return JsonResponse(response)
 
 
-
 #**********************************************************************************************************************#
 #*************************************************** WORK OBJECT VIEW *************************************************#
 #**********************************************************************************************************************#
@@ -115,6 +137,12 @@ def workObjectView(request, **kwargs):
        )
 
     subcontractors = work_object.subcontractor.all()
+    subcontractors_sum = Subcontractor.objects.filter(
+       work_object=work_object 
+    ).aggregate(
+        subcontractors_sum=Sum('sum')
+    )
+    print('subcontractors_sum --------------------', subcontractors_sum)
 
     ##############################
     ### Totals for work_object ###
@@ -225,6 +253,7 @@ def workObjectView(request, **kwargs):
         'total_work_time': total_work_time,
         'total': total,
         'subcontractors': subcontractors,
+        'subcontractors_sum': subcontractors_sum['subcontractors_sum'],
     }
     return render(request, 'work_object.html', context)
 
@@ -258,7 +287,6 @@ def deleteSubcontractor(request):
     if request.method == 'POST':
         pk = request.POST.get('pk')
         subcontractor = get_object_or_404(Subcontractor, id=int(pk))
-        print('SUB ----------------', subcontractor)
         subcontractor.delete()
         response = {
             'status': f'{subcontractor.id} was deleted'
@@ -2887,3 +2915,65 @@ def vacationRequest(request, pk):
     }
     return render(request, 'vacation_request.html', context)
     
+
+####################################################################################
+#                                  END EXCEL                                       #
+####################################################################################
+
+
+def upload_document(request):
+    users = CustomUser.objects.values_list('username', flat=True).order_by('id')
+    users_ids = CustomUser.objects.values_list('id', flat=True).order_by('id')
+    documents = Documents.objects.all()
+    users_ = CustomUser.objects.values('id', 'username')
+    if request.method == 'POST':
+        uploaded_file = request.FILES['document']
+        title = request.POST['title']
+        username = request.POST['user']
+        user = get_object_or_404(CustomUser, username=username)
+        
+        document = Documents(
+            title=title, 
+            document=uploaded_file,
+            user=user,
+            )
+        document.save()
+
+        return redirect('upload_document')
+
+    context = {
+        'users': users,
+        'users_ids': users_ids,
+        'documents': documents,
+        'users_': users_,
+    }
+
+    return render(request, 'documents.html', context)
+
+
+def getDocuments(request, pk):
+    user = get_object_or_404(CustomUser, id=pk)
+    try:
+        documents = Documents.objects.filter(user=user)
+    except Exception as e:
+        return render(request, 'error.html', context={'Błąd': e})
+    context = {
+        'documents': documents,
+    }
+
+    return render(request, 'get_documents.html', context)
+
+
+def deleteDocument(request):
+    if request.method == "POST":
+        pk = request.POST.get('pk')
+        print('pk --------------', pk)
+        document = get_object_or_404(Documents, id=int(pk))
+        print('document --------------', document)
+        document.delete()
+
+        response = {
+            'status': 'deleted'
+        }
+
+        return JsonResponse(response)

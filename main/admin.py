@@ -10,6 +10,7 @@ from .models import (
     Vacations,
     IsRead,
     Task,
+    Documents,
 )
 
 admin.site.register(Work)
@@ -22,3 +23,4 @@ admin.site.register(VacationRequest)
 admin.site.register(IsRead)
 admin.site.register(Task)
 admin.site.register(Subcontractor)
+admin.site.register(Documents)

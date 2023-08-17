@@ -53,4 +53,7 @@ urlpatterns = [
     path('vacationRequest/<pk>/', vacationRequest, name='vacationRequest'),
     path('deleteVacationRequestQuestion/', deleteVacationRequestQuestion, name='deleteVacationRequestQuestion'),
     path('deleteVacationRequest/', deleteVacationRequest, name='deleteVacationRequest'),
+    path('upload_document/', upload_document, name='upload_document'),
+    path('getDocuments/<pk>/', getDocuments, name='getDocuments'),
+    path('deleteDocument/', deleteDocument, name='deleteDocument'),
 ]

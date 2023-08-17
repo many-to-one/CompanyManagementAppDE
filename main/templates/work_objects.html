@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load messages %}
+{% load days_until_end %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -29,6 +30,17 @@
             </select> 
             <img src="{% static 'images/search.png' %}" width="30" height="30"> 
         </form>
+        <form method="POST" class="search_form" id="status">
+            {% csrf_token %}
+            <select name="status" class="search" onchange="submitFormStatus()">
+                <option disabled selected hidden>Filtruj status</option>                       
+                <option >Wszystkie objekty</option>
+                {% for o in work_objects_status %}
+                    <option value="{{o}}">{{o}}</option>
+                {% endfor %}
+            </select> 
+            <img src="{% static 'images/search.png' %}" width="30" height="30"> 
+        </form>
     </div>
     <br>
 
@@ -37,12 +49,19 @@
         {% for wo in work_objects %}
         <div class="before">
             <div class="label_img_sch">
-                <p class="init">Status:</p>
-                <p class="init">{{ wo.status }}</p>
+                <div class="row_simple_between">
+                    <div class="row_simple">
+                        <p class="init">Status:</p>
+                        <p class="init">{{ wo.status }}</p>
+                    </div>
+                    <div class="row_simple">
+                        <p class="init">Dni do końca:</p>
+                        <p class="init">{% days_until_end wo.timefinish %}</p>
+                    </div>
+                </div>
             </div>
 
         <div class="row_simple">
-
           <div id="taskDateCont">
             <div id="taskDateImg">
               <div id="taskDateBg">
@@ -140,9 +159,14 @@
 <script>
 
     function submitFormObjects() {
-              var form = document.getElementById("objects");
-              form.submit();
-            }
+      var form = document.getElementById("objects");
+      form.submit();
+    }
+
+    function submitFormStatus() {
+      var form = document.getElementById("status");
+      form.submit();
+    }
 
 </script>
 

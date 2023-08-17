@@ -14,7 +14,7 @@
 .base{
     background-color: var(--main-bg-color);
     height: auto;
-    min-height: var(--height);
+    min-height: 100vh;
 }
 
 .container {
@@ -80,6 +80,17 @@ tr:nth-child(odd) td {
 tr:nth-child(even) td {
     background-color: white;
 }
+
+.filter-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  padding: 10px;
+  margin-left: 40px;
+  background-color: var(--title-bg-color);
+}
   
   @media screen and (max-width: 1180px) {
 
@@ -96,6 +107,7 @@ tr:nth-child(even) td {
     .filter-container {
       justify-content: center;
       padding: 10px; 
+      margin-left: 70px;
       background-color: var(--title-bg-color);
     }
 
@@ -172,18 +184,12 @@ tr:nth-child(even) td {
     .total {
       display: none;
     }
-  }
 
-.filter-container {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    width: 100vw;
-    padding: 10px;
-    margin-left: 40px;
-    background-color: var(--title-bg-color);
-}
+    .filter-container {
+      margin-left: 86px;
+    }
+
+  }
 
 .filter-cont {
   word-wrap: break-word;
@@ -214,6 +220,11 @@ tr:nth-child(even) td {
     padding: 15px;
     cursor: pointer;
 }
+
+.nav-el a {
+  font-size: 12px;
+}
+
 
 .title {
     display: flex;
@@ -328,6 +339,15 @@ tr:nth-child(even) td {
   align-items: center;
   align-self: flex-start;
   margin-left: 2vw;
+}
+
+.row_simple_between {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
 }
 
 .row_cont_in_label {
