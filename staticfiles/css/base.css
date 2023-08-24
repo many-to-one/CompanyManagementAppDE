@@ -331,7 +331,7 @@ tr:nth-child(even) td {
 .row_simple {
   display: flex;
   align-items: center;
-  gap: 10px;
+  /* gap: 5px; */
 }
 
 .row_simple_start {

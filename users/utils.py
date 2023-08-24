@@ -5,7 +5,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.conf import settings
 import uuid
-
+from django.core.mail import EmailMessage
 from users.models import BlacklistToken
 
 # class TokenGenerator(PasswordResetTokenGenerator):
@@ -41,8 +41,7 @@ def forgot_password_mail(email, user):
     email_from=settings.EMAIL_HOST_USER
     recipient_list = [email]
     send_mail(subject, message, email_from, recipient_list)
-    # return True
-
+    
 
 def check_user_ip_mail(user):
     # blacklist_token(user.fp_token)

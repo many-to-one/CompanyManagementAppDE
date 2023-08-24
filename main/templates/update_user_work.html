@@ -19,6 +19,17 @@
     
                 <div class="new_work">
 
+                    {% if messages %}
+                        {% for message in messages %}
+                          <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                              <button class="allert-btn">
+                                  <a href="{% url 'user_work' request.user.pk %}">Ok</a>
+                              </button>
+                          </div>
+                        {% endfor %}
+                    {% endif %}
+
                     <form method="POST">
                         {% csrf_token %}
                         <div class="work">
@@ -34,6 +45,29 @@
                             <input name="timefinish" placeholder="00:00" type="time" class="add" value="{{work.timefinish}}">
                         </div>
                         <div class="work">
+                            <p>Przerwa na śniadanie:</p>
+                            <div class="work">
+                                <p>Początek</p>
+                                <input name="timestart_break1" placeholder="00:00" type="time" class="add" value="{{work.timestart_break1}}">
+                            </div>
+                            <div class="work">
+                                <p>Koniec</p>
+                                <input name="timefinish_break1" placeholder="00:00" type="time" class="add" value="{{work.timefinish_break1}}">
+                            </div>
+                        </div>
+    
+                        <div class="work">
+                            <p>Przerwa na obiad:</p>
+                            <div class="work">
+                                <p>Początek</p>
+                                <input name="timestart_break2" placeholder="00:00" type="time" class="add" value="{{work.timestart_break2}}">
+                            </div>
+                            <div class="work">
+                                <p>Koniec</p>
+                                <input name="timefinish_break2" placeholder="00:00" type="time" class="add" value="{{work.timefinish_break2}}">
+                            </div>
+                        </div>
+                        <div class="work">
                             <p>Miejsce pracy</p>
                             <select name="work_object" class="add">
                                 {% for wo in work_objects %}
@@ -45,6 +79,12 @@
                             <p>Czynność</p>
                             <input name="work_type" type="text" class="work_type" value="{{work.work_type}}">
                         </div>
+                        {% if request.user.is_superuser or request.user.administrator == 'Administrator' %}
+                            <div class="work">
+                                <p>Koszty materiałow:</p>
+                                <input name="material_costs" placeholder="00.00" type="text" value="0.00" class="add">
+                            </div>
+                        {% endif %}
                         <div class="work">
                             <p>Kawa i posłki</p>
                             <input name="coffee_food" placeholder="00.00" type="text" value="{{work.coffee_food}}" class="add">

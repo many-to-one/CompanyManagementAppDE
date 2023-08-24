@@ -79,6 +79,7 @@ def WorkObjects(request):
             wo.save()
 
     if request.method == 'POST':
+        timestart = request.POST.get('timestart')
         select = request.POST.get('object')
         status = request.POST.get('status')
         fromEnd = request.POST.get('fromEnd')
@@ -142,7 +143,9 @@ def workObjectView(request, **kwargs):
     ).aggregate(
         subcontractors_sum=Sum('sum')
     )
-    print('subcontractors_sum --------------------', subcontractors_sum)
+    print('work_object.id --------------------', work_object.id)
+    print('work_object.name --------------------', work_object.name)
+    print('work_object.total --------------------', work_object.total)
 
     ##############################
     ### Totals for work_object ###
@@ -161,7 +164,7 @@ def workObjectView(request, **kwargs):
     totals = {}
     for field_name, field in total_fields.items():
         total = Work.objects.filter(
-            work_object=work_object.name
+            work_object=work_object.id
             ).aggregate(
             total=Sum(field)
             )['total']
@@ -732,7 +735,7 @@ def showCountAll(request):
 
 from django.db.models import Q
 
-def chat(request, pk):
+def showMessageHistory(request, pk):
     if request.method == 'GET':
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         work_object = get_object_or_404(WorkObject, id=pk)
@@ -740,10 +743,7 @@ def chat(request, pk):
 
         # Update is_read flag for messages
         try:
-            # messages_results = update_is_read_flag.delay(pk, username)
-            # messages = messages_results.get()
-
-             # All messages in current work object
+             # Last 5 messages in current work object
             read_messages = Message.objects.filter(work_object=work_object).order_by('id')
 
             # All messages in current object for user who open the chat
@@ -800,6 +800,92 @@ def chat(request, pk):
         except Exception as e:
             error = f'Wystąpił błąd: {e}, nie można wyświetlić wiadomości'
             return render(request, 'error.html', {'error': error})
+
+        for message in messages:
+            is_read = IsRead.objects.filter(message_id=message['id'], username=username).first()
+            message['is_read'] = is_read.is_read if is_read else False
+
+        response = {
+            'user': username,
+            'messages': messages,
+            'mess_count': read_messages.count(),
+            'current_time': current_time,
+            'status': 'ok',
+        }
+
+        return JsonResponse(response)
+
+
+
+def chat(request, pk):
+    if request.method == 'GET':
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        work_object = get_object_or_404(WorkObject, id=pk)
+        username = request.user.username
+
+        # Update is_read flag for messages
+        try:
+            # messages_results = update_is_read_flag.delay(pk, username)
+            # messages = messages_results.get()
+
+             # Last 5 messages in current work object
+            read_messages = Message.objects.filter(work_object=work_object).order_by('-id')[:20]
+            # mess_count
+
+            # All messages in current object for user who open the chat
+            read_filter = Q(message__in=read_messages) & Q(username=username)
+
+            # Count of unread messages only for recipients
+            unread_messages = Message.objects.filter(
+                work_object=work_object, 
+                isread__is_read=False # Calling the child model - IsRead
+                )
+
+            # Finding the sender username of unread messages
+            sender = ''
+            for um in unread_messages:
+                sender = um.sender.username
+
+            # Count of unread messages
+            unread_messages_count = IsRead.objects.filter(
+                work_object=work_object,
+                is_read=False,
+            ).exclude(
+                username=sender
+            ).count()
+
+            # if count of unread messages > 0 the message will be
+            # marked - unread - for sender after he will sent it
+            if unread_messages_count > 0:
+                # Marke message - is_read - for first user who
+                # has read the message, exlude sender
+                read_by_someone = IsRead.objects.filter(
+                        work_object=work_object, 
+                        message__in=unread_messages,
+                        username=username,
+                    ).exclude(
+                        username=sender
+                    ).update(
+                        is_read=True
+                    )
+
+                # If somebody has read the message, the message
+                # will be marked - is_read - for sender
+                if read_by_someone:
+                    IsRead.objects.filter(
+                            work_object=work_object, 
+                            username=sender
+                        ).update(
+                            is_read=True
+                        )
+            else:
+                # All messages in current work object marks like is_read
+                IsRead.objects.filter(read_filter).update(is_read=True)
+            messages = list(read_messages.values())[::-1] # [::-1] to show last reversed messages
+
+        except Exception as e:
+            error = f'Wystąpił błąd: {e}, nie można wyświetlić wiadomości'
+            return render(request, 'error.html', {'error': error})
         
         # Add 'is_read' field to each message dictionary
         # try:
@@ -817,6 +903,7 @@ def chat(request, pk):
         response = {
             'user': username,
             'messages': messages,
+            'mess_count': read_messages.count(),
             'current_time': current_time,
             'status': 'ok',
         }
@@ -912,27 +999,32 @@ def chek_messages(request, pk):
 
 def createWorkObject(request):
     users = CustomUser.objects.all()
+    works = [work.name for work in WorkObject.objects.all()]
+
     if request.method == 'POST':
-        work = WorkObject.objects.create()
         workname = request.POST.get('workname')
         timestart = request.POST.get('timestart')
         timefinish = request.POST.get('timefinish')
-        print('workname ---', workname)
+        if workname in works:
+            messages.warning(request, 'Obiekt z podobną nazwą już istnieje lub jest w historii raportów, wprowadź inną')
+            return redirect(reverse('create_work_object'))
 
-        # Parse the input dates
-        parsed_start = datetime.strptime(timestart, '%Y-%m-%d').date()
-        parsed_finish = datetime.strptime(timefinish, '%Y-%m-%d').date()
+        if timestart and timefinish:
+            # Parse the input dates
+            parsed_start = datetime.strptime(timestart, '%Y-%m-%d').date()
+            parsed_finish = datetime.strptime(timefinish, '%Y-%m-%d').date()
 
-        # Format the parsed date into "Day Month Year" format
-        formatted_start = parsed_start.strftime('%d %b %Y')
-        formatted_finish = parsed_finish.strftime('%d %b %Y')
+            # Format the parsed date into "Day Month Year" format
+            formatted_start = parsed_start.strftime('%d %b %Y')
+            formatted_finish = parsed_finish.strftime('%d %b %Y')
 
-        # print('DATE ----------------', parsed_date, formatted_date)
         if workname != '':
             try:
+                work = WorkObject.objects.create()
                 work.name = workname
-                work.timestart = months_pl_shorts(formatted_start)
-                work.timefinish = months_pl_shorts(formatted_finish)
+                if timestart and timefinish:
+                    work.timestart = months_pl_shorts(formatted_start)
+                    work.timefinish = months_pl_shorts(formatted_finish)
                 users_list = request.POST.getlist('users')
                 work.user.add(*users_list)
                 work.save()
@@ -940,39 +1032,69 @@ def createWorkObject(request):
                 error = f'Wystąpił błąd: {e}, nie można utworzyć object'
                 return render(request, 'error.html', {'error': error})
             return redirect('work_objects')
-        work_none = WorkObject.objects.filter(name=None)
-        work_none.delete()
-        return redirect('home')
+        else:
+            messages.warning(request, 'Wpisz nazwę obiekta')
+            return redirect(reverse('create_work_object'))
+        
     context = {
         'users': users,
     }
     return render(request, 'create_work_object.html', context)
 
 
-#**********************************************************************************************************************#
-#*************************************************** CREATE WORK-TYPE *************************************************#
-#**********************************************************************************************************************#
+def updateWorkObject(request, pk):
+    work = WorkObject.objects.get(id=pk)
 
+    if request.method == 'POST':
+        timestart = request.POST.get('timestart')
+        timefinish = request.POST.get('timefinish')
 
-# def createWorkType(request):
-#     users = CustomUser.objects.all()
-#     if request.method == 'POST':
-#         users = CustomUser.objects.all()
-#         worktype = WorkType.objects.create()
-#         worktype_name = request.POST.get('worktype_name')
-#         if worktype_name != '':
-#             worktype.name = worktype_name
-#             users_email = request.POST.getlist('users')
-#             worktype.user.add(*users_email)
-#             worktype.save()
-#             return redirect('work_objects')
-#         work_none = WorkType.objects.filter(name=None)
-#         work_none.delete()
-#         return redirect('home')
-#     context = {
-#         'users': users,
-#     }
-#     return render(request, 'create_work_type.html', context)
+        if timestart:
+            parsed_start = datetime.strptime(timestart, '%Y-%m-%d').date()
+            formatted_start = parsed_start.strftime('%d %b %Y')
+
+            try:
+                work.timestart = months_pl_shorts(formatted_start)
+                work.save()
+                return redirect('work_objects')
+            except Exception as e:
+                error = f'Wystąpił błąd: {e}, nie można edytować object'
+                return render(request, 'error.html', {'error': error})
+            
+        if timefinish:
+            parsed_finish = datetime.strptime(timefinish, '%Y-%m-%d').date()
+            formatted_finish = parsed_finish.strftime('%d %b %Y')
+
+            try:
+                work.timefinish = months_pl_shorts(formatted_finish)
+                work.save()
+                return redirect('work_objects')
+            except Exception as e:
+                error = f'Wystąpił błąd: {e}, nie można edytować object'
+                return render(request, 'error.html', {'error': error})
+
+        if timestart and timefinish:
+            # Parse the input dates
+            parsed_start = datetime.strptime(timestart, '%Y-%m-%d').date()
+            parsed_finish = datetime.strptime(timefinish, '%Y-%m-%d').date()
+
+            # Format the parsed date into "Day Month Year" format
+            formatted_start = parsed_start.strftime('%d %b %Y')
+            formatted_finish = parsed_finish.strftime('%d %b %Y')
+
+            try:
+                work.timestart = months_pl_shorts(formatted_start)
+                work.timefinish = months_pl_shorts(formatted_finish)
+                work.save()
+                return redirect('work_objects')
+            except Exception as e:
+                error = f'Wystąpił błąd: {e}, nie można edytować object'
+                return render(request, 'error.html', {'error': error})
+        
+    context = {
+        'work': work,
+    }
+    return render(request, 'update_work_object.html', context)
 
 
 #**********************************************************************************************************************#
@@ -988,6 +1110,13 @@ def userWork(request, pk):
         timefinish_break1 = request.POST.get('timefinish_break1')
         timestart_break2 = request.POST.get('timestart_break2')
         timefinish_break2 = request.POST.get('timefinish_break2')
+        work_object = request.POST.get('work_object')
+        work_type = request.POST.get('work_type')
+        material_costs = request.POST.get('material_costs')
+        coffee_food = request.POST.get('coffee_food')
+        fuel = request.POST.get('fuel')
+        prepayment = request.POST.get('prepayment')
+        phone_costs = request.POST.get('phone_costs')
 
         if date == '':
             messages.warning(request, 'Wybierz date!')
@@ -998,17 +1127,20 @@ def userWork(request, pk):
         if timefinish == '':
             messages.warning(request, 'Zaznacz koniec czasu pracy!')
             return redirect(reverse('user_work', kwargs={'pk': pk}))
-        if timestart_break1 == '':
-            messages.warning(request, 'Zaznacz początek przerwy na śniadanie!')
-            return redirect(reverse('user_work', kwargs={'pk': pk}))
-        if timefinish_break1 == '':
-            messages.warning(request, 'Zaznacz koniec przerwy na śniadanie!')
-            return redirect(reverse('user_work', kwargs={'pk': pk}))
-        if timestart_break2 == '':
-            messages.warning(request, 'Zaznacz początek przerwy na obiad!')
-            return redirect(reverse('user_work', kwargs={'pk': pk}))
-        if timefinish_break2 == '':
-            messages.warning(request, 'Zaznacz koniec przerwy na obiad!')
+        # if timestart_break1 == '':
+        #     messages.warning(request, 'Zaznacz początek przerwy na śniadanie!')
+        #     return redirect(reverse('user_work', kwargs={'pk': pk}))
+        # if timefinish_break1 == '':
+        #     messages.warning(request, 'Zaznacz koniec przerwy na śniadanie!')
+        #     return redirect(reverse('user_work', kwargs={'pk': pk}))
+        # if timestart_break2 == '':
+        #     messages.warning(request, 'Zaznacz początek przerwy na obiad!')
+        #     return redirect(reverse('user_work', kwargs={'pk': pk}))
+        # if timefinish_break2 == '':
+        #     messages.warning(request, 'Zaznacz koniec przerwy na obiad!')
+        #     return redirect(reverse('user_work', kwargs={'pk': pk}))
+        if work_object == None:
+            messages.warning(request, 'Wybierz Obiekt pracy!')
             return redirect(reverse('user_work', kwargs={'pk': pk}))
 
         ### Here we need to make str(date) => int(date) to sum it ###
@@ -1094,13 +1226,6 @@ def userWork(request, pk):
             else:
                 wt = f'{dif_hours}:{dif_min}'
 
-        work_object = request.POST.get('work_object')
-        work_type = request.POST.get('work_type')
-        material_costs = request.POST.get('material_costs')
-        coffee_food = request.POST.get('coffee_food')
-        fuel = request.POST.get('fuel')
-        prepayment = request.POST.get('prepayment')
-        phone_costs = request.POST.get('phone_costs')
         user = CustomUser.objects.get(id=pk)
         # work_object = WorkObject.objects.get(name=work_object)
         payment = (user.payment / 3600) * diff.seconds
@@ -1130,6 +1255,10 @@ def userWork(request, pk):
             work.fuel = float(fuel)
             work.phone_costs = float(phone_costs)
             work.payment = round(payment, 2)
+            work.timestart_break1 = timestart_break1
+            work.timefinish_break1 = timefinish_break1
+            work.timestart_break2 = timestart_break2
+            work.timefinish_break2 = timefinish_break2
             work.user.add(user)
             try:
                 work.save()
@@ -1153,6 +1282,7 @@ def userWork(request, pk):
 #**********************************************************************************************************************#
 
 def updateUserWork(request, work_pk):
+    print('work_pk----------------', work_pk)
     work = Work.objects.prefetch_related('user').filter(id=work_pk).first()
     user = ''
     if work:
@@ -1165,6 +1295,43 @@ def updateUserWork(request, work_pk):
         date = request.POST.get('date')
         timestart = request.POST.get('timestart')
         timefinish = request.POST.get('timefinish')
+        timestart_break1 = request.POST.get('timestart_break1')
+        timefinish_break1 = request.POST.get('timefinish_break1')
+        timestart_break2 = request.POST.get('timestart_break2')
+        timefinish_break2 = request.POST.get('timefinish_break2')
+        work_object = request.POST.get('work_object')
+        work_type = request.POST.get('work_type')
+        material_costs = request.POST.get('material_costs')
+        coffee_food = request.POST.get('coffee_food')
+        fuel = request.POST.get('fuel')
+        prepayment = request.POST.get('prepayment')
+        phone_costs = request.POST.get('phone_costs')
+
+
+        if date == '':
+            messages.warning(request, 'Wybierz date!')
+            return redirect(reverse('update_user_work', kwargs={'work_pk': work_pk}))
+        if timestart == '':
+            messages.warning(request, 'Zaznacz początek czasu pracy!')
+            return redirect(reverse('update_user_work', kwargs={'work_pk': work_pk}))
+        if timefinish == '':
+            messages.warning(request, 'Zaznacz koniec czasu pracy!')
+            return redirect(reverse('update_user_work', kwargs={'work_pk': work_pk}))
+        # if timestart_break1 == '':
+        #     messages.warning(request, 'Zaznacz początek przerwy na śniadanie!')
+        #     return redirect(reverse('user_work', kwargs={'pk': work_pk}))
+        # if timefinish_break1 == '':
+        #     messages.warning(request, 'Zaznacz koniec przerwy na śniadanie!')
+        #     return redirect(reverse('user_work', kwargs={'pk': work_pk}))
+        # if timestart_break2 == '':
+        #     messages.warning(request, 'Zaznacz początek przerwy na obiad!')
+        #     return redirect(reverse('user_work', kwargs={'pk': work_pk}))
+        # if timefinish_break2 == '':
+        #     messages.warning(request, 'Zaznacz koniec przerwy na obiad!')
+        #     return redirect(reverse('user_work', kwargs={'pk': work_pk}))
+        if work_object == None:
+            messages.warning(request, 'Wybierz Obiekt pracy!')
+            return redirect(reverse('update_user_work', kwargs={'work_pk': work_pk}))
 
         ### Here we need to make str(date) => int(date) to sum it ###
         year, month, day = date.split('-')
@@ -1172,7 +1339,40 @@ def updateUserWork(request, work_pk):
         finish_hr, finish_min = timefinish.split(':') 
         start = datetime(int(year), int(month), int(day), int(start_hr), int(start_min))
         end = datetime(int(year), int(month), int(day), int(finish_hr), int(finish_min))
-        diff = end - start
+
+        #BREAKFAST
+        start_hr_break1, start_min_break1 = timestart_break1.split(':')  
+        finish_hr_break1, finish_min_break1 = timefinish_break1.split(':') 
+        start_break1 = datetime(int(year), int(month), int(day), int(start_hr_break1), int(start_min_break1))
+        end_break1 = datetime(int(year), int(month), int(day), int(finish_hr_break1), int(finish_min_break1))
+        dif_break1 = end_break1 - start_break1 
+
+        #LANCH
+        start_hr_break2, start_min_break2 = timestart_break2.split(':')  
+        finish_hr_break2, finish_min_break2 = timefinish_break2.split(':') 
+        start_break2 = datetime(int(year), int(month), int(day), int(start_hr_break2), int(start_min_break2))
+        end_break2 = datetime(int(year), int(month), int(day), int(finish_hr_break2), int(finish_min_break2))
+        dif_break2 = end_break2 - start_break2
+
+        dif_hours_break1 = dif_break1.seconds // 3600
+        dif_sec_break1 = dif_break1.seconds % 3600
+        dif_min_break1 = dif_sec_break1 // 60
+        if dif_min_break1 < 10 or dif_min_break1 == 0:
+            bt = f'{dif_hours_break1}:0{dif_min_break1}'
+        else:
+            bt = f'{dif_hours_break1}:{dif_min_break1}'
+        print('start_break ------------------', start_break1)
+        print('end_break ------------------', end_break1)
+        print('dif_break.seconds ------------------', dif_break1.seconds)
+        print('dif_hours_break ------------------', dif_hours_break1)
+        print('dif_sec_break ------------------', dif_sec_break1)
+        print('dif_min_break ------------------', dif_min_break1)
+        print('BREAK ------------------', bt)
+
+        # Work time in seconds without break
+        diff = end - start - dif_break1 - dif_break2
+        print('BREAK ------------------', diff)
+        print('diff.seconds ------------------', diff.seconds)
         
         ### Overtime/day ###
         if diff.seconds > 28800:
@@ -1211,12 +1411,12 @@ def updateUserWork(request, work_pk):
             else:
                 wt = f'{dif_hours}:{dif_min}'
 
-        work_object = request.POST.get('work_object')
-        work_type = request.POST.get('work_type')
-        coffee_food = request.POST.get('coffee_food')
-        fuel = request.POST.get('fuel')
-        prepayment = request.POST.get('prepayment')
-        phone_costs = request.POST.get('phone_costs')
+        # work_object = request.POST.get('work_object')
+        # work_type = request.POST.get('work_type')
+        # coffee_food = request.POST.get('coffee_food')
+        # fuel = request.POST.get('fuel')
+        # prepayment = request.POST.get('prepayment')
+        # phone_costs = request.POST.get('phone_costs')
         try:
             work.date = date
             work.timestart = timestart
@@ -1234,11 +1434,17 @@ def updateUserWork(request, work_pk):
             work.sum_over_time_sec = over_time
             work.work_object = work_object
             work.work_type = work_type
+            # if material_costs:
+            work.material_costs = float(material_costs)
             work.coffee_food = coffee_food
             work.prepayment = prepayment
             work.fuel = fuel
             work.phone_costs = phone_costs
-            work.payment = (user.payment / 3600) * diff.seconds       
+            work.payment = (user.payment / 3600) * diff.seconds      
+            work.timestart_break1 = timestart_break1
+            work.timefinish_break1 = timefinish_break1
+            work.timestart_break2 = timestart_break2
+            work.timefinish_break2 = timefinish_break2 
             work.save()
         except Exception as e:
             error = f'Wystąpił błąd: {e}'
@@ -1310,7 +1516,7 @@ def getUserRaport(request, user_pk):
     work_objects = WorkObject.objects.filter(user__id=user_pk)
     if request.user.is_superuser:
         try:
-            works = Work.objects.prefetch_related('user').order_by('-date')
+            works = Work.objects.filter(user=user).order_by('-date')
         except Exception as e:
             error = f'Nie można wyświetlić raport z powodu błędu: {e}'
             return render(request, 'error.html', context=error)
@@ -1622,31 +1828,6 @@ def workObjectRaport(request, user_pk, object_pk):
 #****************************************************** ALL RAPORTS ***************************************************#
 #**********************************************************************************************************************#
 
-def testo(request):
-    if request.user.is_superuser:
-        try:
-            works_result = raports_all_superuser.delay() 
-            works = works_result.get()
-            print('WORKS!!!!!!!', works)
-            return render(request, '404.html', context={'works': works})
-            # print('WORKS!!!!!!!', works)
-            # works = Work.objects.prefetch_related(
-            #     Prefetch('user')
-            #     ).order_by('-date')
-            # # Convert Decimal values to float using dictionary comprehension
-            # works_dict = [work.__dict__ for work in works]
-            # works = [
-            #     {key: float(value) if isinstance(value, Decimal) 
-            #      else value for key, value in work.items() 
-            #      if key != '_state' and key != '_prefetched_objects_cache'} 
-            #      for work in works_dict
-            #     ]
-            # work_objects = WorkObject.objects.all().only('name')
-        except Exception as e:
-            error = f'Nie można wyświetlić raport z powodu błędu: {e}'
-            return render(request, 'error.html', context={'error': error})
-
-
 
 def raports(request):
 
@@ -1663,20 +1844,20 @@ def raports(request):
     
     if request.user.is_superuser:
         try:
-            works_result = raports_all_superuser.delay() 
-            works = works_result.get()
+            # works_result = raports_all_superuser.delay() 
+            # works = works_result.get()
             # print('WORKS!!!!!!!', works)
-            # works = Work.objects.prefetch_related(
-            #     Prefetch('user')
-            #     ).order_by('-date')
-            # # Convert Decimal values to float using dictionary comprehension
-            # works_dict = [work.__dict__ for work in works]
-            # works = [
-            #     {key: float(value) if isinstance(value, Decimal) 
-            #      else value for key, value in work.items() 
-            #      if key != '_state' and key != '_prefetched_objects_cache'} 
-            #      for work in works_dict
-            #     ]
+            works = Work.objects.prefetch_related(
+                Prefetch('user')
+                ).order_by('-date')
+            # Convert Decimal values to float using dictionary comprehension
+            works_dict = [work.__dict__ for work in works]
+            works = [
+                {key: float(value) if isinstance(value, Decimal) 
+                 else value for key, value in work.items() 
+                 if key != '_state' and key != '_prefetched_objects_cache'} 
+                 for work in works_dict
+                ]
             work_objects = WorkObject.objects.all().only('name')
             # return render(request, '404.html', context={'works': works})
         except Exception as e:
@@ -1684,8 +1865,21 @@ def raports(request):
             return render(request, 'error.html', context={'error': error})
     else:
         try:
-            works_result = raports_all.delay(request.user.id)
-            works = works_result.get()
+            # works_result = raports_all.delay(request.user.id)
+            # works = works_result.get()
+            works = Work.objects.prefetch_related(
+                Prefetch('user')
+                ).filter(
+                user__id=request.user.id
+                ).order_by('-date')
+            # Convert Decimal values to float using dictionary comprehension
+            works_dict = [work.__dict__ for work in works]
+            works = [
+                {key: float(value) if isinstance(value, Decimal) 
+                 else value for key, value in work.items() 
+                 if key != '_state' and key != '_prefetched_objects_cache'} 
+                 for work in works_dict
+                ]
             work_objects = WorkObject.objects.filter(user=request.user).only('name')
         except Exception as e:
             error = f'Nie można wyświetlić raport z powodu błędu: {e}'
@@ -1693,7 +1887,6 @@ def raports(request):
         
     users = CustomUser.objects.all().values('id', 'username')
         
-    print('WORKS-VIEW-FIRST-OPEN', works)
     # Totals without filters
     totals = {}
     if works:
@@ -1823,11 +2016,20 @@ def raports(request):
         #####################################################################################
 
         if work_object: 
-
             # Call task from task.py
             try:
-                works_result = raports_work_object.delay(work_object)
-                works = works_result.get()
+                # works_result = raports_work_object.delay(work_object)
+                # works = works_result.get()
+                wo = get_object_or_404(WorkObject, id=work_object)
+                works = Work.objects.filter(work_object=wo.name).order_by('-date')
+                # Convert Decimal values to float using dictionary comprehension
+                works_dict = [work.__dict__ for work in works]
+                works = [
+                    {key: float(value) if isinstance(value, Decimal) 
+                     else value for key, value in work.items() 
+                     if key != '_state'} 
+                     for work in works_dict
+                    ]
             except Exception as e:
                 error = f'Nie można wyświetlić raport z powodu błędu: {e}'
                 return render(request, 'error.html', context={'error': error})

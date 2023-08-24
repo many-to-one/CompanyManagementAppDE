@@ -178,6 +178,7 @@ def forgotPassword(request):
             print('USER', user)
             now = datetime.now()
             forgot_password_mail(email, user)
+            # Util.send_email(email, user)
     except Exception as e:
         print(e)
         return render(request, 'error.html', 

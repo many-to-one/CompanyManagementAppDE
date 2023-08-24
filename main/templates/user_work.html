@@ -17,6 +17,17 @@
 
             <div class="addwork_cont">
 
+                {% if messages %}
+                    {% for message in messages %}
+                      <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                          <button class="allert-btn">
+                              <a href="{% url 'user_work' request.user.pk %}">Ok</a>
+                          </button>
+                      </div>
+                    {% endfor %}
+                {% endif %}
+
                 <form method="POST" class="user_work">
                     {% csrf_token %}
                     <div class="work">

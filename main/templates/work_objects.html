@@ -62,17 +62,17 @@
             </div>
 
         <div class="row_simple">
-          <div id="taskDateCont">
-            <div id="taskDateImg">
-              <div id="taskDateBg">
-                <div id="taskDate">
-                  <p>{{ wo.timestart|slice:":2" }}</p>
-                  <p>{{ wo.timestart|slice:"2:-4" }}</p>
+            <div id="taskDateCont" onclick="edit('{{wo.id}}')">
+                <div id="taskDateImg">
+                  <div id="taskDateBg">
+                    <div id="taskDate">
+                      <p>{{ wo.timestart|slice:":2" }}</p>
+                      <p>{{ wo.timestart|slice:"2:-4" }}</p>
+                    </div>
+                    <p id="taskYear">{{ wo.timestart|slice:"-4:" }}</p>
+                  </div>
                 </div>
-                <p id="taskYear">{{ wo.timestart|slice:"-4:" }}</p>
-              </div>
             </div>
-          </div>
 
             <div class="label {% if wo.deadline %}label_red{% elif wo.finished %}label_green{% endif %}">
 
@@ -111,7 +111,7 @@
 
             </div>
 
-            <div id="taskDateCont">
+            <div id="taskDateCont" onclick="edit('{{wo.id}}')">
                 <div id="taskDateImg">
                   <div id="taskDateBg">
                     <div id="taskDate">
@@ -166,6 +166,11 @@
     function submitFormStatus() {
       var form = document.getElementById("status");
       form.submit();
+    }
+
+    function edit(pk) {
+        var pk = pk
+        window.location.href = "{% url 'updateWorkObject' 0 %}".replace('0', pk);
     }
 
 </script>

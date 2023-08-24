@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+{% block content %}
+
+{% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+          <button class="allert-btn">
+              <a href="{% url 'create_work_object' %}">Ok</a>
+          </button>
+      </div>
+    {% endfor %}
+{% endif %}
+
+    <form method="POST" enctype="multipart/form-data" class="cwo_cont">
+        {% csrf_token %}
+        <input type="text" placeholder="Wpisz object" name="workname" class="cwo_input" value="{{work.name}}">
+        <div class="work">
+            <p>Początek:</p>
+            <div class="row_simple">
+                <div id="taskDateCont" >
+                    <div id="taskDateImg">
+                      <div id="taskDateBg">
+                        <div id="taskDate">
+                          <p>{{ work.timestart|slice:":2" }}</p>
+                          <p>{{ work.timestart|slice:"2:-4" }}</p>
+                        </div>
+                        <p id="taskYear">{{ work.timestart|slice:"-4:" }}</p>
+                      </div>
+                    </div>
+                </div>
+                <input name="timestart" id="datetimepicker" type="date" class="add">
+            </div>
+        </div>
+        <div class="work">
+            <p>Koniec:</p>
+            <div class="row_simple">
+                <div id="taskDateCont" >
+                    <div id="taskDateImg">
+                      <div id="taskDateBg">
+                        <div id="taskDate">
+                          <p>{{ work.timefinish|slice:":2" }}</p>
+                          <p>{{ work.timefinish|slice:"2:-4" }}</p>
+                        </div>
+                        <p id="taskYear">{{ work.timefinish|slice:"-4:" }}</p>
+                      </div>
+                    </div>
+                </div>
+                <input name="timefinish" id="datetimepicker" type="date" class="add">
+            </div>
+        </div>
+
+
+        <button class="cwo_btn" type="submit"><p class="btn-title">Edytuj</p></button>
+    </form>
+{% endblock%}
+
+</body>
+</html>

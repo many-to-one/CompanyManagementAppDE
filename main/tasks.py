@@ -48,6 +48,7 @@ def raports_all(user_id):
          if key != '_state' and key != '_prefetched_objects_cache'} 
          for work in works_dict
         ]
+    print('WORKS FROM CELERY ---------------------------------', works)
     return works
 
 

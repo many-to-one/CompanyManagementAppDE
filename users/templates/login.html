@@ -20,13 +20,13 @@
                   <div class="alert alert-{{ message.tags }}">
                     {{ message }}
                       <button class="allert-btn">
-                          <a href="{% url 'vacations' request.user.pk %}">Ok</a>
+                          <a href="{% url 'login'%}">Ok</a>
                       </button>
                   </div>
                 {% endfor %}
             {% endif %}
 
-            <h1>ERGO</h1>
+            <h1>Adest GmbH ERP</h1>
         </div>
     
         <form method='POST' class='auth-form'>

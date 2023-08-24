@@ -103,6 +103,30 @@ class Work(models.Model):
         default=0.00,
         verbose_name='Stawka za godzinę',
     )
+    timestart_break1 = models.CharField(
+        null=False,
+        default='00:00',
+        max_length=5,
+        verbose_name='Koniec',
+    )
+    timefinish_break1 = models.CharField(
+        null=False,
+        default='00:00',
+        max_length=5,
+        verbose_name='Koniec',
+    )
+    timestart_break2 = models.CharField(
+        null=False,
+        default='00:00',
+        max_length=5,
+        verbose_name='Koniec',
+    )
+    timefinish_break2 = models.CharField(
+        null=False,
+        default='00:00',
+        max_length=5,
+        verbose_name='Koniec',
+    )
     user = models.ManyToManyField(
         CustomUser,
     )
