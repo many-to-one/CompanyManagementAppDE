@@ -74,7 +74,7 @@
                 </div>
             </div>
 
-            <div class="label {% if wo.deadline %}label_red{% elif wo.finished %}label_green{% endif %}">
+            <div class="wo_label {% if wo.deadline %}label_red{% elif wo.finished %}label_green{% endif %}">
 
                 <div class="row_cont_in_label">
                     <a class="label_img" href="{% url 'work_object' wo.pk %}">

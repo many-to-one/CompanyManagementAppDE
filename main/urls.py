@@ -4,7 +4,7 @@ from .views import *
 
 urlpatterns = [
     path('header/', header, name='header'),
-    path('home/', index, name='home'),
+    path('', index, name='home'),
     path('user_work/<pk>/', userWork, name='user_work'),
     path('update_user_work/<work_pk>/', updateUserWork, name='update_user_work'),
     path('deleteUserWorkQuastion/<work_pk>/', deleteUserWorkQuastion, name='deleteUserWorkQuastion'),
@@ -27,6 +27,7 @@ urlpatterns = [
     path('deleteTask/', deleteTask, name='deleteTask'),
     path('deleteQuestionMessages/', deleteQuestionMessages, name='deleteQuestionMessages'),
     path('deleteAllMessagesWO/', deleteAllMessagesWO, name='deleteAllMessagesWO'),
+    path('deleteMessConf/', deleteMessConf, name='deleteMessConf'),
     path('schedule/', schedule, name='schedule'),
     path('deleteAllDoneTasksQuestion/', deleteAllDoneTasksQuestion, name='deleteAllDoneTasksQuestion'),
     path('deleteUserFromObjectQuestion/<user_pk>/<work_object_pk>/', deleteUserFromObjectQuestion, name='deleteUserFromObjectQuestion'),

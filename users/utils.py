@@ -35,7 +35,7 @@ def blacklist_token(token):
 def forgot_password_mail(email, user):
     token = create_token()
     uidb64=urlsafe_base64_encode(force_bytes(user.pk))
-    absurl = f'http://127.0.0.1/8000/users/change_password/{token}/{uidb64}/'
+    absurl = f'https://www.workmeneger.pl/users/change_password/{token}/{uidb64}/'
     subject='Link do zmiany hasła'
     message=f'Kliknij w link i zmień hasło {absurl}'
     email_from=settings.EMAIL_HOST_USER

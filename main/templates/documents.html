@@ -17,8 +17,7 @@
         <div class="filter-container">
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                <label for="title">Title:</label>
-                <input class="doc_input" type="text" name="title">            
+                <input class="doc_input" type="text" name="title" placeholder="Title:">            
                 <select name="user">
                     {% for user in users %}
                         <option value="{{ user }}">{{ user }}</option>

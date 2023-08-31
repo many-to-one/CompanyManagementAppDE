@@ -14,12 +14,14 @@
 
     <div class="hc" id="header-container">
         {% if request.user.is_authenticated %}
-            <img 
-                src="{% static 'images/menu.png' %}" 
-                id="toggle_menu"
-                width="30" height="30"
-                onclick="toggleMenu(); showMessages();"
-            >
+            <div id="toggle_menu_bg">
+                <img 
+                    src="{% static 'images/menu.png' %}" 
+                    id="toggle_menu"
+                    width="30" height="30"
+                    onclick="toggleMenu(); showMessages();"
+                >
+            </div>
             <img 
                 src="{% static 'images/close_white.png' %}" 
                 id="close_menu"
@@ -33,7 +35,7 @@
             <div class="block"><a>Witaj, {{ request.user }}</a></div>
         {% endif %}
         <div class="block">
-            <ul class="navbar">
+            
                 <li class="nav-el"><a href="{% url 'home' %}">GŁÓWNA</a></li>
                 <li class="nav-el row_simple">
                     <img src="{% static 'images/profil.png' %}" width="20" height="20">
@@ -71,10 +73,10 @@
                         <a class="tags_cont_mini" onclick="toggleDropdown(event)">
                             URLOPY <span class="header_quantity">{% request_quantity %}</span>   
                         </a>
-                        <ul class="dropdown-menu">
-                            <li class="nav-el"><a href="{% url 'vacations' request.user.pk %}"> - Moje urlopy</a></li>
-                            <li class="nav-el" id="req">
-                                <a href="{% url 'allVacationRequests' %}" class="tags_cont_mini"> 
+                        <ul class="dropdown-menu" id="vac_1">
+                            <li class="" ><a href="{% url 'vacations' request.user.pk %}" > - Moje urlopy</a></li>
+                            <li class="" >
+                                <a href="{% url 'allVacationRequests' %}" class="tags_cont_mini" > 
                                     - Wnioski <span class="header_quantity">{% request_quantity %}</span>
                                 </a>
                             </li>
@@ -90,7 +92,7 @@
                     <img src="{% static 'images/raports.png' %}" width="20" height="20">
                     <a href="{% url 'raports' %}">RAPORTY</a>
                 </li>
-            </ul>
+            
         </div>
         <div class="block">
             {% if request.user.is_active %}
@@ -110,6 +112,7 @@
         var scheduleQuantity = document.getElementById('scheduleQuantity')
         var sideMenu = document.getElementById('header-container')
         var buttonMenu = document.getElementById('toggle_menu')
+        var buttonMenuBG = document.getElementById('toggle_menu_bg')
         var closeMenu = document.getElementById('close_menu')
         var vacations = document.getElementById('vacations_filter_cont')
         var scheduleCont = document.getElementById('scheduleCont')
@@ -136,64 +139,24 @@
                  success: (response) => {
                     scheduleQuantity.textContent = response.count
                  }
-             })
-
-        //      $.ajax({
-        //       type: 'GET',
-        //       url: "{% url 'header' %}",
-        //       data: {
-        //           'menu': 'active',
-        //       },
-        //       success: (data) => {
-        //         console.log('ok', data)
-        //       },
-        //       error: (data) => {
-        //           console.log('error')
-        //       }                
-        //   })   
+             })  
 
             if (sideMenu.style.left === "0px") {
-              sideMenu.style.left = "-170px"; // Close the menu
-              toggle_menu.style.left = "3px"
+              sideMenu.style.left = "-285px"; // Close the menu
+              buttonMenu.style.right = "10px"
               closeMenu.style.display = 'none';
               buttonMenu.style.display = 'block';
+              buttonMenuBG.style.display = 'block';
               vacations.style.position = 'fixed'; // make the header in the vacations.html fixed 
-
-            //   $.ajax({
-            //     type: 'GET',
-            //     url: "{% url 'header' %}",
-            //     data: {
-            //         'menu': 'inactive',
-            //     },
-            //     success: (data) => {
-            //         console.log('ok', data)
-            //     },
-            //     error: (data) => {
-            //         console.log('error')
-            //     }                
-            // })
               
             } else {
               sideMenu.style.left = "0px"; // Open the menu
-              toggle_menu.style.left = "160px";
+              sideMenu.style.width = "285px"
               closeMenu.style.display = 'block';
               buttonMenu.style.display = 'none'; 
+              buttonMenuBG.style.display = 'none';
               vacations.style.position = 'static'; // make the header in the vacations.html static
               scheduleCont.style.visibility = 'hidden'
-
-            //   $.ajax({
-            //     type: 'GET',
-            //     url: "{% url 'header' %}",
-            //     data: {
-            //         'menu': 'active',
-            //     },
-            //     success: (data) => {
-            //         console.log('ok', data)
-            //     },
-            //     error: (data) => {
-            //         console.log('error')
-            //     }                
-            // })
 
             }
 
@@ -205,10 +168,12 @@
             var dropdown = event.target.nextElementSibling;
             dropdown.classList.toggle("show");
             var styleRaports = document.getElementById('raports')
-            var styleReq = document.getElementById('req')
+            var styleVac_1 = document.getElementById('vac_1')
+            var styleVac_2 = document.getElementById('vac_2')
             if (dropdown.classList.contains("show")) {
-                styleRaports.style.marginTop = '60px';
-                styleReq.style.marginTop = '-20px';
+                styleRaports.style.marginTop = '40px';
+                styleVac_1.style.marginTop = '75px';
+                styleVac_1.style.marginLeft = '35px';
             } else {
                 styleRaports.style.marginTop = '0px';
                 styleReq.style.marginTop = '0px';

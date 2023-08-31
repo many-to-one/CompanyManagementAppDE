@@ -75,6 +75,7 @@ class AuthenticationMiddleware:
             if request.user.token_expiration < timezone.now():
                 # Getting BlacklistToken model from users.app
                 BlacklistToken = apps.get_model('users', 'BlacklistToken')
+                print('token ---------------------', request.user.fp_token)
                 if not BlacklistToken.objects.filter(token=request.user.fp_token).exists():
                     black_list = BlacklistToken(
                         token=request.user.fp_token

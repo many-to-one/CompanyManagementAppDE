@@ -974,22 +974,34 @@ def chek_messages(request, pk):
             response = {
                     'message': True
                 }
+        elif count_mess < messageCount.message_count:
+            messageCount.message_count = count_mess
+            messageCount.save()
+            print('CHECK_MESS_COUNT MENSZE ---------------------', count_mess, messageCount.message_count) 
+            response = {
+                    'message': 1
+                }
         else:
             print('CHECK_MESS_COUNT ROWNO --------------------', count_mess, messageCount.message_count) 
             response = {
                     'message': False
                 }
-            
-
-
-        # get_count_res = chek_messages_task.delay(pk, user)
-        # get_count = get_count_res.get()
-        # response = {
-        #             'message': get_count
-        #         }
 
 
     return JsonResponse(response)
+
+
+def deleteMessConf(request):
+    if request.method == 'POST':
+        pk = request.POST.get('pk')
+        try:
+            mess = Message.objects.get(id=pk)
+            mess.delete()
+            response = {'message': f'message{pk} was deleted!'}
+        except Exception as e:
+            return render(request, 'error.html', context={'error': e})
+        
+        return JsonResponse(response)
 
 
 #**********************************************************************************************************************#
@@ -1127,18 +1139,6 @@ def userWork(request, pk):
         if timefinish == '':
             messages.warning(request, 'Zaznacz koniec czasu pracy!')
             return redirect(reverse('user_work', kwargs={'pk': pk}))
-        # if timestart_break1 == '':
-        #     messages.warning(request, 'Zaznacz początek przerwy na śniadanie!')
-        #     return redirect(reverse('user_work', kwargs={'pk': pk}))
-        # if timefinish_break1 == '':
-        #     messages.warning(request, 'Zaznacz koniec przerwy na śniadanie!')
-        #     return redirect(reverse('user_work', kwargs={'pk': pk}))
-        # if timestart_break2 == '':
-        #     messages.warning(request, 'Zaznacz początek przerwy na obiad!')
-        #     return redirect(reverse('user_work', kwargs={'pk': pk}))
-        # if timefinish_break2 == '':
-        #     messages.warning(request, 'Zaznacz koniec przerwy na obiad!')
-        #     return redirect(reverse('user_work', kwargs={'pk': pk}))
         if work_object == None:
             messages.warning(request, 'Wybierz Obiekt pracy!')
             return redirect(reverse('user_work', kwargs={'pk': pk}))
@@ -1151,55 +1151,81 @@ def userWork(request, pk):
         end = datetime(int(year), int(month), int(day), int(finish_hr), int(finish_min))
 
         #BREAKFAST
-        start_hr_break1, start_min_break1 = timestart_break1.split(':')  
-        finish_hr_break1, finish_min_break1 = timefinish_break1.split(':') 
-        start_break1 = datetime(int(year), int(month), int(day), int(start_hr_break1), int(start_min_break1))
-        end_break1 = datetime(int(year), int(month), int(day), int(finish_hr_break1), int(finish_min_break1))
-        dif_break1 = end_break1 - start_break1 
+        if timestart_break1 and timefinish_break1:
+            start_hr_break1, start_min_break1 = timestart_break1.split(':')  
+            finish_hr_break1, finish_min_break1 = timefinish_break1.split(':') 
+            start_break1 = datetime(int(year), int(month), int(day), int(start_hr_break1), int(start_min_break1))
+            end_break1 = datetime(int(year), int(month), int(day), int(finish_hr_break1), int(finish_min_break1))
+            dif_break1 = end_break1 - start_break1 
+
+            dif_hours_break1 = dif_break1.seconds // 3600
+            dif_sec_break1 = dif_break1.seconds % 3600
+            dif_min_break1 = dif_sec_break1 // 60
+            if dif_min_break1 < 10 or dif_min_break1 == 0:
+                bt = f'{dif_hours_break1}:0{dif_min_break1}'
+            else:
+                bt = f'{dif_hours_break1}:{dif_min_break1}'
+
+            # Work time in seconds without break
+            diff = end - start - dif_break1 
 
         #LANCH
-        start_hr_break2, start_min_break2 = timestart_break2.split(':')  
-        finish_hr_break2, finish_min_break2 = timefinish_break2.split(':') 
-        start_break2 = datetime(int(year), int(month), int(day), int(start_hr_break2), int(start_min_break2))
-        end_break2 = datetime(int(year), int(month), int(day), int(finish_hr_break2), int(finish_min_break2))
-        dif_break2 = end_break2 - start_break2
+        if timestart_break2 and timefinish_break2:
+            start_hr_break2, start_min_break2 = timestart_break2.split(':')  
+            finish_hr_break2, finish_min_break2 = timefinish_break2.split(':') 
+            start_break2 = datetime(int(year), int(month), int(day), int(start_hr_break2), int(start_min_break2))
+            end_break2 = datetime(int(year), int(month), int(day), int(finish_hr_break2), int(finish_min_break2))
+            dif_break2 = end_break2 - start_break2
 
-        dif_hours_break1 = dif_break1.seconds // 3600
-        dif_sec_break1 = dif_break1.seconds % 3600
-        dif_min_break1 = dif_sec_break1 // 60
-        if dif_min_break1 < 10 or dif_min_break1 == 0:
-            bt = f'{dif_hours_break1}:0{dif_min_break1}'
+            dif_hours_break2 = dif_break2.seconds // 3600
+            dif_sec_break2 = dif_break2.seconds % 3600
+            dif_min_break2 = dif_sec_break2 // 60
+            if dif_min_break2 < 10 or dif_min_break2 == 0:
+                bt = f'{dif_hours_break2}:0{dif_min_break2}'
+            else:
+                bt = f'{dif_hours_break2}:{dif_min_break2}'
+
+            # Work time in seconds without break
+            diff = end - start - dif_break2
+
+        if timestart_break1 and timefinish_break1 and timestart_break2 and timefinish_break2:
+            start_hr_break1, start_min_break1 = timestart_break1.split(':')  
+            finish_hr_break1, finish_min_break1 = timefinish_break1.split(':') 
+            start_break1 = datetime(int(year), int(month), int(day), int(start_hr_break1), int(start_min_break1))
+            end_break1 = datetime(int(year), int(month), int(day), int(finish_hr_break1), int(finish_min_break1))
+            dif_break1 = end_break1 - start_break1 
+            start_hr_break2, start_min_break2 = timestart_break2.split(':')  
+            finish_hr_break2, finish_min_break2 = timefinish_break2.split(':') 
+            start_break2 = datetime(int(year), int(month), int(day), int(start_hr_break2), int(start_min_break2))
+            end_break2 = datetime(int(year), int(month), int(day), int(finish_hr_break2), int(finish_min_break2))
+            dif_break2 = end_break2 - start_break2
+
+            dif_hours_break2 = dif_break1.seconds // 3600
+            dif_sec_break1 = dif_break1.seconds % 3600
+            dif_min_break1 = dif_sec_break1 // 60
+            if dif_min_break1 < 10 or dif_min_break1 == 0:
+                bt = f'{dif_hours_break1}:0{dif_min_break1}'
+            else:
+                bt = f'{dif_hours_break1}:{dif_min_break1}'
+
+            # Work time in seconds without break
+            diff = end - start - dif_break1 - dif_break2
+
         else:
-            bt = f'{dif_hours_break1}:{dif_min_break1}'
-        print('start_break ------------------', start_break1)
-        print('end_break ------------------', end_break1)
-        print('dif_break.seconds ------------------', dif_break1.seconds)
-        print('dif_hours_break ------------------', dif_hours_break1)
-        print('dif_sec_break ------------------', dif_sec_break1)
-        print('dif_min_break ------------------', dif_min_break1)
-        print('BREAK ------------------', bt)
+            # Work time in seconds without break
+            diff = end - start 
 
-        # Work time in seconds without break
-        diff = end - start - dif_break1 - dif_break2
-        print('BREAK ------------------', diff)
-        print('diff.seconds ------------------', diff.seconds)
         ### Overtime/day ###
         if diff.seconds > 28800:
             over_time = diff.seconds - 28800
-            print('over_time ------------------', over_time)
             over_hours = over_time // 3600
-            print('over_hours ------------------', over_hours)
             over_sec = diff.seconds % 3600
-            print('over_sec ------------------', over_sec)
             over_min = over_sec // 60
-            print('over_min ------------------', over_min)
             if over_min < 10 or over_min == 0:
                 ot = f'{over_hours}:0{over_min}'
             else:
                 ot = f'{over_hours}:{over_min}'
-                print('ot ------------------', ot)
-                # ot = float
-                # print('ot float ------------------', ot)
+
             ### To calculate only 8:00 hours###
             # dif_hours = 28800 // 3600       #
             # dif_sec = 28800 % 3600          #
@@ -1254,11 +1280,16 @@ def userWork(request, pk):
             work.prepayment = float(prepayment)
             work.fuel = float(fuel)
             work.phone_costs = float(phone_costs)
-            work.payment = round(payment, 2)
-            work.timestart_break1 = timestart_break1
-            work.timefinish_break1 = timefinish_break1
-            work.timestart_break2 = timestart_break2
-            work.timefinish_break2 = timefinish_break2
+            payment_ = float(payment)
+            work.payment = round(payment_, 2)
+            if timestart_break1:
+                work.timestart_break1 = timestart_break1
+            if timefinish_break1:    
+                work.timefinish_break1 = timefinish_break1
+            if timestart_break2:
+                work.timestart_break2 = timestart_break2
+            if timefinish_break2:
+                work.timefinish_break2 = timefinish_break2
             work.user.add(user)
             try:
                 work.save()
@@ -1317,18 +1348,6 @@ def updateUserWork(request, work_pk):
         if timefinish == '':
             messages.warning(request, 'Zaznacz koniec czasu pracy!')
             return redirect(reverse('update_user_work', kwargs={'work_pk': work_pk}))
-        # if timestart_break1 == '':
-        #     messages.warning(request, 'Zaznacz początek przerwy na śniadanie!')
-        #     return redirect(reverse('user_work', kwargs={'pk': work_pk}))
-        # if timefinish_break1 == '':
-        #     messages.warning(request, 'Zaznacz koniec przerwy na śniadanie!')
-        #     return redirect(reverse('user_work', kwargs={'pk': work_pk}))
-        # if timestart_break2 == '':
-        #     messages.warning(request, 'Zaznacz początek przerwy na obiad!')
-        #     return redirect(reverse('user_work', kwargs={'pk': work_pk}))
-        # if timefinish_break2 == '':
-        #     messages.warning(request, 'Zaznacz koniec przerwy na obiad!')
-        #     return redirect(reverse('user_work', kwargs={'pk': work_pk}))
         if work_object == None:
             messages.warning(request, 'Wybierz Obiekt pracy!')
             return redirect(reverse('update_user_work', kwargs={'work_pk': work_pk}))
@@ -1341,38 +1360,69 @@ def updateUserWork(request, work_pk):
         end = datetime(int(year), int(month), int(day), int(finish_hr), int(finish_min))
 
         #BREAKFAST
-        start_hr_break1, start_min_break1 = timestart_break1.split(':')  
-        finish_hr_break1, finish_min_break1 = timefinish_break1.split(':') 
-        start_break1 = datetime(int(year), int(month), int(day), int(start_hr_break1), int(start_min_break1))
-        end_break1 = datetime(int(year), int(month), int(day), int(finish_hr_break1), int(finish_min_break1))
-        dif_break1 = end_break1 - start_break1 
+        if timestart_break1 and timefinish_break1:
+            start_hr_break1, start_min_break1 = timestart_break1.split(':')  
+            finish_hr_break1, finish_min_break1 = timefinish_break1.split(':') 
+            start_break1 = datetime(int(year), int(month), int(day), int(start_hr_break1), int(start_min_break1))
+            end_break1 = datetime(int(year), int(month), int(day), int(finish_hr_break1), int(finish_min_break1))
+            dif_break1 = end_break1 - start_break1 
+
+            dif_hours_break1 = dif_break1.seconds // 3600
+            dif_sec_break1 = dif_break1.seconds % 3600
+            dif_min_break1 = dif_sec_break1 // 60
+            if dif_min_break1 < 10 or dif_min_break1 == 0:
+                bt = f'{dif_hours_break1}:0{dif_min_break1}'
+            else:
+                bt = f'{dif_hours_break1}:{dif_min_break1}'
+
+            # Work time in seconds without break
+            diff = end - start - dif_break1 
 
         #LANCH
-        start_hr_break2, start_min_break2 = timestart_break2.split(':')  
-        finish_hr_break2, finish_min_break2 = timefinish_break2.split(':') 
-        start_break2 = datetime(int(year), int(month), int(day), int(start_hr_break2), int(start_min_break2))
-        end_break2 = datetime(int(year), int(month), int(day), int(finish_hr_break2), int(finish_min_break2))
-        dif_break2 = end_break2 - start_break2
+        if timestart_break2 and timefinish_break2:
+            start_hr_break2, start_min_break2 = timestart_break2.split(':')  
+            finish_hr_break2, finish_min_break2 = timefinish_break2.split(':') 
+            start_break2 = datetime(int(year), int(month), int(day), int(start_hr_break2), int(start_min_break2))
+            end_break2 = datetime(int(year), int(month), int(day), int(finish_hr_break2), int(finish_min_break2))
+            dif_break2 = end_break2 - start_break2
 
-        dif_hours_break1 = dif_break1.seconds // 3600
-        dif_sec_break1 = dif_break1.seconds % 3600
-        dif_min_break1 = dif_sec_break1 // 60
-        if dif_min_break1 < 10 or dif_min_break1 == 0:
-            bt = f'{dif_hours_break1}:0{dif_min_break1}'
+            dif_hours_break2 = dif_break2.seconds // 3600
+            dif_sec_break2 = dif_break2.seconds % 3600
+            dif_min_break2 = dif_sec_break2 // 60
+            if dif_min_break2 < 10 or dif_min_break2 == 0:
+                bt = f'{dif_hours_break2}:0{dif_min_break2}'
+            else:
+                bt = f'{dif_hours_break2}:{dif_min_break2}'
+
+            # Work time in seconds without break
+            diff = end - start - dif_break2
+
+        if timestart_break1 and timefinish_break1 and timestart_break2 and timefinish_break2:
+            start_hr_break1, start_min_break1 = timestart_break1.split(':')  
+            finish_hr_break1, finish_min_break1 = timefinish_break1.split(':') 
+            start_break1 = datetime(int(year), int(month), int(day), int(start_hr_break1), int(start_min_break1))
+            end_break1 = datetime(int(year), int(month), int(day), int(finish_hr_break1), int(finish_min_break1))
+            dif_break1 = end_break1 - start_break1 
+            start_hr_break2, start_min_break2 = timestart_break2.split(':')  
+            finish_hr_break2, finish_min_break2 = timefinish_break2.split(':') 
+            start_break2 = datetime(int(year), int(month), int(day), int(start_hr_break2), int(start_min_break2))
+            end_break2 = datetime(int(year), int(month), int(day), int(finish_hr_break2), int(finish_min_break2))
+            dif_break2 = end_break2 - start_break2
+
+            dif_hours_break2 = dif_break1.seconds // 3600
+            dif_sec_break1 = dif_break1.seconds % 3600
+            dif_min_break1 = dif_sec_break1 // 60
+            if dif_min_break1 < 10 or dif_min_break1 == 0:
+                bt = f'{dif_hours_break1}:0{dif_min_break1}'
+            else:
+                bt = f'{dif_hours_break1}:{dif_min_break1}'
+
+            # Work time in seconds without break
+            diff = end - start - dif_break1 - dif_break2
+
         else:
-            bt = f'{dif_hours_break1}:{dif_min_break1}'
-        print('start_break ------------------', start_break1)
-        print('end_break ------------------', end_break1)
-        print('dif_break.seconds ------------------', dif_break1.seconds)
-        print('dif_hours_break ------------------', dif_hours_break1)
-        print('dif_sec_break ------------------', dif_sec_break1)
-        print('dif_min_break ------------------', dif_min_break1)
-        print('BREAK ------------------', bt)
-
-        # Work time in seconds without break
-        diff = end - start - dif_break1 - dif_break2
-        print('BREAK ------------------', diff)
-        print('diff.seconds ------------------', diff.seconds)
+            # Work time in seconds without break
+            diff = end - start 
         
         ### Overtime/day ###
         if diff.seconds > 28800:
@@ -1575,10 +1625,13 @@ def getUserRaport(request, user_pk):
             start = datetime(int(year), int(month), int(day))
             end = datetime(int(year_), int(month_), int(day_))
             try:
-                works = Work.objects.filter(
+                # works = Work.objects.filter(
+                #     date__range=(start, end),
+                #     user__id=user_pk,
+                # ).order_by('date')
+                works = Work.objects.prefetch_related('user').filter(
                     date__range=(start, end),
-                    user__id=user_pk,
-                ).order_by('date')
+                ).order_by('-date')
             except Exception as e:
                 error = f'Nie można wyświetlić raport z powodu błędu: {e}'
                 return render(request, 'error.html', context=error)
@@ -1844,42 +1897,42 @@ def raports(request):
     
     if request.user.is_superuser:
         try:
-            # works_result = raports_all_superuser.delay() 
-            # works = works_result.get()
+            works_result = raports_all_superuser.delay() 
+            works = works_result.get()
             # print('WORKS!!!!!!!', works)
-            works = Work.objects.prefetch_related(
-                Prefetch('user')
-                ).order_by('-date')
-            # Convert Decimal values to float using dictionary comprehension
-            works_dict = [work.__dict__ for work in works]
-            works = [
-                {key: float(value) if isinstance(value, Decimal) 
-                 else value for key, value in work.items() 
-                 if key != '_state' and key != '_prefetched_objects_cache'} 
-                 for work in works_dict
-                ]
+            # works = Work.objects.prefetch_related(
+            #     Prefetch('user')
+            #     ).order_by('-date')
+            # # Convert Decimal values to float using dictionary comprehension
+            # works_dict = [work.__dict__ for work in works]
+            # works = [
+            #     {key: float(value) if isinstance(value, Decimal) 
+            #      else value for key, value in work.items() 
+            #      if key != '_state' and key != '_prefetched_objects_cache'} 
+            #      for work in works_dict
+            #     ]
             work_objects = WorkObject.objects.all().only('name')
-            # return render(request, '404.html', context={'works': works})
+
         except Exception as e:
             error = f'Nie można wyświetlić raport z powodu błędu: {e}'
             return render(request, 'error.html', context={'error': error})
     else:
         try:
-            # works_result = raports_all.delay(request.user.id)
-            # works = works_result.get()
-            works = Work.objects.prefetch_related(
-                Prefetch('user')
-                ).filter(
-                user__id=request.user.id
-                ).order_by('-date')
-            # Convert Decimal values to float using dictionary comprehension
-            works_dict = [work.__dict__ for work in works]
-            works = [
-                {key: float(value) if isinstance(value, Decimal) 
-                 else value for key, value in work.items() 
-                 if key != '_state' and key != '_prefetched_objects_cache'} 
-                 for work in works_dict
-                ]
+            works_result = raports_all.delay(request.user.id)
+            works = works_result.get()
+            # works = Work.objects.prefetch_related(
+            #     Prefetch('user')
+            #     ).filter(
+            #     user__id=request.user.id
+            #     ).order_by('-date')
+            # # Convert Decimal values to float using dictionary comprehension
+            # works_dict = [work.__dict__ for work in works]
+            # works = [
+            #     {key: float(value) if isinstance(value, Decimal) 
+            #      else value for key, value in work.items() 
+            #      if key != '_state' and key != '_prefetched_objects_cache'} 
+            #      for work in works_dict
+            #     ]
             work_objects = WorkObject.objects.filter(user=request.user).only('name')
         except Exception as e:
             error = f'Nie można wyświetlić raport z powodu błędu: {e}'
@@ -2018,18 +2071,18 @@ def raports(request):
         if work_object: 
             # Call task from task.py
             try:
-                # works_result = raports_work_object.delay(work_object)
-                # works = works_result.get()
-                wo = get_object_or_404(WorkObject, id=work_object)
-                works = Work.objects.filter(work_object=wo.name).order_by('-date')
-                # Convert Decimal values to float using dictionary comprehension
-                works_dict = [work.__dict__ for work in works]
-                works = [
-                    {key: float(value) if isinstance(value, Decimal) 
-                     else value for key, value in work.items() 
-                     if key != '_state'} 
-                     for work in works_dict
-                    ]
+                works_result = raports_work_object.delay(work_object)
+                works = works_result.get()
+                # wo = get_object_or_404(WorkObject, id=work_object)
+                # works = Work.objects.filter(work_object=wo.name).order_by('-date')
+                # # Convert Decimal values to float using dictionary comprehension
+                # works_dict = [work.__dict__ for work in works]
+                # works = [
+                #     {key: float(value) if isinstance(value, Decimal) 
+                #      else value for key, value in work.items() 
+                #      if key != '_state'} 
+                #      for work in works_dict
+                #     ]
             except Exception as e:
                 error = f'Nie można wyświetlić raport z powodu błędu: {e}'
                 return render(request, 'error.html', context={'error': error})
@@ -2063,7 +2116,6 @@ def raports(request):
             try:
                 works_result = raports_sorted_from_work_object.delay(start, end, work_object)
                 works = works_result.get()
-                print('WORKS-VIEW', works)
             except Exception as e:
                 error = f'Nie można wyświetlić raport z powodu błędu: {e}'
                 return render(request, 'error.html', context={'error': error})

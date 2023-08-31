@@ -391,12 +391,14 @@
                 $('#content').empty();
                 textarea.value = '';
                 shouldToBottom = true
+                    
               },
               error: (data) => {
                   console.log('error')
                   $('#content').empty();
               }                
-          })             
+          }) 
+
         }
     
         function showMessages(){
@@ -414,7 +416,7 @@
                                       '</div>'
                         $('#chato').append(history)
                     }
-
+                    
                     for (var key in response.messages){
                         if(response.messages[key].is_read == true){
                             var isRead = '<img src="{% static "images/is_read.png" %}" width="20" height="15">'
@@ -426,12 +428,14 @@
                                     '<div class="chat_label_r">'+
                                         '<p class="chat_content">'+response.messages[key].content+'</p>'+
                                         '<p class="chat_time">'+response.messages[key].day+response.messages[key].time+" "+isRead+'</p>'+
+                                        '<img style="cursor: pointer;" src="{% static "images/deleteMess.png" %}" width="20" height="20" onclick="deleteMess('+response.messages[key].id+')">'+
                                     '</div>'
                         }else{
                             var data='<p class="l">'+response.messages[key].name+'</p>'+
                                     '<div class="chat_label_l">'+
                                         '<p class="chat_content">'+response.messages[key].content+'</p>'+
                                         '<p class="chat_time">'+response.messages[key].day+response.messages[key].time+" "+isRead+'</p>'+
+                                        '<img style="cursor: pointer;" src="{% static "images/deleteMess.png" %}" width="20" height="20" onclick="deleteMess('+response.messages[key].id+')">'+
                                     '</div>'
                         }
                                 
@@ -457,21 +461,23 @@
 
                     for (var key in response.messages){
                         if(response.messages[key].is_read == true){
-                            var isRead = '<img src="{% static "images/is_read.png" %}" width="20" height="15">'
+                            var isRead = '<img src="{% static "images/is_read.png" %}" width="20" height="20">'
                         }else{
-                            var isRead = '<img src="{% static "images/un_read.png" %}" width="20" height="15">'
+                            var isRead = '<img src="{% static "images/un_read.png" %}" width="20" height="20">'
                         }
                        if(response.user === response.messages[key].name){
                             var data= '<p class="r">'+Ty+'</p>'+
                                     '<div class="chat_label_r">'+
                                         '<p class="chat_content">'+response.messages[key].content+'</p>'+
                                         '<p class="chat_time">'+response.messages[key].day+response.messages[key].time+" "+isRead+'</p>'+
+                                        '<img style="cursor: pointer;" src="{% static "images/deleteMess.png" %}" width="20" height="20" onclick="deleteMess('+response.messages[key].id+')">'+
                                     '</div>'
                         }else{
                             var data='<p class="l">'+response.messages[key].name+'</p>'+
                                     '<div class="chat_label_l">'+
                                         '<p class="chat_content">'+response.messages[key].content+'</p>'+
                                         '<p class="chat_time">'+response.messages[key].day+response.messages[key].time+" "+isRead+'</p>'+
+                                        '<img style="cursor: pointer;" src="{% static "images/deleteMess.png" %}" width="20" height="20" onclick="deleteMess('+response.messages[key].id+')">'+
                                     '</div>'
                         }
                                 
@@ -496,7 +502,7 @@
                 type: 'GET',
                 url: "{% url 'chat' work_object.pk %}", 
                 success: function(response){
-                    console.log('chat', response.messages)
+
                     $('#chato').empty();
 
                     if(response.mess_count == 20){
@@ -517,17 +523,20 @@
                                     '<div class="chat_label_r">'+
                                         '<p class="chat_content">'+response.messages[key].content+'</p>'+
                                         '<p class="chat_time">'+response.messages[key].day+response.messages[key].time+" "+isRead+'</p>'+
+                                        '<img style="cursor: pointer;" src="{% static "images/deleteMess.png" %}" width="20" height="20" onclick="deleteMess('+response.messages[key].id+')">'+
                                     '</div>'
                         }else{
                             var data='<p class="l">'+response.messages[key].name+'</p>'+
                                     '<div class="chat_label_l">'+
                                         '<p class="chat_content">'+response.messages[key].content+'</p>'+
                                         '<p class="chat_time">'+response.messages[key].day+response.messages[key].time+" "+isRead+'</p>'+
+                                        '<img style="cursor: pointer;" src="{% static "images/deleteMess.png" %}" width="20" height="20" onclick="deleteMess('+response.messages[key].id+')">'+
                                     '</div>'
                         }
                                 
                         $('#chato').append(data)
                         // chat_down_quantity.textContent = response.count
+
                     }
                     scrollBottom()
                     if(response.messages){
@@ -544,6 +553,7 @@
         }
 
 
+
         let intervalID;
 
         // Function to send the AJAX request and handle the response
@@ -556,7 +566,12 @@
                         console.log('response.message', response.message);
                         clearInterval(intervalID); // Stop the interval
                         getMessages(); // Call getMessages_() function
-                    } else {
+                    } else if (response.message === 1){
+                        console.log('response.message', response.message);
+                        clearInterval(intervalID); // Stop the interval
+                        getMessages(); // Call getMessages_() function
+                    }
+                    else {
                         console.log('response.message', response.message);
                     }
                 }
@@ -567,6 +582,46 @@
         intervalID = setInterval(checkMessages, 1000);
     })
 
+    // Delete message
+    function deleteMess(id) {
+            console.log('deleteMess', id)
+            var deleteQuestion = document.getElementById('deleteQuestion')
+                    deleteQuestion.style.display = 'flex';
+                    var data = '<div id="questCont">'+
+                                    '<p>'+"Usunąć wiadomość?"+'</p>'+
+                                    '<div class="row_cont_in_label">'+
+                                        '<button class="btn" onclick="deleteMessConf('+id+')">'+
+                                            '<a>'+"Tak"+'</a>'+
+                                        '</button>'+
+                                        '<button class="btn" onclick="closeQuestionDelete()">'+
+                                            '<a>'+"Nie"+'</a>'+
+                                        '</button>'+
+                                    '</div>'+
+                                '</div>';
+                        $('#deleteQuestion').html(data)
+        }
+
+    function deleteMessConf(id) {
+        console.log('deleteMessConf', id)
+
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'deleteMessConf' %}",
+            data: {
+                  'pk': id,
+                  'csrfmiddlewaretoken': '{{ csrf_token }}'
+              },
+              success: (data) => {
+                console.log('deleteMessConf - Success', data.response)
+              },
+              error: (data) => {
+                  alert('error', data)
+              }     
+        })
+
+        deleteQuestion.style.display = 'none';
+        // tasks_container.style.display = 'flex';
+    }
 
     // CHART
 

@@ -13,8 +13,7 @@ h2 {
 .vacations_filter_cont {
     position: fixed;
     top: 0;
-    left: 40px;
-    width: 95%;
+    width: 100%;
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -36,7 +35,6 @@ h2 {
 }
 
 .vacations_grafic_container {
-    margin-left: 50px;
     margin-top: 125px;
     width: 93vw;
     height: auto;
@@ -47,7 +45,6 @@ h2 {
 
 @media screen and (max-width: 1180px) {
     .vacations_grafic_container {
-        margin-left: 50px;
         margin-top: 125px;
         width: 92vw;
         height: auto;
@@ -89,12 +86,11 @@ h2 {
     .vacations_filter_cont {
         position: fixed;
         top: 0;
-        left: 9px;
-        width: 85%;
+        width: 100%;
         display: flex;
         flex-wrap: wrap;
         padding: 10px; 
-        margin-left: 30px;
+        margin-left: -10px;
         background-color: var(--title-bg-color);
       }
 }

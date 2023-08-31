@@ -27,7 +27,7 @@ h2 {
 @media screen and (max-width: 1180px) {
     .add_vacations_grafic_container {
         margin-top: 30px;
-        width: 64vw;
+        width: 85vw;
         height: auto;
         background-color: var(--input-bg-color);
         padding: 10px;
