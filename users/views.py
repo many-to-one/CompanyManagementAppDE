@@ -70,6 +70,7 @@ class Login(LoginView):
             'ip': [ip_address],
             'block': [],
             }
+            user.is_logged = True
             user.save()
             # return super().form_valid(form)
             # List of users IP's
@@ -155,6 +156,8 @@ def chack_email(request):
 
 def logout_view(request):
     user = get_object_or_404(CustomUser, id=request.user.pk)
+    user.is_logged = False
+    user.save()
     if user.fp_token:
         blacklist_token(user.fp_token)
     logout(request)

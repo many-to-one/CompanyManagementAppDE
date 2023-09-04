@@ -435,7 +435,6 @@
                                     '<div class="chat_label_l">'+
                                         '<p class="chat_content">'+response.messages[key].content+'</p>'+
                                         '<p class="chat_time">'+response.messages[key].day+response.messages[key].time+" "+isRead+'</p>'+
-                                        '<img style="cursor: pointer;" src="{% static "images/deleteMess.png" %}" width="20" height="20" onclick="deleteMess('+response.messages[key].id+')">'+
                                     '</div>'
                         }
                                 
@@ -477,7 +476,6 @@
                                     '<div class="chat_label_l">'+
                                         '<p class="chat_content">'+response.messages[key].content+'</p>'+
                                         '<p class="chat_time">'+response.messages[key].day+response.messages[key].time+" "+isRead+'</p>'+
-                                        '<img style="cursor: pointer;" src="{% static "images/deleteMess.png" %}" width="20" height="20" onclick="deleteMess('+response.messages[key].id+')">'+
                                     '</div>'
                         }
                                 
@@ -530,7 +528,6 @@
                                     '<div class="chat_label_l">'+
                                         '<p class="chat_content">'+response.messages[key].content+'</p>'+
                                         '<p class="chat_time">'+response.messages[key].day+response.messages[key].time+" "+isRead+'</p>'+
-                                        '<img style="cursor: pointer;" src="{% static "images/deleteMess.png" %}" width="20" height="20" onclick="deleteMess('+response.messages[key].id+')">'+
                                     '</div>'
                         }
                                 
@@ -593,7 +590,7 @@
                                         '<button class="btn" onclick="deleteMessConf('+id+')">'+
                                             '<a>'+"Tak"+'</a>'+
                                         '</button>'+
-                                        '<button class="btn" onclick="closeQuestionDelete()">'+
+                                        '<button class="btn" onclick="closeQuestionDeleteCurrMess()">'+
                                             '<a>'+"Nie"+'</a>'+
                                         '</button>'+
                                     '</div>'+
@@ -621,6 +618,10 @@
 
         deleteQuestion.style.display = 'none';
         // tasks_container.style.display = 'flex';
+    }
+
+    function closeQuestionDeleteCurrMess(){
+        deleteQuestion.style.display = 'none';
     }
 
     // CHART

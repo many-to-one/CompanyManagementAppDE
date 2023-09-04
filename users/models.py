@@ -194,6 +194,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         _('Do użycia w bieżącym roku'),
         default=0,
     )
+    is_logged = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(

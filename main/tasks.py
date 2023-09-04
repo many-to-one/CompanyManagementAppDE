@@ -9,6 +9,7 @@ from users.models import CustomUser
 from .models import IsRead, Message, Work, WorkObject
 from django.db.models import Q, Prefetch
 from django.template import Template, Context
+from django.core.mail import send_mail
 
 
 @shared_task
@@ -292,3 +293,7 @@ def chek_messages_task(pk, user):
         print('CHECK_MESS_COUNT ROWNO --------------------', work_object.message_count, count_mess) 
         count = False
     return count
+
+@shared_task
+def mail_message(subject, plain_message, email_from, recipient_list, html_message):
+    send_mail(subject, plain_message, email_from, recipient_list, html_message=html_message)

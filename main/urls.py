@@ -41,6 +41,7 @@ urlpatterns = [
     path('showCountAll/', showCountAll, name='showCountAll'),
     path('chat/<pk>/', chat, name='chat'),
     path('showMessageHistory/<pk>/', showMessageHistory, name='showMessageHistory'),
+    path('chek_messages_user', chek_messages_user, name='chek_messages_user'),
     path('chek_messages/<pk>/', chek_messages, name='chek_messages'),
     path('vacations/<pk>/', vacations, name='vacations'), #1776
     path('delete_vacations_question/', delete_vacations_question, name='delete_vacations_question'),

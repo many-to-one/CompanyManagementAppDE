@@ -13,6 +13,7 @@ from .tasks import *
 from .models import (
     Documents,
     MessageCount,
+    MessageCountUser,
     VacationRequest, 
     Vacations, 
     Work, 
@@ -468,6 +469,7 @@ def deleteAllMessagesWO(request):
         try:
             messages = Message.objects.filter(work_object=work_object)
             if messages is not None:
+                MessageCountUser.objects.all().delete()
                 messages.delete()
                 response = {
                     'message': 'ok',
@@ -828,7 +830,7 @@ def chat(request, pk):
             # messages_results = update_is_read_flag.delay(pk, username)
             # messages = messages_results.get()
 
-             # Last 5 messages in current work object
+             # Last 20 messages in current work object
             read_messages = Message.objects.filter(work_object=work_object).order_by('-id')[:20]
             # mess_count
 
@@ -927,12 +929,25 @@ def chat(request, pk):
                 name=user,
                 sender=r_user,
                 content=content,
-                day=f"{datetime.now().strftime('%d %B %Y')}  ",
+                day=f"{datetime.now().strftime('%d %b %Y')} ",
                 time=f'{datetime.now().hour}:{datetime.now().minute}',
                 work_object=work_object,
                 for_sender_is_read=True,
             )
-            print('NEW_MESSAGE !!!!!!!!!!!!!!!', new_message)
+
+            subject = 'Adest GmbH ERP'
+            url = f'https://www.workmeneger.pl/work_object/{work_object.id}/'
+            message = f'Wiadomość w czacie z obiektu: {work_object.name}, <a href="{url}">sprawdź</a>'
+            html_message = f'<p>{message}</p>'
+            plain_message = f'{message}'
+            email_from = settings.EMAIL_HOST_USER
+
+            # The list of user's emails whose are offline to send them alert about the new message 
+            recipient_list = [u.email for u in users if u.email != r_user.email and u.is_logged == False]
+
+            # celery task for sending email
+            mail_message(subject, plain_message, email_from, recipient_list, html_message)
+
             # new_message_results = create_message.delay(pk, r_user, content, user)
             # new_message = new_message_results.get()
         except Exception as e:
@@ -956,13 +971,54 @@ def chat(request, pk):
         return JsonResponse(response)
     
 
+# This function checks if the users has a new message, exclude the sender
+def chek_messages_user(request):
+    user = request.user
+    if request.method == 'GET':
+        new_mess = Message.objects.all().order_by('-id').values('content', 'work_object').first()
+        count_mess = Message.objects.all().exclude(sender=user).count()
+        print('COUNT_MESS --------------', count_mess)
+        messageCount, created = MessageCountUser.objects.get_or_create(user=user)
+        if count_mess > messageCount.message_count:
+            messageCount.message_count = count_mess
+            messageCount.save()
+            print('CHECK_MESS_COUNT BOLSZE ---------------------', count_mess, messageCount.message_count) 
+            response = {
+                    'message': True,
+                    'new_mess': new_mess,
+                    # 'chat_id': new_mess['work_object']
+                }
+        elif count_mess < messageCount.message_count:
+            messageCount.message_count = count_mess
+            messageCount.save()
+            print('CHECK_MESS_COUNT MENSZE ---------------------', count_mess, messageCount.message_count) 
+            response = {
+                    'message': 1,
+                    'user': user.is_logged,
+                }
+        else:
+            print('CHECK_MESS_COUNT ROWNO --------------------', count_mess, messageCount.message_count) 
+            response = {
+                    'message': False,
+                    'user': user.is_logged,
+                }
+
+
+    return JsonResponse(response)
+   
+
+# This function checks if there is a new message in the chat of
+# the current work object by checking theirs count. If there is a 
+# new message the function return True and the JS function in 
+# work_object.html refreash the chat to show all messages, with 
+# the new one.
 def chek_messages(request, pk):
     user = request.user
     if request.method == 'GET':
         work_object = get_object_or_404(WorkObject, id=pk)
         count_mess = work_object.objekt.count()
-        print('COUNT_MESS --------------', count_mess)
-        print('WORK_OBJECT --------------', work_object)
+        # print('COUNT_MESS --------------', count_mess)
+        # print('WORK_OBJECT --------------', work_object)
         messageCount, created = MessageCount.objects.get_or_create(
             user=user,
             work_object=work_object,
@@ -970,19 +1026,19 @@ def chek_messages(request, pk):
         if count_mess > messageCount.message_count:
             messageCount.message_count = count_mess
             messageCount.save()
-            print('CHECK_MESS_COUNT BOLSZE ---------------------', count_mess, messageCount.message_count) 
+            # print('CHECK_MESS_COUNT BOLSZE ---------------------', count_mess, messageCount.message_count) 
             response = {
                     'message': True
                 }
         elif count_mess < messageCount.message_count:
             messageCount.message_count = count_mess
             messageCount.save()
-            print('CHECK_MESS_COUNT MENSZE ---------------------', count_mess, messageCount.message_count) 
+            # print('CHECK_MESS_COUNT MENSZE ---------------------', count_mess, messageCount.message_count) 
             response = {
                     'message': 1
                 }
         else:
-            print('CHECK_MESS_COUNT ROWNO --------------------', count_mess, messageCount.message_count) 
+            # print('CHECK_MESS_COUNT ROWNO --------------------', count_mess, messageCount.message_count) 
             response = {
                     'message': False
                 }
@@ -1168,9 +1224,10 @@ def userWork(request, pk):
 
             # Work time in seconds without break
             diff = end - start - dif_break1 
+            # print('dif_break1 -------------- ', diff)
 
         #LANCH
-        if timestart_break2 and timefinish_break2:
+        elif timestart_break2 and timefinish_break2:
             start_hr_break2, start_min_break2 = timestart_break2.split(':')  
             finish_hr_break2, finish_min_break2 = timefinish_break2.split(':') 
             start_break2 = datetime(int(year), int(month), int(day), int(start_hr_break2), int(start_min_break2))
@@ -1187,8 +1244,9 @@ def userWork(request, pk):
 
             # Work time in seconds without break
             diff = end - start - dif_break2
+            # print('dif_break2 --------------', diff)
 
-        if timestart_break1 and timefinish_break1 and timestart_break2 and timefinish_break2:
+        elif timestart_break1 and timefinish_break1 and timestart_break2 and timefinish_break2:
             start_hr_break1, start_min_break1 = timestart_break1.split(':')  
             finish_hr_break1, finish_min_break1 = timefinish_break1.split(':') 
             start_break1 = datetime(int(year), int(month), int(day), int(start_hr_break1), int(start_min_break1))
@@ -1210,11 +1268,14 @@ def userWork(request, pk):
 
             # Work time in seconds without break
             diff = end - start - dif_break1 - dif_break2
+            # print('dif_break1 + dif_break2 --------------', diff)
 
         else:
             # Work time in seconds without break
             diff = end - start 
+            # print('without brak --------------', diff)
 
+        # print('diff_diff --------------', diff)
         ### Overtime/day ###
         if diff.seconds > 28800:
             over_time = diff.seconds - 28800
@@ -1379,7 +1440,7 @@ def updateUserWork(request, work_pk):
             diff = end - start - dif_break1 
 
         #LANCH
-        if timestart_break2 and timefinish_break2:
+        elif timestart_break2 and timefinish_break2:
             start_hr_break2, start_min_break2 = timestart_break2.split(':')  
             finish_hr_break2, finish_min_break2 = timefinish_break2.split(':') 
             start_break2 = datetime(int(year), int(month), int(day), int(start_hr_break2), int(start_min_break2))
@@ -1397,7 +1458,7 @@ def updateUserWork(request, work_pk):
             # Work time in seconds without break
             diff = end - start - dif_break2
 
-        if timestart_break1 and timefinish_break1 and timestart_break2 and timefinish_break2:
+        elif timestart_break1 and timefinish_break1 and timestart_break2 and timefinish_break2:
             start_hr_break1, start_min_break1 = timestart_break1.split(':')  
             finish_hr_break1, finish_min_break1 = timefinish_break1.split(':') 
             start_break1 = datetime(int(year), int(month), int(day), int(start_hr_break1), int(start_min_break1))

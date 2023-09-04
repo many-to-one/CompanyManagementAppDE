@@ -47,8 +47,8 @@ def check_user_ip_mail(user):
     # blacklist_token(user.fp_token)
     token = create_token()
     uidb64=urlsafe_base64_encode(force_bytes(user.pk))
-    block = f'http://127.0.0.1/8000/users/block_ip_address/{token}/{uidb64}/'
-    accept = f'http://127.0.0.1/8000/users/accept_ip_address/{token}/{uidb64}/'
+    block = f'https://www.workmeneger.pl/users/block_ip_address/{token}/{uidb64}/'
+    accept = f'https://www.workmeneger.pl/users/accept_ip_address/{token}/{uidb64}/'
     subject='Weryfikacja'
     email_from=settings.EMAIL_HOST_USER
     recipient_list = [user.email]

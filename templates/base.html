@@ -25,13 +25,74 @@
     <title>Document</title>
 </head>
 <body>
-
+    <p id="user" style="display: none;">{{ request.user.is_logged }}</p>
     <div class="base">
         {% include 'header.html' %}
         {% block content %}
             <p>Base</p>
         {% endblock %}
     </div>
+
+    <script>
+
+        // Function to send the AJAX request and handle the response
+        // This function each 10 sec checks if users have new messages
+        // exclude sender and sends them a notification, they will see it
+        // on any page of the app, that's why this function is here, 
+        // in the base.html
+        var User = document.getElementById('user').textContent
+        let intervalID;
+        function checkMessages() {
+            $.ajax({
+                type: 'GET',
+                url: "{% url 'chek_messages_user' %}",
+                success: function(response) {
+                    if (response.message === true) {
+                    clearInterval(intervalID); // Stop the interval
+                        if (Notification.permission === "granted") {
+                            // Create a notification
+                            var notification = new Notification("New Message", {
+                                body: response.new_mess['content'].slice(0, 40) + '...',
+                                icon: "path/to/your/icon.png" // Optional: Set a custom icon
+                            });
+                            setInterval(checkMessages, 10000);
+                            // Optional: Handle click on the notification (e.g., open a chat window)
+                            notification.onclick = function () {
+                                var workObjectId = response.new_mess['work_object']
+                                var url = '/work_object/' + workObjectId + '/';
+                                // Add code to open the chat or message window
+                                window.open(url, '_blank');
+                            };
+                        }else if (Notification.permission !== "denied") {
+                            Notification.requestPermission().then(function (permission) {
+                                if (permission === "granted") {
+                                    // Permission has been granted, you can now create the notification
+                                    var notification = new Notification("New Message", {
+                                        body: response.new_mess['content'].slice(0, 40) + '...',
+                                        icon: "path/to/your/icon.png" // Optional: Set a custom icon
+                                    });
+
+                                    // Optional: Handle click on the notification (e.g., open a chat window)
+                                    notification.onclick = function () {
+                                        var workObjectId = response.new_mess['work_object']
+                                        var url = '/work_object/' + workObjectId + '/';
+                                        // Add code to open the chat or message window
+                                        window.open(url, '_blank');
+                                    };
+                                }
+                            });
+                        }
+                    } 
+                }
+            });
+        }
+
+        // Start the interval and store the ID in the intervalID variable
+        if(User){
+            intervalID = setInterval(checkMessages, 10000);
+        }
+
+    </script>
     
 </body>
 </html>

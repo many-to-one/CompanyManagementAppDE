@@ -46,7 +46,7 @@
 #close_menu {
   position: fixed;
   top: 10px;
-  left: 138px;
+  left: 245px;
   background-color: transparent;
   cursor: pointer;
 }
@@ -262,7 +262,7 @@ tr:nth-child(even) td {
     color: #2a2a2a;
     border-radius: 5px;
     border: transparent;
-    width: 100vw;
+    width: 95vw;
     height: auto;
     min-height: 100px;
     font-size: 10px;

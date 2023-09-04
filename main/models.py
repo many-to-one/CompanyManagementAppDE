@@ -406,6 +406,21 @@ class MessageCount(models.Model):
         return str(self.id)
     
 
+class MessageCountUser(models.Model):
+    user = models.ForeignKey(
+        CustomUser, 
+        # on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True,
+        )
+    message_count = models.IntegerField(
+        default=0
+    )
+
+    def __str__(self):
+        return str(self.id)
+    
+
 class Vacations(models.Model):
     user = models.ForeignKey(
         CustomUser, 
