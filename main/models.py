@@ -516,3 +516,14 @@ class Documents(models.Model):
 
     def __str__(self):
         return self.title
+    
+
+class Warehouse(models.Model):
+    number = models.CharField(max_length=100)
+    value = models.CharField(max_length=100)
+    is_find = models.BooleanField(
+        default=False,
+    )
+
+    def __str__(self):
+        return self.number

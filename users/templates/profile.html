@@ -32,7 +32,7 @@
         </div>
  
         <div class="add_vacations_grafic_container">
-            <form method="POST">
+            <form method="POST" onsubmit="return checkPayment();">
                 {% csrf_token %}
 
                 {% if request.user.is_superuser %}
@@ -196,6 +196,21 @@
         </div> 
         
     </div>
+
+    <script>
+        function checkPayment() {
+          // Get the value of the input field
+          var paymentValue = document.getElementsByName("payment")[0].value;
+      
+          // Check if the value is equal to "0.0"
+          if (paymentValue === "0.0") {
+            // Display an alert
+            alert("Stawka za godzine nie może być 0.0");
+            return false; // Prevent form submission
+          }
+          return true; // Allow form submission
+        }
+      </script>
 
     {% endblock %}
 

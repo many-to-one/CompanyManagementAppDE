@@ -60,4 +60,11 @@ urlpatterns = [
     path('upload_document/', upload_document, name='upload_document'),
     path('getDocuments/<pk>/', getDocuments, name='getDocuments'),
     path('deleteDocument/', deleteDocument, name='deleteDocument'),
+    path('getWarehouse/', getWarehouse, name='getWarehouse'),
+    path('editValue/', editValue, name='editValue'),
+    path('deleteValue/', deleteValue, name='deleteValue'),
+    path('newValue/', newValue, name='newValue'),
+    path('getSearch/', getSearch, name='getSearch'),
+    path('resetWarehouse/', resetWarehouse, name='resetWarehouse'),
+    path('imageWarehouse/', imageWarehouse, name='imageWarehouse'),
 ]

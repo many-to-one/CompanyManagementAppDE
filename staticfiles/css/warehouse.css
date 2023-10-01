@@ -1,65 +1,9 @@
-.row-container {
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: row;
-    /* gap: 10%; */
-    margin: 50px;
-    margin-left: 15%;
-    justify-content: center;
-    width: 70%;
-}
-
-.home_part {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: center;
-    background: transparent;
-    border-radius: 10px;
-    width: 200px;
-    height: 300px;
-    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
-    cursor: pointer;
-    margin: 5%;
-}
-
-.home_part p {
-    color: black;
-}
-
-.w_back__ {
+.w_back_ {
     background-color: #5C8374;
-    width: 280vw;
+    width: 230vw;
 }
 
-@media screen and (max-width: 450px){
-    .w_back__ {
-        background-color: #5C8374;
-        width: 840vw;
-    }
-} 
-
-#deleteQuestionWh{
-    position: fixed;
-    z-index: 9999;
-    left: 10%;
-    top: 5%;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 80vw;
-    height: auto;
-    min-height: 30vh;
-    background-color: var(--main-bg-color);
-    padding: 20px;
-    margin: 20px;
-    border-radius: 5px;
-    border: transparent;
-    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
-}
-
-.levels_cont_ {
+#levels_cont_ {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -70,22 +14,22 @@
     padding: 20px;
 }
 
-.w_main_level__ {
+#w_main_level {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    width: 672px;
+    width: 555px;
     height: auto;
     min-height: 100vh;
     margin: 10px;
     padding: 20px;
 }
 
-.level__ {
+#level_ {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    width: 300px;
+    width: 250px;
     height: auto;
     min-height: 100vh;
     margin: 10px;
@@ -93,10 +37,10 @@
     background-color: #183D3D;
 }
 
-.column__ {
+#column_ {
     display: flex;
     flex-direction: column; 
-    width: 170px;
+    width: 120px;
     height: auto;
     min-height: 90vh;
 }
@@ -144,7 +88,7 @@
     cursor: pointer;
 }
 
-.column__ button {
+#column_ button {
     background-color: #93B1A6;
     border-radius: 10px;
     width: 75px;
@@ -152,16 +96,7 @@
     cursor: pointer;
 } 
 
-.column__ input {
+#column_ input {
     border-radius: 4px;
     width: 70px;
-}
-
-.crossed {
-    text-decoration: line-through;
-    background-color: #93B1A6;
-}
-
-.order_file {
-    display: none;
 }

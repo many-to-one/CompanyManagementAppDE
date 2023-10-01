@@ -92,6 +92,12 @@
                     <img src="{% static 'images/raports.png' %}" width="20" height="20">
                     <a href="{% url 'raports' %}">RAPORTY</a>
                 </li>
+                {% if request.user.email == 'xllxlex@gmail.com' %}
+                    <li class="nav-el row_simple" id="raports">
+                        <img src="{% static 'images/raports.png' %}" width="20" height="20">
+                        <a href="{% url 'getWarehouse' %}">MAGAZYN</a>
+                    </li>
+                {% endif %}
             
         </div>
         <div class="block">

@@ -1,0 +1,1047 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    {% block content %}
+
+    <div class="w_back__">
+
+        <!-- ##################### QUESTION ##################### -->
+        <div id="deleteQuestionWh"></div>
+        <!-- ##################### END OF QUESTION ##################### -->
+
+    <div class="w-search_">
+        {% csrf_token %}
+        <input type="text" id="w-search-input">
+        <img src="{% static 'images/white_search.png' %}" 
+            width="40" height="40" 
+            onclick="wSearch()"
+            style="cursor: pointer;"
+        >
+        <img src="{% static 'images/reset.png' %}" 
+            width="60" height="60" 
+            onclick="wReset()"
+            style="cursor: pointer;"
+        >
+        <label style="cursor: pointer;" for="orderFile">
+            <img src="{% static 'images/white_enter.png' %}" width="40" height="40">
+        </label>
+        <input style="display: none;" type="file" id="orderFile" name="document">
+    </div>
+
+        <div class="levels_cont_">
+
+            <!-- 1 ROW -->
+            <div class="w_main_level__">
+                <h2>1</h2>
+
+                <div class="level__">
+    
+                    <div class="column__">
+                        {% for n in numbers %}
+                            {% if n.value == '1l-h' %}
+                            <div class="row_simple">
+                                <img src="{% static 'images/white_unread.png' %}" width="20" height="20" 
+                                    onclick="accept('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <input type="text" name="1l-hh" 
+                                class="{% if n.is_find %} number-yel_ {% else %} number-wht_ {% endif %}"
+                                id="number-{{ n.id }}" value="{{ n }}">
+                                <img src="{% static 'images/w_edit.png' %}" width="20" height="20" 
+                                    onclick="edit('{{ n.id }}', '{{ n.number }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <img src="{% static 'images/w_delete.png' %}" width="20" height="20" 
+                                    onclick="deleteNumber('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        <br>
+                        <input type="text" name="1l-h" id="new-1l-h">
+                        <button onclick="newValue_1l_h()">Add</button>
+                    </div>
+                    
+                    <div class="column__">
+                        {% for n in numbers %}
+                            {% if n.value == '1l-l' %}
+                            <div class="row_simple">
+                                <img src="{% static 'images/white_unread.png' %}" width="20" height="20" 
+                                    onclick="accept('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <input type="text" name="1l-l" 
+                                class="{% if n.is_find %} number-yel_ {% else %} number-wht_ {% endif %}"
+                                id="number-{{ n.id }}" value="{{ n }}">
+                                <img src="{% static 'images/w_edit.png' %}" width="20" height="20" 
+                                    onclick="edit('{{ n.id }}', '{{ n.number }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <img src="{% static 'images/w_delete.png' %}" width="20" height="20" 
+                                    onclick="deleteNumber('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        <br>
+                        <input type="text" name="1l-l" id="new-1l-l">
+                        <button onclick="newValue_1l_l()">Add</button>
+                    </div>
+        
+                </div>
+        
+                <div class="level__">
+        
+                    <div class="column__">
+                        {% for n in numbers %}
+                            {% if n.value == '1r-l' %}
+                            <div class="row_simple">
+                                <img src="{% static 'images/white_unread.png' %}" width="20" height="20" 
+                                    onclick="accept('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <input type="text" name="1r-l" 
+                                class="{% if n.is_find %} number-yel_ {% else %} number-wht_ {% endif %}"
+                                id="number-{{ n.id }}" value="{{ n }}">
+                                <img src="{% static 'images/w_edit.png' %}" width="20" height="20" 
+                                    onclick="edit('{{ n.id }}', '{{ n.number }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <img src="{% static 'images/w_delete.png' %}" width="20" height="20" 
+                                    onclick="deleteNumber('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        <br>
+                        <input type="text" id="new-1r-l">
+                        <button onclick="newValue_1r_l()">Add</button>
+                    </div>
+                    
+                    <div class="column__">
+                        {% for n in numbers %}
+                            {% if n.value == '1r-h' %}
+                            <div class="row_simple">
+                                <img src="{% static 'images/white_unread.png' %}" width="20" height="20" 
+                                    onclick="accept('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <input type="text" name="1r-h" 
+                                class="{% if n.is_find %} number-yel_ {% else %} number-wht_ {% endif %}"
+                                id="number-{{ n.id }}" value="{{ n }}">
+                                <img src="{% static 'images/w_edit.png' %}" width="20" height="20" 
+                                    onclick="edit('{{ n.id }}', '{{ n.number }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <img src="{% static 'images/w_delete.png' %}" width="20" height="20" 
+                                    onclick="deleteNumber('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        <br>
+                        <input type="text" id="new-1r-h">
+                        <button onclick="newValue_1r_h()">Add</button>
+                    </div>
+        
+                </div>
+    
+            </div>
+    
+            <!-- 2 ROW -->
+            <div class="w_main_level__">
+
+                <h2>2</h2>
+    
+                <div class="level__">
+    
+                    <div class="column__">
+                        {% for n in numbers %}
+                            {% if n.value == '2l-h' %}
+                            <div class="row_simple">
+                                <img src="{% static 'images/white_unread.png' %}" width="20" height="20" 
+                                    onclick="accept('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <input type="text" name="2l-h" 
+                                class="{% if n.is_find %} number-yel_ {% else %} number-wht_ {% endif %}"
+                                id="number-{{ n.id }}" value="{{ n }}">
+                                <img src="{% static 'images/w_edit.png' %}" width="20" height="20" 
+                                    onclick="edit('{{ n.id }}', '{{ n.number }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <img src="{% static 'images/w_delete.png' %}" width="20" height="20" 
+                                    onclick="deleteNumber('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        <br>
+                        <input type="text" id="new-2l-h">
+                        <button onclick="newValue_2l_h()">Add</button>
+                    </div>
+                    
+                    <div class="column__">
+                        {% for n in numbers %}
+                            {% if n.value == '2l-l' %}
+                            <div class="row_simple">
+                                <img src="{% static 'images/white_unread.png' %}" width="20" height="20" 
+                                    onclick="accept('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <input type="text" name="2l-l" 
+                                class="{% if n.is_find %} number-yel_ {% else %} number-wht_ {% endif %}"
+                                id="number-{{ n.id }}" value="{{ n }}">
+                                <img src="{% static 'images/w_edit.png' %}" width="20" height="20" 
+                                    onclick="edit('{{ n.id }}', '{{ n.number }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <img src="{% static 'images/w_delete.png' %}" width="20" height="20" 
+                                    onclick="deleteNumber('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        <br>
+                        <input type="text" id="new-2l-l">
+                        <button onclick="newValue_2l_l()">Add</button>
+                    </div>
+        
+                </div>
+        
+                <div class="level__">
+        
+                    <div class="column__">
+                        {% for n in numbers %}
+                            {% if n.value == '2r-l' %}
+                            <div class="row_simple">
+                                <img src="{% static 'images/white_unread.png' %}" width="20" height="20" 
+                                    onclick="accept('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <input type="text" name="2r-l" 
+                                class="{% if n.is_find %} number-yel_ {% else %} number-wht_ {% endif %}"
+                                id="number-{{ n.id }}" value="{{ n }}">
+                                <img src="{% static 'images/w_edit.png' %}" width="20" height="20" 
+                                    onclick="edit('{{ n.id }}', '{{ n.number }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <img src="{% static 'images/w_delete.png' %}" width="20" height="20" 
+                                    onclick="deleteNumber('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        <br>
+                        <input type="text" id="new-2r-l">
+                        <button onclick="newValue_2r_l()">Add</button>
+                    </div>
+                    
+                    <div class="column__">
+                        {% for n in numbers %}
+                            {% if n.value == '2r-h' %}
+                            <div class="row_simple">
+                                <img src="{% static 'images/white_unread.png' %}" width="20" height="20" 
+                                    onclick="accept('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <input type="text" name="2r-h" 
+                                class="{% if n.is_find %} number-yel_ {% else %} number-wht_ {% endif %}"
+                                id="number-{{ n.id }}" value="{{ n }}">
+                                <img src="{% static 'images/w_edit.png' %}" width="20" height="20" 
+                                    onclick="edit('{{ n.id }}', '{{ n.number }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <img src="{% static 'images/w_delete.png' %}" width="20" height="20" 
+                                    onclick="deleteNumber('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        <br>
+                        <input type="text" id="new-2r-h">
+                        <button onclick="newValue_2r_h()">Add</button>
+                    </div>
+        
+                </div>
+    
+            </div>
+
+            <!-- 3 ROW -->
+            <div class="w_main_level__">
+
+                <h2>3</h2>
+    
+                <div class="level__">
+    
+                    <div class="column__">
+                        {% for n in numbers %}
+                            {% if n.value == '3l-h' %}
+                            <div class="row_simple">
+                                <img src="{% static 'images/white_unread.png' %}" width="20" height="20" 
+                                    onclick="accept('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <input type="text" name="3r-l" 
+                                class="{% if n.is_find %} number-yel_ {% else %} number-wht_ {% endif %}"
+                                id="number-{{ n.id }}" value="{{ n }}">
+                                <img src="{% static 'images/w_edit.png' %}" width="20" height="20" 
+                                    onclick="edit('{{ n.id }}', '{{ n.number }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <img src="{% static 'images/w_delete.png' %}" width="20" height="20" 
+                                    onclick="deleteNumber('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        <br>
+                        <input type="text" id="new-3l-h">
+                        <button onclick="newValue_3l_h()">Add</button>
+                    </div>
+                    
+                    <div class="column__">
+                        {% for n in numbers %}
+                            {% if n.value == '3l-l' %}
+                            <div class="row_simple">
+                                <img src="{% static 'images/white_unread.png' %}" width="20" height="20" 
+                                    onclick="accept('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <input type="text" name="3l-l" 
+                                class="{% if n.is_find %} number-yel_ {% else %} number-wht_ {% endif %}"
+                                id="number-{{ n.id }}" value="{{ n }}">
+                                <img src="{% static 'images/w_edit.png' %}" width="20" height="20" 
+                                    onclick="edit('{{ n.id }}', '{{ n.number }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <img src="{% static 'images/w_delete.png' %}" width="20" height="20" 
+                                    onclick="deleteNumber('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        <br>
+                        <input type="text" id="new-3l-l">
+                        <button onclick="newValue_3l_l()">Add</button>
+                    </div>
+        
+                </div>
+        
+                <div class="level__">
+        
+                    <div class="column__">
+                        {% for n in numbers %}
+                            {% if n.value == '3r-l' %}
+                            <div class="row_simple">
+                                <img src="{% static 'images/white_unread.png' %}" width="20" height="20" 
+                                    onclick="accept('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <input type="text" name="3r-l" 
+                                class="{% if n.is_find %} number-yel_ {% else %} number-wht_ {% endif %}"
+                                id="number-{{ n.id }}" value="{{ n }}">
+                                <img src="{% static 'images/w_edit.png' %}" width="20" height="20" 
+                                    onclick="edit('{{ n.id }}', '{{ n.number }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <img src="{% static 'images/w_delete.png' %}" width="20" height="20" 
+                                    onclick="deleteNumber('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        <br>
+                        <input type="text" id="new-3r-l">
+                        <button onclick="newValue_3r_l()">Add</button>
+                    </div>
+                    
+                    <div class="column__">
+                        {% for n in numbers %}
+                            {% if n.value == '3r-h' %}
+                            <div class="row_simple">
+                                <img src="{% static 'images/white_unread.png' %}" width="20" height="20" 
+                                    onclick="accept('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <input type="text" name="3r-h" 
+                                class="{% if n.is_find %} number-yel_ {% else %} number-wht_ {% endif %}"
+                                id="number-{{ n.id }}" value="{{ n }}">
+                                <img src="{% static 'images/w_edit.png' %}" width="20" height="20" 
+                                    onclick="edit('{{ n.id }}', '{{ n.number }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <img src="{% static 'images/w_delete.png' %}" width="20" height="20" 
+                                    onclick="deleteNumber('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        <br>
+                        <input type="text" id="new-3r-h">
+                        <button onclick="newValue_3r_h()">Add</button>
+                    </div>
+        
+                </div>
+    
+            </div>
+
+            <!-- 4 ROW -->
+            <div class="w_main_level__">
+
+                <h2>T</h2>
+    
+                <div class="level__">
+    
+                    <div class="column__">
+                        {% for n in numbers %}
+                            {% if n.value == '4l-h' %}
+                            <div class="row_simple">
+                                <img src="{% static 'images/white_unread.png' %}" width="20" height="20" 
+                                    onclick="accept('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <input type="text" name="4l-h" 
+                                class="{% if n.is_find %} number-yel_ {% else %} number-wht_ {% endif %}"
+                                id="number-{{ n.id }}" value="{{ n }}">
+                                <img src="{% static 'images/w_edit.png' %}" width="20" height="20" 
+                                    onclick="edit('{{ n.id }}', '{{ n.number }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <img src="{% static 'images/w_delete.png' %}" width="20" height="20" 
+                                    onclick="deleteNumber('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        <br>
+                        <input type="text" id="new-4l-h">
+                        <button onclick="newValue_4l_h()">Add</button>
+                    </div>
+                    
+                    <div class="column__">
+                        {% for n in numbers %}
+                            {% if n.value == '4l-l' %}
+                            <div class="row_simple">
+                                <img src="{% static 'images/white_unread.png' %}" width="20" height="20" 
+                                    onclick="accept('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <input type="text" name="4l-l" 
+                                class="{% if n.is_find %} number-yel_ {% else %} number-wht_ {% endif %}"
+                                id="number-{{ n.id }}" value="{{ n }}">
+                                <img src="{% static 'images/w_edit.png' %}" width="20" height="20" 
+                                    onclick="edit('{{ n.id }}', '{{ n.number }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <img src="{% static 'images/w_delete.png' %}" width="20" height="20" 
+                                    onclick="deleteNumber('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        <br>
+                        <input type="text" id="new-4l-l">
+                        <button onclick="newValue_4l_l()">Add</button>
+                    </div>
+        
+                </div>
+        
+                <div class="level__">
+        
+                    <div class="column__">
+                        {% for n in numbers %}
+                            {% if n.value == '4r-l' %}
+                            <div class="row_simple">
+                                <img src="{% static 'images/white_unread.png' %}" width="20" height="20" 
+                                    onclick="accept('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <input type="text" name="4r-l" 
+                                class="{% if n.is_find %} number-yel_ {% else %} number-wht_ {% endif %}"
+                                id="number-{{ n.id }}" value="{{ n }}">
+                                <img src="{% static 'images/w_edit.png' %}" width="20" height="20" 
+                                    onclick="edit('{{ n.id }}', '{{ n.number }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <img src="{% static 'images/w_delete.png' %}" width="20" height="20" 
+                                    onclick="deleteNumber('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        <br>
+                        <input type="text" id="new-4r-l">
+                        <button onclick="newValue_4r_l()">Add</button>
+                    </div>
+                    
+                    <div class="column__">
+                        {% for n in numbers %}
+                            {% if n.value == '4r-h' %}
+                            <div class="row_simple">
+                                <img src="{% static 'images/white_unread.png' %}" width="20" height="20" 
+                                    onclick="accept('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <input type="text" name="4r-h" 
+                                class="{% if n.is_find %} number-yel_ {% else %} number-wht_ {% endif %}"
+                                id="number-{{ n.id }}" value="{{ n }}">
+                                <img src="{% static 'images/w_edit.png' %}" width="20" height="20" 
+                                    onclick="edit('{{ n.id }}', '{{ n.number }}')"
+                                    style="cursor: pointer;"
+                                >
+                                <img src="{% static 'images/w_delete.png' %}" width="20" height="20" 
+                                    onclick="deleteNumber('{{ n.id }}')"
+                                    style="cursor: pointer;"
+                                >
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        <br>
+                        <input type="text" id="new-4r-h">
+                        <button onclick="newValue_4r_h()">Add</button>
+                    </div>
+        
+                </div>
+    
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+
+        function sendImage() {
+            const fileInput = document.getElementById('orderFile');
+            const formData = new FormData();
+            console.log('sendImage works!')
+
+            if (fileInput.files.length > 0) {
+                const selectedFile = fileInput.files[0];
+                formData.append('document', selectedFile);
+
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'imageWarehouse' %}",  // Replace with the URL of your Django view
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                    'X-CSRFToken': '{{ csrf_token }}' // Include the CSRF token in the headers
+                },
+                    success: function(response) {
+                        // Handle the response from the Django backend
+                        console.log('File uploaded:', response);
+                        window.location.reload()
+                    },
+                    error: function(error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+        }
+        // Attach an event listener to the file input change event
+        const fileInput = document.getElementById('orderFile');
+        fileInput.addEventListener('change', sendImage);
+
+        // SEARCH
+        function wSearch() {
+            // Get the input value
+            var inputElement = document.getElementById("w-search-input");
+            var inputValue = inputElement.value;
+
+            // Split the input value into an array of articles
+            var articles = inputValue.split(',').map(function(article) {
+                return article.trim(); // Remove whitespace from each article
+            });
+
+            // Create an object to send as JSON
+            var dataToSend = {
+                articles: articles
+            };
+
+            // Send the data to the Django view using AJAX
+            $.ajax({
+                type: 'POST',
+                url: '{% url "getSearch" %}',
+                data: JSON.stringify(dataToSend),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}' // Include the CSRF token in the headers
+                },
+                success: function(response) {
+                    // Handle the response from the Django view here
+                    window.location.reload()
+                    
+                },
+                error: function(error) {
+                    alert(error);
+                }
+            });
+
+            
+        }
+
+        
+        // RESET
+        function wReset() {
+            $.ajax({
+                type: 'POST',
+                url: '{% url "resetWarehouse" %}',
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}' // Include the CSRF token in the headers
+                },
+                success: function(response) {
+                    // Handle the response from the Django view here
+                    window.location.reload();
+                },
+                error: function(error) {
+                    alert(error);
+                }
+            })
+        }
+
+
+        //ACCEPT
+        function accept(id) {
+            var num = "number-" + id;
+            var number = document.getElementById(num)
+            number.classList.toggle("crossed");
+        }
+
+
+        //DELETE
+        function deleteNumber(id) {
+            var deleteQuestionWh = document.getElementById('deleteQuestionWh')
+                    deleteQuestionWh.style.display = 'flex';
+                    var data = '<div id="questCont">'+
+                                    '<p>'+"Usunąć numer?"+'</p>'+
+                                    '<div class="row_cont_in_label">'+
+                                        '<button class="btn" onclick="deleteNumberConfirm('+id+')">'+
+                                            '<a>'+"Tak"+'</a>'+
+                                        '</button>'+
+                                        '<button class="btn" onclick="closeQuestionDeleteNumber()">'+
+                                            '<a>'+"Nie"+'</a>'+
+                                        '</button>'+
+                                    '</div>'+
+                                '</div>';
+                        $('#deleteQuestionWh').html(data)
+        }
+
+        function deleteNumberConfirm(id) {
+            $.ajax({
+                type: 'POST',
+                url: '{% url "deleteValue" %}',
+                data: {
+                    'id': id,  
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',              
+                },
+                success: (data) => {
+                    window.location.reload()
+                },
+                error: (data) => {
+                    alert('error', data)
+                }
+              
+            })
+        }
+
+        function closeQuestionDeleteNumber(){
+            deleteQuestionWh.style.display = 'none';
+        }
+
+        function newValue_1l_h() {
+            var inputValue = document.getElementById("new-1l-h").value;
+            console.log('inputValue', inputValue, name)
+            $.ajax({
+                type: 'POST',
+                url: '{% url "newValue" %}',
+                data: {
+                    'number': inputValue,
+                    'value': '1l-h',  
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',              
+                },
+                success: (data) => {
+                    window.location.reload()
+                },
+                error: (data) => {
+                    alert('error', data)
+                }
+              
+            })
+        }
+
+        function newValue_1l_l() {
+            var inputValue = document.getElementById("new-1l-l").value;
+            console.log('inputValue', inputValue)
+            $.ajax({
+                type: 'POST',
+                url: '{% url "newValue" %}',
+                data: {
+                    'number': inputValue,
+                    'value': '1l-l',  
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',              
+                },
+                success: (data) => {
+                    window.location.reload()
+                },
+                error: (data) => {
+                    alert('error', data)
+                }
+              
+            })
+        }
+
+        function newValue_1r_l() {
+            var inputValue = document.getElementById("new-1r-l").value;
+            console.log('inputValue', inputValue)
+            $.ajax({
+                type: 'POST',
+                url: '{% url "newValue" %}',
+                data: {
+                    'number': inputValue,
+                    'value': '1r-l',  
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',              
+                },
+                success: (data) => {
+                    window.location.reload()
+                },
+                error: (data) => {
+                    alert('error', data)
+                }
+              
+            })
+        }
+
+        function newValue_1r_h() {
+            var inputValue = document.getElementById("new-1r-h").value;
+            console.log('inputValue', inputValue)
+            $.ajax({
+                type: 'POST',
+                url: '{% url "newValue" %}',
+                data: {
+                    'number': inputValue,
+                    'value': '1r-h',  
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',              
+                },
+                success: (data) => {
+                    window.location.reload()
+                },
+                error: (data) => {
+                    alert('error', data)
+                }
+              
+            })
+        } 
+
+        // 2 ROW
+        function newValue_2l_h() {
+            var inputValue = document.getElementById("new-2l-h").value;
+            console.log('inputValue', inputValue)
+            $.ajax({
+                type: 'POST',
+                url: '{% url "newValue" %}',
+                data: {
+                    'number': inputValue,
+                    'value': '2l-h',  
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',              
+                },
+                success: (data) => {
+                    window.location.reload()
+                },
+                error: (data) => {
+                    alert('error', data)
+                }
+              
+            })
+        }
+
+        function newValue_2l_l() {
+            var inputValue = document.getElementById("new-2l-l").value;
+            console.log('inputValue', inputValue)
+            $.ajax({
+                type: 'POST',
+                url: '{% url "newValue" %}',
+                data: {
+                    'number': inputValue,
+                    'value': '2l-l',  
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',              
+                },
+                success: (data) => {
+                    window.location.reload()
+                },
+                error: (data) => {
+                    alert('error', data)
+                }
+              
+            })
+        }
+
+        function newValue_2r_l() {
+            var inputValue = document.getElementById("new-2r-l").value;
+            console.log('inputValue', inputValue)
+            $.ajax({
+                type: 'POST',
+                url: '{% url "newValue" %}',
+                data: {
+                    'number': inputValue,
+                    'value': '2r-l',  
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',              
+                },
+                success: (data) => {
+                    window.location.reload()
+                },
+                error: (data) => {
+                    alert('error', data)
+                }
+              
+            })
+        }
+
+        function newValue_2r_h() {
+            var inputValue = document.getElementById("new-2r-h").value;
+            console.log('inputValue', inputValue)
+            $.ajax({
+                type: 'POST',
+                url: '{% url "newValue" %}',
+                data: {
+                    'number': inputValue,
+                    'value': '2r-h',  
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',              
+                },
+                success: (data) => {
+                    window.location.reload()
+                },
+                error: (data) => {
+                    alert('error', data)
+                }
+              
+            })
+        }
+
+
+        // 3 ROW
+        function newValue_3l_h() {
+            var inputValue = document.getElementById("new-3l-h").value;
+            console.log('inputValue', inputValue)
+            $.ajax({
+                type: 'POST',
+                url: '{% url "newValue" %}',
+                data: {
+                    'number': inputValue,
+                    'value': '3l-h',  
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',              
+                },
+                success: (data) => {
+                    window.location.reload()
+                },
+                error: (data) => {
+                    alert('error', data)
+                }
+              
+            })
+        }
+
+        function newValue_3l_l() {
+            var inputValue = document.getElementById("new-3l-l").value;
+            console.log('inputValue', inputValue)
+            $.ajax({
+                type: 'POST',
+                url: '{% url "newValue" %}',
+                data: {
+                    'number': inputValue,
+                    'value': '3l-l',  
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',              
+                },
+                success: (data) => {
+                    window.location.reload()
+                },
+                error: (data) => {
+                    alert('error', data)
+                }
+              
+            })
+        }
+
+        function newValue_3r_l() {
+            var inputValue = document.getElementById("new-3r-l").value;
+            console.log('inputValue', inputValue)
+            $.ajax({
+                type: 'POST',
+                url: '{% url "newValue" %}',
+                data: {
+                    'number': inputValue,
+                    'value': '3r-l',  
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',              
+                },
+                success: (data) => {
+                    window.location.reload()
+                },
+                error: (data) => {
+                    alert('error', data)
+                }
+              
+            })
+        }
+
+        function newValue_3r_h() {
+            var inputValue = document.getElementById("new-3r-h").value;
+            console.log('inputValue', inputValue)
+            $.ajax({
+                type: 'POST',
+                url: '{% url "newValue" %}',
+                data: {
+                    'number': inputValue,
+                    'value': '3r-h',  
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',              
+                },
+                success: (data) => {
+                    window.location.reload()
+                },
+                error: (data) => {
+                    alert('error', data)
+                }
+              
+            })
+        }
+
+
+        // 4 ROW
+        function newValue_4l_h() {
+            var inputValue = document.getElementById("new-4l-h").value;
+            console.log('inputValue', inputValue)
+            $.ajax({
+                type: 'POST',
+                url: '{% url "newValue" %}',
+                data: {
+                    'number': inputValue,
+                    'value': '4l-h',  
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',              
+                },
+                success: (data) => {
+                    window.location.reload()
+                },
+                error: (data) => {
+                    alert('error', data)
+                }
+              
+            })
+        }
+
+        function newValue_4l_l() {
+            var inputValue = document.getElementById("new-4l-l").value;
+            console.log('inputValue', inputValue)
+            $.ajax({
+                type: 'POST',
+                url: '{% url "newValue" %}',
+                data: {
+                    'number': inputValue,
+                    'value': '4l-l',  
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',              
+                },
+                success: (data) => {
+                    window.location.reload()
+                },
+                error: (data) => {
+                    alert('error', data)
+                }
+              
+            })
+        }
+
+        function newValue_4r_l() {
+            var inputValue = document.getElementById("new-4r-l").value;
+            console.log('inputValue', inputValue)
+            $.ajax({
+                type: 'POST',
+                url: '{% url "newValue" %}',
+                data: {
+                    'number': inputValue,
+                    'value': '4r-l',  
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',              
+                },
+                success: (data) => {
+                    window.location.reload()
+                },
+                error: (data) => {
+                    alert('error', data)
+                }
+              
+            })
+        }
+
+        function newValue_4r_h() {
+            var inputValue = document.getElementById("new-4r-h").value;
+            console.log('inputValue', inputValue)
+            $.ajax({
+                type: 'POST',
+                url: '{% url "newValue" %}',
+                data: {
+                    'number': inputValue,
+                    'value': '4r-h',  
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',              
+                },
+                success: (data) => {
+                    window.location.reload()
+                },
+                error: (data) => {
+                    alert('error', data)
+                }
+              
+            })
+        }
+
+
+        function edit(id, number) {
+            var inputElement = document.getElementById("number-" + id).value;
+            console.log('n', id, inputElement)
+            $.ajax({
+                type: 'POST',
+                url: '{% url "editValue" %}',
+                data: {
+                    'id': id, 
+                    'number': inputElement, 
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',              
+                },
+                success: (data) => {
+                    window.location.reload()
+                },
+                error: (data) => {
+                    alert('error', data)
+                }
+              
+            })
+        }
+    </script>
+
+    {% endblock %}
+    
+</body>
+</html>

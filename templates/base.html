@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="{% static 'css/raports.css' %}">
     <link rel="stylesheet" href="{% static 'css/schedule.css' %}">
     <link rel="stylesheet" href="{% static 'css/documents.css' %}">
+    <link rel="stylesheet" href="{% static 'css/warehouse_.css' %}">
     <script src="{% static 'chat.js' %}"></script>
     
     <title>Document</title>
@@ -40,6 +41,7 @@
         // exclude sender and sends them a notification, they will see it
         // on any page of the app, that's why this function is here, 
         // in the base.html
+
         var User = document.getElementById('user').textContent
         let intervalID;
         function checkMessages() {

@@ -152,7 +152,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         )
     payment = models.FloatField(
         _('Stawka za godzinę'),
-        null=True
+        null=True,
+        default=0,
     )
     vacations_days_quantity = models.IntegerField(
         _('Ilość przysługujących dni urlopu'),

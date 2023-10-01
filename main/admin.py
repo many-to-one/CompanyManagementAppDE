@@ -4,6 +4,7 @@ from .models import (
     MessageCountUser,
     Subcontractor,
     VacationRequest,
+    Warehouse,
     Work,
     WorkObject,
     WorkType,
@@ -26,3 +27,4 @@ admin.site.register(IsRead)
 admin.site.register(Task)
 admin.site.register(Subcontractor)
 admin.site.register(Documents)
+admin.site.register(Warehouse)

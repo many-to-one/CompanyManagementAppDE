@@ -26,3 +26,138 @@
 .home_part p {
     color: black;
 }
+
+.w_back__ {
+    background-color: #5C8374;
+    width: 280vw;
+}
+
+@media screen and (max-width: 450px){
+    .w_back__ {
+        background-color: #5C8374;
+        width: 840vw;
+    }
+} 
+
+#deleteQuestionWh{
+    position: fixed;
+    z-index: 9999;
+    left: 10%;
+    top: 5%;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 80vw;
+    height: auto;
+    min-height: 30vh;
+    background-color: var(--main-bg-color);
+    padding: 20px;
+    margin: 20px;
+    border-radius: 5px;
+    border: transparent;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+
+.levels_cont_ {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100vw;
+    height: auto;
+    min-height: 100vh;
+    margin: 10px;
+    padding: 20px;
+}
+
+.w_main_level__ {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 672px;
+    height: auto;
+    min-height: 100vh;
+    margin: 10px;
+    padding: 20px;
+}
+
+.level__ {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 300px;
+    height: auto;
+    min-height: 100vh;
+    margin: 10px;
+    padding: 20px;
+    background-color: #183D3D;
+}
+
+.column__ {
+    display: flex;
+    flex-direction: column; 
+    width: 170px;
+    height: auto;
+    min-height: 90vh;
+}
+
+#number_ {
+    width: 60px;
+    height: 15px;
+    border: 1px solid black;
+}
+
+.number-yel_ {
+    width: 60px;
+    height: 15px;
+    border: 1px solid black;
+    background-color: yellow;
+}
+
+.number-wht_ {
+    width: 60px;
+    height: 15px;
+    border: 1px solid black;
+    background-color: rgb(255, 255, 255);
+}
+
+.w-search_ {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    padding: 35px 85px;
+}
+
+.w-search_ input {
+    width: 80vw;
+    height: 30px;
+    border: 1px solid black;
+    border-radius: 10px;
+}
+
+.w-search_ button {
+    background-color: #93B1A6;
+    border-radius: 10px;
+    width: 75px;
+    cursor: pointer;
+}
+
+.column__ button {
+    background-color: #93B1A6;
+    border-radius: 10px;
+    width: 75px;
+    margin-top: 5px;
+    cursor: pointer;
+} 
+
+.column__ input {
+    border-radius: 4px;
+    width: 70px;
+}
+
+.crossed {
+    text-decoration: line-through;
+    background-color: #93B1A6;
+}

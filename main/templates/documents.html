@@ -12,6 +12,8 @@
 
     {% block content %}
 
+    {% if request.user.is_superuser %}
+
     <div class="page-container">
 
         <div class="filter-container">
@@ -49,7 +51,22 @@
         {% endfor %}
 
     </div>
-    
+
+    {% else %}
+
+    <div class="wo_container">
+        <div class="label">
+            <div class="row_cont_in_label">
+                <a class="label_img" href="{% url 'getDocuments' user.id %}">
+                    <img src="{% static 'images/documents.png' %}" width="30" height="30">
+                </a>
+                {{ request.user.username }}
+                <br>
+            </div>
+        </div>
+    </div>
+
+    {% endif %}
     
     {% endblock %}
 
