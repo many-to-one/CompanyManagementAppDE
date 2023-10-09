@@ -1,6 +1,64 @@
 from django.urls import path
+from .views_.excel import raportsToExcel, vacationsToExcel
+from .views_.vacations import(
+    addVacation,
+    allVacationRequests,
+    delete_vacations,
+    delete_vacations_question,
+    deleteVacation,
+    deleteVacationPage,
+    deleteVacationRequest,
+    deleteVacationRequestQuestion,
+    editVacation,
+    vacationRequest,
+    vacations,
+    vacationsExcelPage,
+) 
+from .views_.documents import deleteDocument, getDocuments, upload_document
+from .views_.messages import (
+    chat, 
+    chek_messages, 
+    chek_messages_user, 
+    deleteAllMessagesWO, 
+    deleteMessConf, 
+    deleteQuestionMessages, 
+    showCount, 
+    showCountAll, 
+    showMessageHistory
+)
+from .views_.schedule import schedule
+from .views_.header_activity import header
+from .views_.tasks_view import (
+    deleteAllDoneTasksQuestion, 
+    deleteTask, 
+    deleteTaskQuestion, 
+    doneTask, 
+    new_task, 
+    task, 
+    taskQuantity
+)
+from .views_.subcontractor import addSubcontractor, deleteSubcontractor
+from .views_.work_object_view import (
+    deleteUserFromObject, 
+    deleteUserFromObjectQuestion, 
+    workObjectView
+)
+from .views_.work_objects import WorkObjects, changeStatusWorkObject, deleteWorkObject, deleteWorkObjectQuestion
+from .views_.create_update_workobject import createWorkObject, updateWorkObject
+from .views_.delete_user_work import (
+    deleteUserWork, 
+    deleteListUserWork, 
+    deleteListUserWorkQuestion, 
+    success_delete_user_work
+)
+from .views_.user_raport import getUserRaport
+from .views_.raports import raports
+from .views_.work_object_raport import workObjectRaport
+from .views_.delete_user_work_question import deleteUserWorkQuastion
+from .views_.update_user_work import updateUserWork
+from . views import *
+from .views_.user_work import userWork
 
-from .views import *
 
 urlpatterns = [
     path('header/', header, name='header'),

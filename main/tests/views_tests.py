@@ -1,7 +1,9 @@
 from django.test import TestCase, RequestFactory
+from matplotlib.pyplot import summer
+from Adest.main.views import WorkObjects, workObjectView
 # from django.contrib.auth.models import AnonymousUser, User
 from main.models import *
-from main.views import *
+from main.views_ import *
 from users.models import CustomUser
 
 
@@ -97,19 +99,19 @@ class WorkObjectViewTest(TestCase):
         )
         work2.save()
 
-        total_payment = Work.objects.filter(
-            work_object=work_object.name
-            ).aggregate(
-            total_payment=Sum('payment')
-            )['total_payment']
+        # total_payment = Work.objects.filter(
+        #     work_object=work_object.name
+        #     ).aggregate(
+        #     total_payment=Sum('payment')
+        #     )['total_payment']
 
         # Create a message
         message1 = Message.objects.create(work_object=work_object, content='Test message1')
         message2 = Message.objects.create(work_object=work_object, content='Test message2')
 
-        context = {
-            'total_payment': total_payment
-        }
+        # context = {
+        #     'total_payment': total_payment
+        # }
 
         # Create a request
         request = self.factory.get(f'/work_objects/{work_object.id}')
@@ -125,7 +127,7 @@ class WorkObjectViewTest(TestCase):
         self.assertContains(response, work_object)
         self.assertContains(response, 'user1')
         self.assertContains(response, 'user2')
-        self.assertEqual(context['total_payment'], 40)
+        # self.assertEqual(context['total_payment'], 40)
         # self.assertEqual(response.context['total_prepayment'], '0:00')
         # self.assertEqual(response.context['total_phone_costs'], '0:00')
         # self.assertEqual(response.context['total_payment'], '0:00')

@@ -159,11 +159,11 @@ class WorkObject(models.Model):
         max_length=25,
         verbose_name='Koniec',
     )
-    # remaining_time = models.IntegerField(
-    #     null=False,
-    #     default=0,
-    #     verbose_name='Pozostały czas',
-    # )
+    days_difference = models.IntegerField(
+        null=False,
+        default=0,
+        verbose_name='Pozostały czas',
+    )
     name = models.CharField(
         null=True,
         max_length=150,

@@ -17,6 +17,17 @@
 
 <div class="page-container">
 
+    {% if messages %}
+                {% for message in messages %}
+                  <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                      <button class="allert-btn">
+                          <a href="{% url 'work_objects'%}">Ok</a>
+                      </button>
+                  </div>
+                {% endfor %}
+            {% endif %}
+
     <div class="title">
         <h3>MIEJSCA PRACY</h3>
         <form method="POST" class="search_form" id="objects">
@@ -158,22 +169,10 @@
 
 <script>
 
-    function submitFormObjects() {
-      var form = document.getElementById("objects");
-      form.submit();
-    }
-
-    function submitFormStatus() {
-      var form = document.getElementById("status");
-      form.submit();
-    }
-
-    function edit(pk) {
-        var pk = pk
-        window.location.href = "{% url 'updateWorkObject' 0 %}".replace('0', pk);
-    }
+    var update_wo = "{% url 'updateWorkObject' 0 %}";
 
 </script>
+<script src="{% static 'js/work_objects.js' %}"></script>
 
 {% endblock %}
     

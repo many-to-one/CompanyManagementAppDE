@@ -293,7 +293,6 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    /* background-color: var(--input-bg-color); */
     color: #2a2a2a;
     border-radius: 5px;
     border: transparent;
@@ -551,7 +550,7 @@ textarea {
 
     #task {
         font-size: 14px;
-        width: 78vw;
+        width: 66vw;
         padding: 5px;
     }
 
